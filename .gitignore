@@ -16,5 +16,9 @@
 *.lastbuildstate
 *.ilk
 *.VC.db
+*.lib
+*.obj
+*.pdb
+caliD3D11*.exe
 .vs
 Bin
