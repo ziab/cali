@@ -1,0 +1,112 @@
+// ----------------------------------------------------------------------------
+// Rayleigh and Mie scattering atmosphere system
+// ----------------------------------------------------------------------------
+
+#include "cali_common.fx"
+#include "bruneton_main.fx"
+
+static const float kBottomRadius = 6360000.0;
+static const float kLengthUnitInMeters = 1000.0;
+
+static const float kPi = 3.1415926;
+static const float kSunAngularRadius = 0.00935 / 2.0;
+static const float kSunSolidAngle = kPi * kSunAngularRadius * kSunAngularRadius;
+static const float3 kGroundAlbedo = float3(0.0, 0.0, 0.04);
+
+static const float kSolarIrradiance[3] =
+{
+    1.11776, 1.14259, 1.01249
+};
+
+static const float3 sun_radiance = float3(
+    kSolarIrradiance[0] / kSunSolidAngle,
+    kSolarIrradiance[1] / kSunSolidAngle,
+    kSolarIrradiance[2] / kSunSolidAngle);
+
+float4 ps_sky(VS_OUTPUT input) : SV_TARGET
+{
+    ////////////////////////////////////////////////////////////////////////////
+    const float3 white_point = float3(1.0, 1.0, 1.0);
+    const float3 earth_center = float3(0.0, -kBottomRadius / kLengthUnitInMeters, 0.0);
+    const float exposure = 10.0;
+    const float shadow_length = 0.0;
+    ////////////////////////////////////////////////////////////////////////////
+
+    float3 view_ray = input.worldPos - camera_position;
+    float3 view_direction = normalize(view_ray);
+    float3 sun_direction = normalize(sun_position - camera_position);
+
+    // Hack to fade out light shafts when the Sun is very close to the horizon.
+    float lightshaft_fadein_hack = smoothstep(0.02, 0.04, dot(normalize(camera_position - earth_center), sun_direction));
+
+    float3 camera_position_km_uints = camera_position / kLengthUnitInMeters;
+
+    // Compute the distance between the view ray line and the Earth center,
+    // and the distance between the camera and the intersection of the view
+    // ray with the ground (or NaN if there is no intersection).
+    float3 p = camera_position_km_uints - earth_center;
+    float p_dot_v = dot(p, view_direction);
+    float p_dot_p = dot(p, p);
+    float ray_earth_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
+    float distance_to_intersection_ground = -p_dot_v - sqrt(
+        earth_center.y * earth_center.y - ray_earth_center_squared_distance);
+
+    // Compute the radiance reflected by the ground, if the ray intersects it.
+    float ground_alpha = 0.0;
+    float3 ground_radiance = float3(0.0, 0.0, 0.0);
+    if (distance_to_intersection_ground > 0.0)
+    {
+        float3 _point = camera_position_km_uints + view_direction * distance_to_intersection_ground;
+        float3 normal = normalize(_point - earth_center);
+
+        // Compute the radiance reflected by the ground.
+        float3 sky_irradiance;
+        float3 sun_irradiance = GetSunAndSkyIrradiance(_point - earth_center, normal, sun_direction, sky_irradiance);
+        ground_radiance = kGroundAlbedo * (1.0 / PI) * 
+            (sun_irradiance * /*GetSunVisibility*/ 1.0 + sky_irradiance * /*GetSkyVisibility*/ 1.0);
+
+        //float shadow_length = max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) * lightshaft_fadein_hack;
+        float3 transmittance;
+        float3 in_scatter = GetSkyRadianceToPoint(
+            camera_position_km_uints - earth_center,
+            _point - earth_center, 
+            shadow_length, 
+            sun_direction, 
+            transmittance);
+
+        ground_radiance = ground_radiance * transmittance + in_scatter;
+        // HARDCODE
+        ground_alpha = 0.3;
+    }
+
+    float3 transmittance;
+    float3 radiance = GetSkyRadiance(
+        camera_position_km_uints - earth_center,
+        view_direction,
+        shadow_length,
+        sun_direction,
+        transmittance);
+
+    float vs_dot = dot(view_direction, sun_direction);
+
+    if (vs_dot > 0.99993)
+    {
+        radiance = radiance + transmittance * sun_radiance;
+    }
+
+    radiance = lerp(radiance, ground_radiance, ground_alpha);
+
+    float3 color = pow(
+        abs(float3(1.0, 1.0, 1.0) - exp(-radiance / white_point * exposure)),
+        float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+
+    float alpha = 1.0;
+    // Uncommnet to mix atmosphere with whatever is rendered further
+    //if (distance_to_intersection_ground < 0.0)
+    //{
+    //    float brightness = 0.2126 * color.r + .7152 * color.g + .0722 * color.b;
+    //    alpha = lerp(0.0, 0.1, brightness);
+    //}
+
+    return float4(color.rgb, alpha);
+}

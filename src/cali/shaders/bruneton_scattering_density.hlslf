@@ -1,0 +1,189 @@
+#include "cali_common.fx"
+#include "bruneton_common.fx"
+
+RadianceDensitySpectrum ComputeScatteringDensity(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_textureSampler,
+    in ReducedScatteringTexture single_rayleigh_scattering_texture,
+    in SamplerState single_rayleigh_scattering_textureSampler,
+    in ReducedScatteringTexture single_mie_scattering_texture,
+    in SamplerState single_mie_scattering_textureSampler,
+    in ScatteringTexture multiple_scattering_texture,
+    in SamplerState multiple_scattering_textureSampler,
+    in IrradianceTexture irradiance_texture,
+    in SamplerState irradiance_textureSampler,
+    Length r, Number mu, Number mu_s, Number nu, int scattering_order)
+{
+    //assert(r >= atmosphere.bottom_radius && r <= atmosphere.top_radius);
+    //assert(mu >= -1.0 && mu <= 1.0);
+    //assert(mu_s >= -1.0 && mu_s <= 1.0);
+    //assert(nu >= -1.0 && nu <= 1.0);
+    //assert(scattering_order >= 2);
+    float3 zenith_direction = float3(0.0, 0.0, 1.0);
+    float3 omega = float3(sqrt(1.0 - mu * mu), 0.0, mu);
+    Number sun_dir_x = omega.x == 0.0 ? 0.0 : (nu - mu * mu_s) / omega.x;
+    Number sun_dir_y = sqrt(max(1.0 - sun_dir_x * sun_dir_x - mu_s * mu_s, 0.0));
+    float3 omega_s = float3(sun_dir_x, sun_dir_y, mu_s);
+    const int SAMPLE_COUNT = 16;
+    const Angle dphi = pi / Number(SAMPLE_COUNT);
+    const Angle dtheta = pi / Number(SAMPLE_COUNT);
+    RadianceDensitySpectrum rayleigh_mie = RadianceDensitySpectrum(
+        0.0 * watt_per_cubic_meter_per_sr_per_nm, 
+        0.0 * watt_per_cubic_meter_per_sr_per_nm, 
+        0.0 * watt_per_cubic_meter_per_sr_per_nm);
+
+    for (int l = 0; l < SAMPLE_COUNT; ++l)
+    {
+      Angle theta = (Number(l) + 0.5) * dtheta;
+      Number cos_theta = cos(theta);
+      Number sin_theta = sin(theta);
+        bool ray_r_theta_intersects_ground =
+          RayIntersectsGround(atmosphere, r, cos_theta);
+      Length distance_to_ground = 0.0 * m;
+      DimensionlessSpectrum transmittance_to_ground = DimensionlessSpectrum(0.0, 0.0, 0.0);
+      DimensionlessSpectrum ground_albedo = DimensionlessSpectrum(0.0, 0.0, 0.0);
+        if (ray_r_theta_intersects_ground)
+        {
+            distance_to_ground =
+            DistanceToBottomAtmosphereBoundary(atmosphere, r, cos_theta);
+            transmittance_to_ground =
+            GetTransmittance(atmosphere, transmittance_texture, transmittance_textureSampler, r, cos_theta,
+                distance_to_ground, true /* ray_intersects_ground */);
+            ground_albedo = atmosphere.ground_albedo;
+        }
+        for (int m = 0; m < 2 * SAMPLE_COUNT; ++m)
+        {
+            Angle phi = (Number(m) + 0.5) * dphi;
+                float3 omega_i =
+                float3(cos(phi) * sin_theta, sin(phi) * sin_theta, cos_theta);
+            SolidAngle domega_i = (dtheta / rad) * (dphi / rad) * sin(theta) * sr;
+            Number nu1 = dot(omega_s, omega_i);
+        
+            RadianceSpectrum incident_radiance = GetScattering(
+                atmosphere,
+                single_rayleigh_scattering_texture,
+                single_rayleigh_scattering_textureSampler,
+                single_mie_scattering_texture,
+                single_mie_scattering_textureSampler,
+                multiple_scattering_texture, 
+                multiple_scattering_textureSampler,
+                r, omega_i.z, mu_s, nu1,
+                ray_r_theta_intersects_ground, scattering_order - 1);
+
+            float3 ground_normal =
+            normalize(zenith_direction * r + omega_i * distance_to_ground);
+
+            IrradianceSpectrum ground_irradiance = GetIrradiance(
+                atmosphere, 
+                irradiance_texture, 
+                irradiance_textureSampler, 
+                atmosphere.bottom_radius,
+                dot(ground_normal, omega_s)
+                );
+
+            incident_radiance += transmittance_to_ground *
+            ground_albedo * (1.0 / (PI * sr)) * ground_irradiance;
+            Number nu2 = dot(omega, omega_i);
+            Number rayleigh_density = exp(
+                -(r - atmosphere.bottom_radius) / atmosphere.rayleigh_scale_height);
+            Number mie_density = exp(
+                -(r - atmosphere.bottom_radius) / atmosphere.mie_scale_height);
+            rayleigh_mie += incident_radiance * (
+                atmosphere.rayleigh_scattering * rayleigh_density *
+                    RayleighPhaseFunction(nu2) +
+                atmosphere.mie_scattering * mie_density *
+                    MiePhaseFunction(atmosphere.mie_phase_function_g, nu2)) * domega_i;
+        }
+    }
+    return rayleigh_mie;
+}
+
+RadianceDensitySpectrum ComputeScatteringDensityTexture(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_textureSampler,
+    in ReducedScatteringTexture single_rayleigh_scattering_texture,
+    in SamplerState single_rayleigh_scattering_textureSampler,
+    in ReducedScatteringTexture single_mie_scattering_texture,
+    in SamplerState single_mie_scattering_textureSampler,
+    in ScatteringTexture multiple_scattering_texture,
+    in SamplerState multiple_scattering_textureSampler,
+    in IrradianceTexture irradiance_texture,
+    in SamplerState irradiance_textureSampler,
+    in float3 gl_frag_coord, 
+    int scattering_order)
+{
+    Length r;
+    Number mu;
+    Number mu_s;
+    Number nu;
+    bool ray_r_mu_intersects_ground;
+    GetRMuMuSNuFromScatteringTextureFragCoord(atmosphere, gl_frag_coord,
+        r, mu, mu_s, nu, ray_r_mu_intersects_ground);
+
+    return ComputeScatteringDensity(
+        atmosphere, 
+        transmittance_texture,
+        transmittance_textureSampler,
+        single_rayleigh_scattering_texture,
+        single_rayleigh_scattering_textureSampler,
+        single_mie_scattering_texture,
+        single_mie_scattering_textureSampler,
+        multiple_scattering_texture,
+        multiple_scattering_textureSampler,
+        irradiance_texture,
+        irradiance_textureSampler,
+        r, mu, mu_s, nu,
+        scattering_order);
+}
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
+TransmittanceTexture transmittance_texture;
+SamplerState transmittance_textureSampler;
+ReducedScatteringTexture single_rayleigh_scattering_texture;
+SamplerState single_rayleigh_scattering_textureSampler;
+ReducedScatteringTexture single_mie_scattering_texture;
+SamplerState single_mie_scattering_textureSampler;
+ScatteringTexture multiple_scattering_texture;
+SamplerState multiple_scattering_textureSampler;
+IrradianceTexture irradiance_texture;
+SamplerState irradiance_textureSampler;
+
+const float scattering_order;
+
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+struct PixelInputType3D
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+    uint layer : COLOR; // layer is stored in "r" chanel
+};
+
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
+
+float4 main(PixelInputType3D input) : SV_TARGET
+{
+    return float4(ComputeScatteringDensityTexture(
+        ATMOSPHERE, 
+        transmittance_texture, 
+        transmittance_textureSampler, 
+        single_rayleigh_scattering_texture,
+        single_rayleigh_scattering_textureSampler, 
+        single_mie_scattering_texture, 
+        single_mie_scattering_textureSampler, 
+        multiple_scattering_texture,
+        multiple_scattering_textureSampler, 
+        irradiance_texture, 
+        irradiance_textureSampler, 
+        float3(input.position.xy, input.layer + 0.5), 
+        scattering_order), 1.0);
+}

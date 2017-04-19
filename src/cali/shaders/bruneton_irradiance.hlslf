@@ -1,0 +1,73 @@
+#include "cali_common.fx"
+#include "bruneton_common.fx"
+
+void GetRMuSFromIrradianceTextureUv(in AtmosphereParameters atmosphere,
+    in float2 uv, out Length r, out Number mu_s) 
+{
+    //assert(uv.x >= 0.0 && uv.x <= 1.0);
+    //assert(uv.y >= 0.0 && uv.y <= 1.0);
+    Number x_mu_s = GetUnitRangeFromTextureCoord(uv.x, IRRADIANCE_TEXTURE_WIDTH);
+    Number x_r = GetUnitRangeFromTextureCoord(uv.y, IRRADIANCE_TEXTURE_HEIGHT);
+    r = atmosphere.bottom_radius +
+        x_r * (atmosphere.top_radius - atmosphere.bottom_radius);
+    mu_s = ClampCosine(2.0 * x_mu_s - 1.0);
+}
+
+IrradianceSpectrum ComputeDirectIrradiance(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_sampler,
+    Length r, Number mu_s) 
+{
+    //assert(r >= atmosphere.bottom_radius && r <= atmosphere.top_radius);
+    //assert(mu_s >= -1.0 && mu_s <= 1.0);
+    return atmosphere.solar_irradiance *
+        GetTransmittanceToTopAtmosphereBoundary(
+            atmosphere, transmittance_texture, transmittance_sampler, r, mu_s) * max(mu_s, 0.0);
+}
+
+IrradianceSpectrum ComputeDirectIrradianceTexture(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_sampler,
+    in float2 uv) 
+{
+    Length r;
+    Number mu_s;
+    GetRMuSFromIrradianceTextureUv(atmosphere, uv, r, mu_s);
+
+    return ComputeDirectIrradiance(atmosphere, transmittance_texture, transmittance_sampler, r, mu_s);
+}
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
+TransmittanceTexture transmittance_texture;
+SamplerState transmittance_textureSampler;
+
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
+
+float4 main(PixelInputType input) : SV_TARGET
+{
+    float2 uv = input.tex;
+    float4 delta_irradiance = float4(ComputeDirectIrradianceTexture(
+          ATMOSPHERE, transmittance_texture, transmittance_textureSampler, uv), 1.0);
+
+    // Warning: write to a texture
+    // irradiance_texture = float(0.0);
+
+    return delta_irradiance;
+}

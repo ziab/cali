@@ -1,0 +1,124 @@
+#include "cali_common.fx"
+#include "bruneton_common.fx"
+
+void ComputeSingleScatteringIntegrand(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_sampler,
+    Length r, Number mu, Number mu_s, Number nu, Length d,
+    bool ray_r_mu_intersects_ground,
+    out DimensionlessSpectrum rayleigh, out DimensionlessSpectrum mie)
+{
+    Length r_d = ClampRadius(atmosphere, sqrt(d * d + 2.0 * r * mu * d + r * r));
+    Number mu_s_d = ClampCosine((r * mu_s + d * nu) / r_d);
+    if (RayIntersectsGround(atmosphere, r_d, mu_s_d))
+    {
+        rayleigh = DimensionlessSpectrum(0.0, 0.0, 0.0);
+        mie = DimensionlessSpectrum(0.0, 0.0, 0.0);
+    }
+    else
+    {
+        DimensionlessSpectrum transmittance =
+            GetTransmittance(
+                atmosphere, transmittance_texture, transmittance_sampler, r, mu, d,
+                ray_r_mu_intersects_ground) *
+            GetTransmittanceToTopAtmosphereBoundary(
+                atmosphere, transmittance_texture, transmittance_sampler, r_d, mu_s_d);
+        rayleigh = transmittance * exp(-(r_d - atmosphere.bottom_radius) / atmosphere.rayleigh_scale_height);
+        mie = transmittance * exp(-(r_d - atmosphere.bottom_radius) / atmosphere.mie_scale_height);
+    }
+}
+
+void ComputeSingleScattering(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_sampler,
+    Length r, Number mu, Number mu_s, Number nu,
+    bool ray_r_mu_intersects_ground,
+    out IrradianceSpectrum rayleigh, out IrradianceSpectrum mie)
+{
+    //assert(r >= atmosphere.bottom_radius && r <= atmosphere.top_radius);
+    //assert(mu >= -1.0 && mu <= 1.0);
+    //assert(mu_s >= -1.0 && mu_s <= 1.0);
+    //assert(nu >= -1.0 && nu <= 1.0);
+    const int SAMPLE_COUNT = 50;
+    Length dx = DistanceToNearestAtmosphereBoundary(atmosphere, r, mu,
+        ray_r_mu_intersects_ground) / Number(SAMPLE_COUNT);
+    DimensionlessSpectrum rayleigh_sum = DimensionlessSpectrum(0.0, 0.0, 0.0);
+    DimensionlessSpectrum mie_sum = DimensionlessSpectrum(0.0, 0.0, 0.0);
+    for (int i = 0; i <= SAMPLE_COUNT; ++i)
+    {
+        Length d_i = Number(i) * dx;
+        DimensionlessSpectrum rayleigh_i;
+        DimensionlessSpectrum mie_i;
+        ComputeSingleScatteringIntegrand(atmosphere, transmittance_texture, transmittance_sampler,
+            r, mu, mu_s, nu, d_i, ray_r_mu_intersects_ground, rayleigh_i, mie_i);
+        Number weight_i = (i == 0 || i == SAMPLE_COUNT) ? 0.5 : 1.0;
+        rayleigh_sum += rayleigh_i * weight_i;
+        mie_sum += mie_i * weight_i;
+    }
+
+    rayleigh = rayleigh_sum * dx * atmosphere.solar_irradiance * atmosphere.rayleigh_scattering;
+    mie = mie_sum * dx * atmosphere.solar_irradiance * atmosphere.mie_scattering;
+}
+
+void ComputeSingleScatteringTexture(in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture, in SamplerState transmittance_sampler, in float3 gl_frag_coord,
+    out IrradianceSpectrum rayleigh, out IrradianceSpectrum mie) 
+{
+    Length r;
+    Number mu;
+    Number mu_s;
+    Number nu;
+    bool ray_r_mu_intersects_ground;
+    GetRMuMuSNuFromScatteringTextureFragCoord(atmosphere, gl_frag_coord,
+        r, mu, mu_s, nu, ray_r_mu_intersects_ground);
+    ComputeSingleScattering(atmosphere, transmittance_texture, transmittance_sampler,
+        r, mu, mu_s, nu, ray_r_mu_intersects_ground, rayleigh, mie);
+}
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
+TransmittanceTexture transmittance_texture;
+SamplerState transmittance_textureSampler;
+
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+struct PixelInputType3D
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+    uint layer : COLOR;
+};
+
+struct RayleighMieScattering
+{
+    float4 delta_rayleigh_scattering_texture : SV_Target0;
+    float4 delta_mie_scattering_texture : SV_Target1;
+    float4 scattering_texture : SV_Target2;
+};
+
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
+
+RayleighMieScattering main(PixelInputType3D input)
+{
+    RayleighMieScattering output;
+    IrradianceSpectrum delta_rayleigh;
+    IrradianceSpectrum delta_mie;
+
+    ComputeSingleScatteringTexture(
+          ATMOSPHERE, transmittance_texture, transmittance_textureSampler, float3(input.position.xy, input.layer + 0.5),
+          delta_rayleigh, delta_mie);
+
+    output.delta_rayleigh_scattering_texture = float4(delta_rayleigh, 1.0);
+    output.delta_mie_scattering_texture = float4(delta_mie, 1.0);
+    output.scattering_texture = float4(delta_rayleigh.rgb, delta_mie.r);
+
+    return output;
+}

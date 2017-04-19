@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CommonFileSystem.cpp" />
+    <ClCompile Include="DebugInfo.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="InputController.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Renderable.cpp" />
+    <ClCompile Include="Sky.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="Sun.cpp" />
+    <ClCompile Include="PostEffect.cpp" />
+    <ClCompile Include="Bruneton.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CommonFileSystem.h" />
+    <ClInclude Include="ConstantBufferWrapper.h" />
+    <ClInclude Include="DebugInfo.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="InputController.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Renderable.h" />
+    <ClInclude Include="Signal.h" />
+    <ClInclude Include="Sky.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="Sun.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Atomsphere.h" />
+    <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="PostEffect.h" />
+    <ClInclude Include="Bruneton.h" />
+    <ClInclude Include="shaders\BrunetonCommonDefs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\cali_common.fx">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="pointShader.glslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="pointShader.glslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sky.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sky.hlslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sun.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sun.hlslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sky_scatter.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bloom.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bloom.hlslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\sky_precomp.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\draw_quad.hlslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_common.fx">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_transmittance.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_irradiance.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_single_scattering.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_scattering_density.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_indirect_irradiance.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_multiple_scattering.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\bruneton_main.fx">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.hlslv">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.hlslf">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{20964beb-1f1b-4c4f-9ed2-28bbcc442460}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

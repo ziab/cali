@@ -1,0 +1,31 @@
+#include "cali_common.fx"
+
+float4 ps_sky(VS_OUTPUT input) : SV_TARGET
+{
+    float angle_cos = dot(input.worldPos, world_up) / (length(input.worldPos) * length(world_up));
+
+    if (angle_cos < 0.0) return float4 (1.0, 1.0, 1.0, 1.0);
+
+    float sun_angle_to_current_point_cos = dot(input.worldPos, sun_position) / (length(input.worldPos) * length(sun_position));
+    sun_angle_to_current_point_cos = pow(sun_angle_to_current_point_cos, 5);
+
+    angle_cos = sqrt(angle_cos);
+
+    float light_factor = angle_cos;
+
+    if (sun_angle_to_current_point_cos > 0.0)
+    {
+        light_factor -= sun_angle_to_current_point_cos;
+
+        if (light_factor <= 0)
+            light_factor = 0;
+    }
+
+    float4 frag_color;
+    frag_color.r = map_in_range(light_factor, 0.0, 1.0, sky_color_horizon.r, sky_color_zenith.r);
+    frag_color.g = map_in_range(light_factor, 0.0, 1.0, sky_color_horizon.g, sky_color_zenith.g);
+    frag_color.b = map_in_range(light_factor, 0.0, 1.0, sky_color_horizon.b, sky_color_zenith.b);
+    frag_color.a = 1.f;
+
+    return frag_color;
+}

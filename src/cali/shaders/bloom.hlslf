@@ -1,0 +1,97 @@
+#include "cali_common.fx"
+
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+Texture2D target;
+SamplerState targetSampler;
+
+const float screen_width;
+const float screen_height;
+
+float3 samplef(float2 tc)
+{
+    return pow(abs(target.Sample(targetSampler, tc).xyz), float3(2.2, 2.2, 2.2));
+}
+
+float3 highlights(float3 pixel, float thres)
+{
+    float val = (pixel.x + pixel.y + pixel.z) / 3.0;
+    return pixel * smoothstep(thres - 0.1, thres + 0.1, val);
+}
+
+float3 hsample(float2 tc)
+{
+    return highlights(samplef(tc), 0.8);
+}
+
+float3 blur(float2 tc, float offs)
+{
+    float4 xoffs = offs * float4(-2.0, -1.0, 1.0, 2.0) / screen_width;
+    float4 yoffs = offs * float4(-2.0, -1.0, 1.0, 2.0) / screen_height;
+	
+    float3 color = float3(0.0, 0.0, 0.0);
+    color += hsample(tc + float2(xoffs.x, yoffs.x)) * 0.00366;
+    color += hsample(tc + float2(xoffs.y, yoffs.x)) * 0.01465;
+    color += hsample(tc + float2(0.0,     yoffs.x)) * 0.02564;
+    color += hsample(tc + float2(xoffs.z, yoffs.x)) * 0.01465;
+    color += hsample(tc + float2(xoffs.w, yoffs.x)) * 0.00366;
+	
+    color += hsample(tc + float2(xoffs.x, yoffs.y)) * 0.01465;
+    color += hsample(tc + float2(xoffs.y, yoffs.y)) * 0.05861;
+    color += hsample(tc + float2(0.0,     yoffs.y)) * 0.09524;
+    color += hsample(tc + float2(xoffs.z, yoffs.y)) * 0.05861;
+    color += hsample(tc + float2(xoffs.w, yoffs.y)) * 0.01465;
+	
+    color += hsample(tc + float2(xoffs.x, 0.0)) * 0.02564;
+    color += hsample(tc + float2(xoffs.y, 0.0)) * 0.09524;
+    color += hsample(tc + float2(0.0,     0.0)) * 0.15018;
+    color += hsample(tc + float2(xoffs.z, 0.0)) * 0.09524;
+    color += hsample(tc + float2(xoffs.w, 0.0)) * 0.02564;
+	
+    color += hsample(tc + float2(xoffs.x, yoffs.z)) * 0.01465;
+    color += hsample(tc + float2(xoffs.y, yoffs.z)) * 0.05861;
+    color += hsample(tc + float2(0.0,     yoffs.z)) * 0.09524;
+    color += hsample(tc + float2(xoffs.z, yoffs.z)) * 0.05861;
+    color += hsample(tc + float2(xoffs.w, yoffs.z)) * 0.01465;
+	
+    color += hsample(tc + float2(xoffs.x, yoffs.w)) * 0.00366;
+    color += hsample(tc + float2(xoffs.y, yoffs.w)) * 0.01465;
+    color += hsample(tc + float2(0.0,     yoffs.w)) * 0.02564;
+    color += hsample(tc + float2(xoffs.z, yoffs.w)) * 0.01465;
+    color += hsample(tc + float2(xoffs.w, yoffs.w)) * 0.00366;
+
+    return color;
+}
+
+float4 hdr(float3 hdr_color)
+{
+    const float gamma = 2.2;
+    const float exposure = 1.0;
+	// Exposure tone mapping
+    float3 mapped = float3(1.0, 1.0, 1.0) - exp(-hdr_color * exposure);
+	// Gamma correction 
+    mapped = pow(mapped, float3(1.0 / gamma, 1.0 / gamma, 1.0 / gamma));
+
+    return float4(mapped, 1.0);
+}
+
+float4 ps_bloom(PixelInputType input) : SV_TARGET
+{
+    // Determine the floating point size of a texel for a screen with this specific width
+    float texel_size = 1.0f / screen_width;
+
+    float2 tc = input.tex;
+    float3 color = blur(tc, 2.0);
+    //color += blur(tc, 3.0);
+    //color += blur(tc, 5.0);
+    //color += blur(tc, 7.0);
+    color /= 4.0;
+	
+    color += target.Sample(targetSampler, tc).xyz;
+
+    return float4(color, 1.0);
+}

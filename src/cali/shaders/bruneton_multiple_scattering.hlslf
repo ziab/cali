@@ -1,0 +1,121 @@
+#include "cali_common.fx"
+#include "bruneton_common.fx"
+
+RadianceSpectrum ComputeMultipleScattering(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_textureSampler,
+    in ScatteringDensityTexture scattering_density_texture,
+    in SamplerState scattering_density_textureSampler,
+    Length r, Number mu, Number mu_s, Number nu,
+    bool ray_r_mu_intersects_ground) 
+{
+    //assert(r >= atmosphere.bottom_radius && r <= atmosphere.top_radius);
+    //assert(mu >= -1.0 && mu <= 1.0);
+    //assert(mu_s >= -1.0 && mu_s <= 1.0);
+    //assert(nu >= -1.0 && nu <= 1.0);
+    const int SAMPLE_COUNT = 50;
+    Length dx =
+        DistanceToNearestAtmosphereBoundary(
+            atmosphere, r, mu, ray_r_mu_intersects_ground) /
+            Number(SAMPLE_COUNT);
+
+    float component = 0.0 * watt_per_square_meter_per_sr_per_nm;
+    RadianceSpectrum rayleigh_mie_sum = RadianceSpectrum(component, component, component);
+    for (int i = 0;i <=SAMPLE_COUNT;++i) 
+    {
+        Length d_i = Number(i) * dx;
+        Length r_i = ClampRadius(atmosphere, sqrt(d_i * d_i + 2.0 * r * mu * d_i + r * r));
+        Number mu_i = ClampCosine((r * mu + d_i) / r_i);
+        Number mu_s_i = ClampCosine((r * mu_s + d_i * nu) / r_i);
+        RadianceSpectrum rayleigh_mie_i =
+            GetScattering(
+                atmosphere, scattering_density_texture, scattering_density_textureSampler, r_i, mu_i, mu_s_i, nu,
+                ray_r_mu_intersects_ground) *
+            GetTransmittance(
+                atmosphere, transmittance_texture, transmittance_textureSampler, r, mu, d_i, ray_r_mu_intersects_ground) * dx;
+        Number weight_i = (i == 0 || i == SAMPLE_COUNT) ? 0.5 : 1.0;
+        rayleigh_mie_sum += rayleigh_mie_i * weight_i;
+    }
+    return rayleigh_mie_sum;
+}
+
+RadianceSpectrum ComputeMultipleScatteringTexture(
+    in AtmosphereParameters atmosphere,
+    in TransmittanceTexture transmittance_texture,
+    in SamplerState transmittance_textureSampler,
+    in ScatteringDensityTexture scattering_density_texture,
+    in SamplerState scattering_density_textureSampler,
+    in float3 gl_frag_coord, out Number nu) 
+{
+    Length r;
+    Number mu;
+    Number mu_s;
+    bool ray_r_mu_intersects_ground;
+    GetRMuMuSNuFromScatteringTextureFragCoord(atmosphere, gl_frag_coord,
+        r, mu, mu_s, nu, ray_r_mu_intersects_ground);
+
+    return ComputeMultipleScattering(
+        atmosphere, 
+        transmittance_texture, 
+        transmittance_textureSampler,
+        scattering_density_texture, 
+        scattering_density_textureSampler, 
+        r, 
+        mu, 
+        mu_s, 
+        nu, 
+        ray_r_mu_intersects_ground);
+}
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
+TransmittanceTexture transmittance_texture;
+SamplerState transmittance_textureSampler;
+ScatteringDensityTexture scattering_density_texture;
+SamplerState scattering_density_textureSampler;
+
+const float scattering_order;
+
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+struct PixelInputType3D
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+    uint layer : COLOR; // layer is stored in "r" chanel
+};
+
+
+struct MultipleScatteringOutput
+{
+    float4 delta_multiple_scattering : SV_Target0;
+    float4 scattering : SV_Target1;
+};
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
+
+MultipleScatteringOutput main(PixelInputType3D input)
+{
+    MultipleScatteringOutput output;
+
+    float nu;
+    float3 delta_multiple_scattering = ComputeMultipleScatteringTexture(
+        ATMOSPHERE, 
+        transmittance_texture,
+        transmittance_textureSampler,
+        scattering_density_texture,
+        scattering_density_textureSampler,
+        float3(input.position.xy, input.layer + 0.5), 
+        nu);
+
+    output.delta_multiple_scattering = float4(delta_multiple_scattering, 1.0);
+    output.scattering = float4(delta_multiple_scattering.rgb / RayleighPhaseFunction(nu), 0.0);
+
+    return output;
+}
