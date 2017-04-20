@@ -32,6 +32,7 @@ namespace Cali
 		Model<kTNPFormat, IvTNPVertex> m_terrain;
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
+		float m_grid_stride;
 
 	private:
 		void read_height_map(const std::string & path, BufferRAIIWrapper<IvVertexBuffer, IvNPVertex>& vertices, size_t width, size_t height);
@@ -41,6 +42,7 @@ namespace Cali
 	public:
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer& renderer) override;
+		virtual void set_current_origin(const IvVector3& camera_position);
 
 		Terrain();
 		~Terrain();

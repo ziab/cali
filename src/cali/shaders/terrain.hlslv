@@ -1,5 +1,33 @@
 #include "cali_common.fx"
 
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////
+// Local functions
+/////////////////////////////////////////////////////////////
+
+float3 get_noramal_from_tex(Texture2D tex, SamplerState samp, float2 uv)
+{
+    float texel_size = 0.001;
+    float h1 = tex.SampleLevel(samp, uv, 0);
+    float h2 = tex.SampleLevel(samp, uv + float2(texel_size, 0.0), 0);
+    float h3 = tex.SampleLevel(samp, uv + float2(texel_size, texel_size), 0);
+
+    float3 v1 = float3(uv.x, h1, uv.y);
+    float3 v2 = float3(uv.x + texel_size, h2, uv.y);
+    float3 v3 = float3(uv.x + texel_size, h3, uv.y + texel_size);
+
+    float3 normal = cross(normalize(v3 - v1), normalize(v2 - v1));
+
+    return normal;
+}
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
 float4x4 IvModelViewProjectionMatrix;
 float4x4 IvNormalMatrix;
 float4x4 modelMatrix;
@@ -7,20 +35,13 @@ float4x4 modelMatrix;
 Texture2D height_map;
 SamplerState height_mapSampler;
 
-float3 get_noramal_from_tex(Texture2D tex, SamplerState samp, float2 uv)
-{
-    float h1 = tex.SampleLevel(samp, uv, 0);
-    float h2 = tex.SampleLevel(samp, uv + float2(0.001, 0.000), 0);
-    float h3 = tex.SampleLevel(samp, uv + float2(0.001, 0.001), 0);
+float grid_stride;
+float grid_width;
+float grid_height;
 
-    float3 v1 = float3(uv.x, h1, uv.y);
-    float3 v2 = float3(uv.x + 0.001, h2, uv.y);
-    float3 v3 = float3(uv.x + 0.001, h3, uv.y + 0.001);
-
-    float3 normal = cross(normalize(v3 - v1), normalize(v2 - v1));
-
-    return normal;
-}
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
 
 VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITION)
 {
@@ -28,11 +49,28 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITI
 
     float4 position = pos;
 
-    position.y = sqrt(height_map.SampleLevel(height_mapSampler, uv, 0).r) * 255.0 * 0.035;
+    float2 grid_coordinates = floor(float2(camera_position.x, camera_position.z) / grid_stride) * grid_stride;
+    grid_coordinates = frac(grid_coordinates / (float2(grid_width, grid_height) * grid_stride));
+
+    float2 translated_uv = uv + grid_coordinates;
+
+    if (translated_uv.x > 1.0)
+        translated_uv.x -= 1.0;
+    if (translated_uv.x < 0.0)
+        translated_uv.x += 1.0;
+
+    if (translated_uv.y > 1.0)
+        translated_uv.y -= 1.0;
+    if (translated_uv.y < 0.0)
+        translated_uv.y += 1.0;
+
+    //translated_uv = floor(translated_uv / grid_stride) * grid_stride;
+
+    position.y = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.65;
 
     output.position = mul(IvModelViewProjectionMatrix, position);
     output.worldPos = (float3) (mul(modelMatrix, position));
-    output.normal = (float3) (mul(IvNormalMatrix, float4(get_noramal_from_tex(height_map, height_mapSampler, uv), 0)));
+    output.normal = (float3) (mul(IvNormalMatrix, float4(get_noramal_from_tex(height_map, height_mapSampler, translated_uv), 0)));
     output.depth = output.position;
     return output;
 }
