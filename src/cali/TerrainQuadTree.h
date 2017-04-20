@@ -124,22 +124,22 @@ namespace Cali
 				if (has_child()) return;
 
 				m_tl = new Node(
-				{ m_quad.center - m_quad.half_size / 2, m_quad.half_size / 2 },
+					{ m_quad.center - m_quad.half_size / 2, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
 				m_tr = new Node(
-				{ m_quad.center + Point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
+					{ m_quad.center + Point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
 				m_bl = new Node(
-				{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
+					{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
 				m_br = new Node(
-				{ m_quad.center + m_quad.half_size / 2, m_quad.half_size / 2 },
+					{ m_quad.center + m_quad.half_size / 2, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 			}
@@ -155,31 +155,31 @@ namespace Cali
 			Node* get_child_node_at(const Point& point)
 			{
 				if (point.x <= m_quad.center.x  &&
-					point.x > m_quad.center.x - m_quad.half_size.x)
+					point.x >= m_quad.center.x - m_quad.half_size.x)
 				{
 					if (point.y <= m_quad.center.y)
 					{
-						if (point.y > m_quad.center.y - m_quad.half_size.y)
+						if (point.y >= m_quad.center.y - m_quad.half_size.y)
 							return m_tl;
 					}
 					else
 					{
-						if (point.y < m_quad.center.y + m_quad.half_size.y)
+						if (point.y <= m_quad.center.y + m_quad.half_size.y)
 							return m_tr;
 					}
 				}
 				else if (
 					point.x >= m_quad.center.x  &&
-					point.x < m_quad.center.x + m_quad.half_size.x)
+					point.x <= m_quad.center.x + m_quad.half_size.x)
 				{
 					if (point.y <= m_quad.center.y)
 					{
-						if (point.y > m_quad.center.y - m_quad.half_size.y)
+						if (point.y >= m_quad.center.y - m_quad.half_size.y)
 							return m_bl;
 					}
 					else
 					{
-						if (point.y < m_quad.center.y + m_quad.half_size.y)
+						if (point.y <= m_quad.center.y + m_quad.half_size.y)
 							return m_br;
 					}
 				}
@@ -269,6 +269,7 @@ namespace Cali
 
 		void query_nodes(std::vector<const Node*>& vec) const
 		{
+			vec.clear();
 			m_root.query_nodes(vec);
 		}
 
