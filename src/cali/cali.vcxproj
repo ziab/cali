@@ -549,6 +549,7 @@
     <ClInclude Include="Sky.h" />
     <ClInclude Include="Sun.h" />
     <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TerrainQuadTree.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\depends\DirectXTK-master\DirectXTK_Desktop_2015.vcxproj">

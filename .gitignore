@@ -22,3 +22,6 @@
 caliD3D11*.exe
 .vs
 Bin
+*.idb
+x64/Debug/cali_test.exe
+*.enc

@@ -33,6 +33,7 @@
     <ClInclude Include="PostEffect.h" />
     <ClInclude Include="Bruneton.h" />
     <ClInclude Include="shaders\BrunetonCommonDefs.h" />
+    <ClInclude Include="TerrainQuadTree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">
