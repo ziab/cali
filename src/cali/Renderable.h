@@ -36,7 +36,7 @@ namespace Cali
 		IvVector3 m_position;
 		IvVector3 m_direction;
 		IvVector3 m_right;
-		float m_scale;
+		IvVector3 m_scale;
 
 	private:
 		Physical(Physical&) = delete;
@@ -50,14 +50,15 @@ namespace Cali
 		virtual ~Physical() {};
 		
 		void set_scale(float scale);
+		void set_scale(const IvVector3& scale);
 		void set_position(const IvVector3& pos);
 		void set_direction(const IvVector3& dir, const IvVector3& up);
 
-		float get_scale() { return m_scale; }
-		IvMatrix33 get_rotation();
-		IvVector3& get_position() { return m_position; }
-		IvVector3& get_direction() { return m_direction; }
-		IvVector3& get_right() { return m_right; }
+		const IvVector3& get_scale() const { return m_scale; }
+		const IvMatrix33& get_rotation();
+		const IvVector3& get_position() const { return m_position; }
+		const IvVector3& get_direction() const { return m_direction; }
+		const IvVector3& get_right() const { return m_right; }
 
 		void look_at(const IvVector3& point, const IvVector3 & up);
 

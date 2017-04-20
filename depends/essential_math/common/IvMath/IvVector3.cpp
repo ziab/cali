@@ -327,7 +327,7 @@ IvVector3::operator-() const
 // Scalar multiplication
 //-------------------------------------------------------------------------------
 IvVector3   
-IvVector3::operator*( float scalar )
+IvVector3::operator*( float scalar ) const
 {
     return IvVector3( scalar*x, scalar*y, scalar*z );
 
@@ -370,7 +370,7 @@ IvVector3::operator*=( float scalar )
 // Scalar division
 //-------------------------------------------------------------------------------
 IvVector3   
-IvVector3::operator/( float scalar )
+IvVector3::operator/( float scalar ) const
 {
     return IvVector3( x/scalar, y/scalar, z/scalar );
 

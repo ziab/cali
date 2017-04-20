@@ -20,7 +20,6 @@ namespace Cali
 	void Terrain::render(IvRenderer& renderer)
 	{
 		Physical::set_transformation_matrix(renderer);
-		renderer.SetShaderProgram(m_shader);
 		m_shader->GetUniform("modelMatrix")->SetValue(Physical::get_transformation_matrix(), 0);
 		m_shader->GetUniform("grid_stride")->SetValue(m_grid_stride, 0);
 		m_shader->GetUniform("grid_width")->SetValue((float)m_width, 0);
@@ -45,6 +44,7 @@ namespace Cali
 		Physical::set_transformation_matrix(renderer);
 		m_terrain.render(renderer, m_shader);
 
+		render_quad_nodes(renderer);
 	}
 
 	void Terrain::set_current_origin(const IvVector3 & camera_position)
@@ -57,7 +57,8 @@ namespace Cali
 		set_position({ grid_coordinates.x, get_position().y, grid_coordinates.y });
 	}
 
-	Terrain::Terrain()
+	Terrain::Terrain() : 
+		m_tqtree({ { 0.0, 0.0 }, { 1000.0, 1000.0 } })
 	{
 		std::string vertex_shader = construct_shader_path("terrain.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -77,6 +78,8 @@ namespace Cali
 		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
+
+		m_tqtree.divide({ 100.0, 100.0 }, 3);
 	}
 
 	Terrain::~Terrain()
@@ -227,5 +230,49 @@ namespace Cali
 		texture->SetMinFiltering(kBilerpTexMinFilter);
 
 		return texture;
+	}
+
+	void Terrain::render_quad_nodes(IvRenderer & renderer)
+	{
+		renderer.SetFillMode(kWireframeFill);
+
+		std::vector<const TerrainQuadTree::Node*> nodes;
+		m_tqtree.query_nodes(nodes);
+
+		for (auto* node : nodes)
+		{
+			auto quad = node->get_centred_quad();
+			m_aabb.set_position({ (float)quad.center.x, 0.0f, (float)quad.center.y });
+			m_aabb.set_scale({ (float)(quad.half_size.x * 2.0), 250.0f, (float)(quad.half_size.y * 2.0) });
+			m_aabb.render(renderer);
+		}
+
+		renderer.SetFillMode(kSolidFill);
+	}
+
+	AABB::AABB()
+	{
+		std::string vertex_shader = construct_shader_path("simple.hlslv");
+		std::string pixel_shader = construct_shader_path("simple.hlslf");
+
+		m_shader = IvRenderer::mRenderer->GetResourceManager()->CreateShaderProgram(
+			IvRenderer::mRenderer->GetResourceManager()->CreateVertexShaderFromFile(
+				vertex_shader.c_str(), "main"),
+			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
+				pixel_shader.c_str(), "main"));
+
+		if (!m_shader) throw std::exception("Terrain: failed to load shader program");
+
+		create_box(m_box, { 1.0, 1.0, 1.0 }, true, false);
+	}
+
+	void AABB::update(float dt)
+	{
+	}
+
+	void AABB::render(IvRenderer & renderer)
+	{
+		Physical::set_transformation_matrix(renderer);
+		m_box.render(renderer, m_shader);
 	}
 }

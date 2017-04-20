@@ -47,15 +47,10 @@ namespace Cali
 		m_model_matrix(2, 1) = up.z;
 		m_model_matrix(2, 2) = m_direction.z;
 
-		m_model_matrix(0, 0) *= m_scale;
-		m_model_matrix(1, 0) *= m_scale;
-		m_model_matrix(2, 0) *= m_scale;
-		m_model_matrix(0, 1) *= m_scale;
-		m_model_matrix(1, 1) *= m_scale;
-		m_model_matrix(2, 1) *= m_scale;
-		m_model_matrix(0, 2) *= m_scale;
-		m_model_matrix(1, 2) *= m_scale;
-		m_model_matrix(2, 2) *= m_scale;
+		m_model_matrix(0, 0) *= m_scale.x;
+		m_model_matrix(1, 1) *= m_scale.y;
+		m_model_matrix(2, 2) *= m_scale.z;
+
 		m_model_matrix(0, 3) = m_position.x;
 		m_model_matrix(1, 3) = m_position.y;
 		m_model_matrix(2, 3) = m_position.z;
@@ -73,11 +68,17 @@ namespace Cali
 		m_position = { 0.f, 0.f, 0.f };
 		m_direction = { 0.f, 0.f, 1.f };
 		m_right = { 1.0, 0.0, 0.0 };
-		m_scale = 1.0f;
+		m_scale = { 1.0f, 1.0f, 1.0f };
 		calculate_model_matrix();
 	}
 
 	void Physical::set_scale(float scale)
+	{
+		m_scale = { scale, scale, scale };
+		calculate_model_matrix();
+	}
+
+	void Physical::set_scale(const IvVector3 & scale)
 	{
 		m_scale = scale;
 		calculate_model_matrix();

@@ -18,12 +18,25 @@
 
 #include "Renderable.h"
 #include "Model.h"
+#include "TerrainQuadTree.h"
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 namespace Cali
 {
+	class AABB : public Physical
+	{
+		Model<kNPFormat, IvNPVertex> m_box;
+		IvShaderProgram* m_shader;
+
+	public:
+		AABB();
+
+		virtual void update(float dt) override;
+		virtual void render(IvRenderer& renderer) override;
+	};
+
 	class Terrain : public Physical
 	{
 		uint32_t m_width;
@@ -34,10 +47,15 @@ namespace Cali
 		IvTexture* m_height_map_texture;
 		float m_grid_stride;
 
+		TerrainQuadTree m_tqtree;
+		AABB m_aabb;
+
 	private:
 		void read_height_map(const std::string & path, BufferRAIIWrapper<IvVertexBuffer, IvNPVertex>& vertices, size_t width, size_t height);
 		void create_plain(int32_t width, int32_t height, float stride);
 		IvTexture* load_height_map_texture(const std::string & path);
+
+		void render_quad_nodes(IvRenderer& renderer);
 
 	public:
 		virtual void update(float dt) override;

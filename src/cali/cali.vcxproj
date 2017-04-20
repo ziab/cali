@@ -583,6 +583,8 @@
     <None Include="shaders\bruneton_scattering_density.hlslf" />
     <None Include="shaders\bruneton_single_scattering.hlslf" />
     <None Include="shaders\bruneton_transmittance.hlslf" />
+    <None Include="shaders\simple.hlslf" />
+    <None Include="shaders\simple.hlslv" />
     <None Include="shaders\terrain.hlslf" />
     <None Include="shaders\terrain.hlslv" />
     <None Include="shaders\sky.hlslf">

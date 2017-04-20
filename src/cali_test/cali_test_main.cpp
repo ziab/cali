@@ -19,6 +19,11 @@ TEST(TerrainQuadTree, test_building_tree)
 	ASSERT_FALSE(tqtree.divide({ -0.25, 0.25 }, 2));
 
 	tqtree.get_node_at({ 0.75, 0.75 });
+
+	std::vector<const Cali::TerrainQuadTree::Node*> nodes;
+	tqtree.query_nodes(nodes);
+
+	ASSERT_TRUE(nodes.size() == 7);
 }
 
 void main(int argc, char** argv)

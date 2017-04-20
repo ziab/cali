@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <exception>
 #include <assert.h>
 
@@ -26,6 +27,12 @@ namespace Cali
 			{
 				return Point{ x / rhv, y / rhv };
 			}
+
+			Point& operator=(const Point& rhv)
+			{
+				x = rhv.x;
+				y = rhv.y;
+			}
 		};
 
 		struct Quad
@@ -45,6 +52,12 @@ namespace Cali
 					}
 				}
 				return false;
+			}
+
+			Quad& operator=(const Quad& rhv)
+			{
+				center = rhv.center;
+				half_size = rhv.half_size;
 			}
 
 		};
@@ -69,6 +82,13 @@ namespace Cali
 					delete child;
 					child = nullptr;
 				}
+			}
+
+			bool has_child() const
+			{
+				if (m_tl && m_tr && m_bl && m_br) return true;
+				assert(!(m_tl || m_tr || m_bl || m_br));
+				return false;
 			}
 
 		public:
@@ -101,8 +121,8 @@ namespace Cali
 
 			void divide()
 			{
-				if (m_tl && m_tr && m_bl && m_br) return;
-				assert(!(m_tl || m_tr || m_bl || m_br));
+				if (has_child()) return;
+
 				m_tl = new Node(
 				{ m_quad.center - m_quad.half_size / 2, m_quad.half_size / 2 },
 					m_depth + 1,
@@ -172,7 +192,7 @@ namespace Cali
 				return const_cast<Node*>(this)->get_child_node_at(point);
 			}
 
-			const Quad& get_centred_quad() { return m_quad; }
+			const Quad& get_centred_quad() const { return m_quad; }
 
 			const Node* get_node_at(const Point& point) const
 			{
@@ -184,6 +204,20 @@ namespace Cali
 				}
 
 				return this;
+			}
+
+			void query_nodes(std::vector<const Node*>& vec) const
+			{
+				if (!has_child())
+				{
+					vec.push_back(this);
+					return;
+				}
+
+				m_tl->query_nodes(vec);
+				m_tr->query_nodes(vec);
+				m_bl->query_nodes(vec);
+				m_br->query_nodes(vec);
 			}
 		};
 
@@ -233,6 +267,14 @@ namespace Cali
 			return &m_root;
 		}
 
-		void query_nodes() const;
+		void query_nodes(std::vector<const Node*>& vec) const
+		{
+			m_root.query_nodes(vec);
+		}
+
+		void query_nodes(const Point& point, double radius) const
+		{
+
+		}
 	};
 }

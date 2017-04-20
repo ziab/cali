@@ -88,10 +88,10 @@ public:
     IvVector3 operator-() const;
 
     // scalar multiplication
-    IvVector3   operator*( float scalar );
+    IvVector3   operator*( float scalar ) const;
     friend IvVector3    operator*( float scalar, const IvVector3& vector );
     IvVector3&          operator*=( float scalar );
-    IvVector3   operator/( float scalar );
+    IvVector3   operator/( float scalar ) const;
     IvVector3&          operator/=( float scalar );
 
     // dot product/cross product

@@ -1,0 +1,16 @@
+#include "cali_common.fx"
+
+float4x4 IvModelViewProjectionMatrix;
+float4x4 IvNormalMatrix;
+float4x4 modelMatrix;
+
+VS_OUTPUT main( float3 normal : NORMAL, float4 pos : POSITION )
+{
+    VS_OUTPUT output = (VS_OUTPUT) 0;
+
+    output.position = mul(IvModelViewProjectionMatrix, pos);
+    output.worldPos = (float3) (mul(modelMatrix, pos));
+    output.normal = (float3) (mul(IvNormalMatrix, float4(normal, 0)));
+    output.depth = output.position;
+    return output;
+}
