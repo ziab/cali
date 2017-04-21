@@ -115,7 +115,7 @@ namespace Cali
 		set_direction(direction, up);
 	}
 
-	void Physical::set_transformation_matrix(IvRenderer & renderer)
+	void Physical::set_transformation_matrix(IvRenderer & renderer) const
 	{
 		renderer.SetWorldMatrix(m_model_matrix);
 	}

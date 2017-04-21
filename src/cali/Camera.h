@@ -20,7 +20,7 @@
 
 namespace Cali
 {
-	class Camera : public Physical
+	class Camera : public Physical, public Renderable
 	{
 		float m_fov;
 		float m_near;
@@ -59,8 +59,8 @@ namespace Cali
 		void set_fov(float new_fov);
 		void send_settings_to_renderer(IvRenderer& renderer);
 
-		virtual void update(float dt);
-		virtual void render(IvRenderer& renderer);
+		virtual void update(float dt) override;
+		virtual void render(IvRenderer& renderer) override;
 
 		void update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state);
 

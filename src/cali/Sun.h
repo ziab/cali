@@ -6,7 +6,7 @@
 
 namespace Cali
 {
-	class Sun : public Physical
+	class Sun : public Physical, public Renderable
 	{
 		Model<kNPFormat, IvNPVertex> m_sun_rect;
 		IvShaderProgram* m_shader;
@@ -18,8 +18,8 @@ namespace Cali
 		Sun();
 		~Sun();
 
-		virtual void update(float dt);
-		virtual void render(IvRenderer& renderer);
+		virtual void update(float dt) override;
+		virtual void render(IvRenderer& renderer) override;
 
 		void update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state);
 	};

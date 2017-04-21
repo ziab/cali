@@ -36,8 +36,8 @@ Texture2D height_map;
 SamplerState height_mapSampler;
 
 float grid_stride;
-float grid_width;
-float grid_height;
+float grid_cols;
+float grid_rows;
 
 /////////////////////////////////////////////////////////////
 // Main
@@ -50,7 +50,7 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITI
     float4 position = pos;
 
     float2 grid_coordinates = floor(float2(camera_position.x, camera_position.z) / grid_stride) * grid_stride;
-    grid_coordinates = frac(grid_coordinates / (float2(grid_width, grid_height) * grid_stride));
+    grid_coordinates = frac(grid_coordinates / (float2(grid_cols, grid_rows) * grid_stride));
 
     float2 translated_uv = uv + grid_coordinates;
 

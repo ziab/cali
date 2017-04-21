@@ -121,7 +121,7 @@ namespace Cali
 			return BufferRAIIWrapper<IvIndexBuffer, UInt32>(m_indices, (UInt32*) m_indices->BeginLoadData());
 		}
 
-		void Model::render(IvRenderer & renderer, IvShaderProgram* shader)
+		void Model::render(IvRenderer & renderer, IvShaderProgram* shader) const
 		{
 			if (shader)	renderer.SetShaderProgram(shader);
 

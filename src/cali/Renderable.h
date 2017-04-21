@@ -30,7 +30,7 @@ namespace Cali
 		virtual void render(IvRenderer& renderer) = 0;
 	};
 
-	class Physical : public Renderable
+	class Physical
 	{
 		IvMatrix44 m_model_matrix;
 		IvVector3 m_position;
@@ -64,7 +64,7 @@ namespace Cali
 
 		const IvMatrix44& get_transformation_matrix() { return m_model_matrix; };
 
-		void set_transformation_matrix(IvRenderer& renderer);
+		void set_transformation_matrix(IvRenderer& renderer) const;
 
 		void pitch(float angle);
 		void yaw(float angle);

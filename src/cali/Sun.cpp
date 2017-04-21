@@ -40,7 +40,7 @@ namespace Cali
 	void Sun::update(float dt)
 	{
 		IvMatrix33 mat;
-		mat.Rotation({ 1.f, 0.f, 0.f }, -0.1f * dt);
+		mat.Rotation({ 1.f, 0.f, 0.f }, -0.05f * dt);
 
 		set_position(get_position() * mat);
 	}
