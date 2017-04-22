@@ -41,12 +41,12 @@ namespace Cali
 
 	class Terrain : public Renderable
 	{
-		Grid m_grid;
 		Grid m_hd_grid;
 		Grid m_ld_grid;
 		IvVector3 m_planet_center;
 		float m_planet_radius;
 		IvVector3 m_viewer_position;
+		const float m_overlapping_edge_quads;
 
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
@@ -54,8 +54,21 @@ namespace Cali
 	private:
 		void read_height_map(const std::string & path, BufferRAIIWrapper<IvVertexBuffer, IvNPVertex>& vertices, size_t width, size_t height);
 		IvTexture* load_height_map_texture(const std::string & path);
-		void render_level(IvRenderer & renderer, Grid & level_grid, float scale, const IvVector3& position);
-		void render_levels(IvRenderer& renderer, size_t level, size_t max_level);
+		
+		void render_level(
+			IvRenderer & renderer, 
+			Grid & level_grid, 
+			const IvVector3& offset, 
+			float scale, 
+			float grid_scale_factor);
+
+		void render_levels(
+			IvRenderer& renderer, 
+			size_t level, 
+			size_t max_level, 
+			float offset_from_viewer, 
+			float grid_scale_factor,
+			float grid_uv_scale_factor);
 
 	public:
 		virtual void update(float dt) override;

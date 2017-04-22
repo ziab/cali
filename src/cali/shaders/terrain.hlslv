@@ -38,34 +38,42 @@ SamplerState height_mapSampler;
 float grid_stride;
 float grid_cols;
 float grid_rows;
+float3 grid_camera_offset;
+float3 grid_uv_quad_size;
 
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
 
+float2 get_texture_size(Texture2D _texture)
+{
+    uint tex_width, tex_height;
+    _texture.GetDimensions(tex_width, tex_height);
+    return float2(tex_width, tex_height);
+}
+
 VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITION)
 {
-    VS_OUTPUT output = (VS_OUTPUT) 0;
+    VS_OUTPUT output;
+
+    float2 texture_size = get_texture_size(height_map);
+    float2 grid_quad_size = float2(grid_uv_quad_size.x, grid_uv_quad_size.y);
+    float2 grid_size = float2(grid_cols, grid_rows);
+
+    float2 grid_center = floor(
+        float2(
+            camera_position.x + grid_camera_offset.x,
+            camera_position.z + grid_camera_offset.z)
+        / grid_stride) * grid_stride;
+
+    float2 grid_center_uv = grid_center / (grid_size * grid_stride);
+
+    float2 translated_uv = (grid_center_uv + uv) * grid_quad_size;
+
+    // loop the texture
+    translated_uv = frac(abs(translated_uv));
 
     float4 position = pos;
-
-    float2 grid_coordinates = floor(float2(camera_position.x, camera_position.z) / grid_stride) * grid_stride;
-    grid_coordinates = frac(grid_coordinates / (float2(grid_cols, grid_rows) * grid_stride));
-
-    float2 translated_uv = uv + grid_coordinates;
-
-    if (translated_uv.x > 1.0)
-        translated_uv.x -= 1.0;
-    if (translated_uv.x < 0.0)
-        translated_uv.x += 1.0;
-
-    if (translated_uv.y > 1.0)
-        translated_uv.y -= 1.0;
-    if (translated_uv.y < 0.0)
-        translated_uv.y += 1.0;
-
-    //translated_uv = floor(translated_uv / grid_stride) * grid_stride;
-
     position.y = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.65;
 
     output.position = mul(IvModelViewProjectionMatrix, position);

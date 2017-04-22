@@ -17,27 +17,16 @@ namespace Cali
 	{
 	}
 
-	void Terrain::render(IvRenderer& renderer)
-	{
-		float gird_width = m_grid.width();
-		float gird_height = m_grid.height();
-
-		render_level(renderer, m_grid, 1.0f, m_viewer_position);
-		render_level(renderer, m_grid, 1.0f, m_viewer_position + IvVector3{ 0.0, 0.0, gird_height });
-		render_level(renderer, m_grid, 1.0f, m_viewer_position + IvVector3{ 0.0, 0.0, -gird_height });
-		render_level(renderer, m_grid, 1.0f, m_viewer_position + IvVector3{ gird_width, 0.0, 0.0 });
-		render_level(renderer, m_grid, 1.0f, m_viewer_position + IvVector3{ -gird_width, 0.0, 0.0 });
-	}
-
 	void Terrain::set_viewer(const IvVector3 & position)
 	{
 		m_viewer_position = position;
 	}
 
 	Terrain::Terrain() :
-		m_grid(1000, 1000, 2.0f),
 		m_hd_grid(c_hd_gird_dimention, c_hd_gird_dimention, 1.0f),
-		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f)
+		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f),
+		m_viewer_position{ 0.0f, 0.0f, 0.0f },
+		m_overlapping_edge_quads(5.0f)
 	{
 		std::string vertex_shader = construct_shader_path("terrain.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -119,24 +108,74 @@ namespace Cali
 		return texture;
 	}
 
-	void Terrain::render_level(IvRenderer & renderer, Grid & level_grid, float scale, const IvVector3& position)
+	void Terrain::render_level(IvRenderer & renderer,
+		Grid & level_grid,
+		const IvVector3& offset,
+		float scale,
+		float grid_scale_factor)
 	{
-		level_grid.set_current_origin(position, { scale, 1.0f, scale } );
+		level_grid.set_current_origin(m_viewer_position + offset, { scale, 1.0f, scale } );
 
 		m_shader->GetUniform("modelMatrix")->SetValue(level_grid.get_transformation_matrix(), 0);
-		m_shader->GetUniform("grid_stride")->SetValue(level_grid.stride(), 0);
+		m_shader->GetUniform("grid_stride")->SetValue(level_grid.stride() * scale, 0);
 		m_shader->GetUniform("grid_cols")->SetValue((float)level_grid.cols(), 0);
 		m_shader->GetUniform("grid_rows")->SetValue((float)level_grid.rows(), 0);
+		m_shader->GetUniform("grid_camera_offset")->SetValue(offset, 0);
+		m_shader->GetUniform("grid_uv_quad_size")->SetValue(
+		    IvVector3{ grid_scale_factor, grid_scale_factor, 0.0f},
+			0);
+
 
 		level_grid.set_transformation_matrix(renderer);
 		level_grid.render(renderer, m_shader);
 	}
 
-	void Terrain::render_levels(IvRenderer & renderer, size_t level, size_t max_level)
+	void Terrain::render_levels(
+		IvRenderer& renderer,
+		size_t level,
+		size_t max_level,
+		float offset_from_viewer,
+		float grid_scale_factor,
+		float grid_uv_scale_factor)
 	{
-		if (level == 1)
+		if (level > max_level) return;
+
+		if (level == 0)
 		{
+			render_level(renderer, m_hd_grid, { 0.0f, 0.0f, 0.0f }, grid_scale_factor, grid_uv_scale_factor);
+			
+			render_levels(
+				renderer, 
+				level + 1, 
+				max_level, 
+				(m_hd_grid.width() - m_hd_grid.stride() * m_overlapping_edge_quads) * grid_scale_factor,
+				grid_scale_factor, 
+				grid_uv_scale_factor);
 		}
+		else
+		{
+			render_level(renderer, m_ld_grid, { 0.0,                 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { 0.0,                 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+
+			render_levels(
+				renderer, 
+				level + 1, 
+				max_level, 
+				offset_from_viewer + (m_ld_grid.width() - m_ld_grid.stride() * m_overlapping_edge_quads) * grid_scale_factor * 2.0f,
+				grid_scale_factor * 3.0f, 
+				grid_uv_scale_factor * 3.0f);
+		}
+	}
+
+	void Terrain::render(IvRenderer& renderer)
+	{
+		render_levels(renderer, 0, 5, 0.0f, 1.0f, 0.15f);
 	}
 
 	AABB::AABB()

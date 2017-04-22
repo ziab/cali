@@ -23,10 +23,10 @@ namespace Cali
 
 		float u_stride = 1.f / (float)cols;
 		float v_stride = 1.f / (float)rows;
-		float u = 0.f, v = 0.f;
+		float u = -0.5f, v = -0.5f;
 		for (int32_t y = -rows / 2; y < rows / 2 + rows % 2; ++y)
 		{
-			float u = 0.f;
+			float u = -0.5f;
 			for (int32_t x = -cols / 2; x < cols / 2 + cols % 2; ++x)
 			{
 				auto& curr = vertices[i++];
