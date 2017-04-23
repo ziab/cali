@@ -79,6 +79,5 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITI
     output.position = mul(IvModelViewProjectionMatrix, position);
     output.worldPos = (float3) (mul(modelMatrix, position));
     output.normal = (float3) (mul(IvNormalMatrix, float4(get_noramal_from_tex(height_map, height_mapSampler, translated_uv), 0)));
-    output.depth = output.position;
     return output;
 }

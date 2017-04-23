@@ -25,3 +25,4 @@ Bin
 *.idb
 x64/Debug/cali_test.exe
 *.enc
+src/cali/Debug.txt

@@ -12,8 +12,17 @@ struct VS_OUTPUT
     float4 position : SV_POSITION;
     float3 worldPos : TEXCOORD0;
     float3 normal : NORMAL;
-    float4 depth : TEXTURE0;
 };
+
+/*
+struct VS_TERRAIN_OUTPUT
+{
+    float4 position : SV_POSITION;
+    float3 worldPos : TEXCOORD0;
+    float3 normal : NORMAL;
+    float alpha : BLENDWEIGHT0;
+};
+*/
 
 cbuffer SunLight : register(b1)
 {

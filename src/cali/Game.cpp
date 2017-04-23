@@ -205,8 +205,8 @@ Game::Render() // Here's Where We Do All The Drawing
 	renderer.UpdateConstantBuffer(m_global_state_cbuffer.ivcbuffer());
 
 	IvDrawAxes();
-   	m_terrain->render(renderer);
 	m_sky->render(renderer);
+	m_terrain->render(renderer);
 	//m_sun->render(renderer);
 
 	//renderer.ReleaseRenderTarget();

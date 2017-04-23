@@ -72,6 +72,7 @@ namespace Cali
 	class Model
 	{
 		IvRenderer& m_renderer;
+		IvPrimType m_primitive_type;
 
 		size_t m_indices_count;
 		IvIndexBuffer* m_indices;
@@ -82,6 +83,7 @@ namespace Cali
 	public:
 		Model() :
 			m_renderer(*IvRenderer::mRenderer),
+			m_primitive_type(kTriangleListPrim),
 			m_indices_count(0),
 			m_indices(nullptr),
 			m_vertices_count(0),
@@ -90,6 +92,16 @@ namespace Cali
 		}
 
 		~Model() { free(); }
+
+		void set_primitive_type(IvPrimType type)
+		{
+			m_primitive_type = type;
+		}
+
+		IvPrimType get_primitive_type()
+		{
+			return m_primitive_type;
+		}
 
 		bool Model::allocate(size_t indicies_count, size_t verticies_count)
 		{
@@ -125,7 +137,7 @@ namespace Cali
 		{
 			if (shader)	renderer.SetShaderProgram(shader);
 
-			renderer.Draw(kTriangleListPrim, m_vertices, m_indices);
+			renderer.Draw(m_primitive_type, m_vertices, m_indices);
 		}
 	};
 
