@@ -26,7 +26,7 @@ namespace Cali
 		m_hd_grid(c_hd_gird_dimention, c_hd_gird_dimention, 1.0f),
 		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
-		m_overlapping_edge_quads(5.0f)
+		m_overlapping_edge_cells(c_hd_gird_dimention / 32)
 	{
 		std::string vertex_shader = construct_shader_path("terrain.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -148,7 +148,7 @@ namespace Cali
 				renderer, 
 				level + 1, 
 				max_level, 
-				(m_hd_grid.width() - m_hd_grid.stride() * m_overlapping_edge_quads) * grid_scale_factor,
+				(m_hd_grid.width() - m_hd_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor,
 				grid_scale_factor, 
 				grid_uv_scale_factor);
 		}
@@ -167,7 +167,7 @@ namespace Cali
 				renderer, 
 				level + 1, 
 				max_level, 
-				offset_from_viewer + (m_ld_grid.width() - m_ld_grid.stride() * m_overlapping_edge_quads) * grid_scale_factor * 2.0f,
+				offset_from_viewer + (m_ld_grid.width() - m_ld_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor * 2.0f,
 				grid_scale_factor * 3.0f, 
 				grid_uv_scale_factor * 3.0f);
 		}
@@ -175,6 +175,7 @@ namespace Cali
 
 	void Terrain::render(IvRenderer& renderer)
 	{
+		renderer.SetBlendFunc(kSrcAlphaBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 		render_levels(renderer, 0, 5, 0.0f, 1.0f, 0.15f);
 	}
 

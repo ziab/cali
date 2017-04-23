@@ -46,7 +46,7 @@ namespace Cali
 		IvVector3 m_planet_center;
 		float m_planet_radius;
 		IvVector3 m_viewer_position;
-		const float m_overlapping_edge_quads;
+		const float m_overlapping_edge_cells;
 
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
