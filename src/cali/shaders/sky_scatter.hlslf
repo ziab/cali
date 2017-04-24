@@ -195,7 +195,7 @@ float3 get_incident_light(ray_t ray)
 float4 ps_sky(VS_OUTPUT input) : SV_TARGET
 {
     sun_dir = normalize(sun_position - camera_position);
-    ray_t ray = { float3(0.f, earth_radius + camera_position.y, 0.f), normalize(input.worldPos - camera_position) };
+    ray_t ray = { float3(0.f, earth_radius + camera_position.y, 0.f), normalize(input.world_position - camera_position) };
     float3 col = get_incident_light(ray);
     return float4(col.r, col.g, col.b, 1.0);
 }

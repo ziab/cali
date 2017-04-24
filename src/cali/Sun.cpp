@@ -5,7 +5,7 @@
 #include <IvUniform.h>
 
 #include "CommonFileSystem.h"
-#include "Atomsphere.h"
+#include "World.h"
 #include "ConstantBuffer.h"
 #include "Constants.h"
 #include <IvMath.h>
@@ -20,8 +20,8 @@ namespace Cali
 	Sun::Sun()
 	{
 		create_sun_rect({ 1.f, 1.f, 1.f });
-		Physical::set_position({ 0.f, 1000.f, -Cali::Atmosphere::c_horizon_distance / 10 });
-		Physical::set_scale(Cali::Atmosphere::c_horizon_distance / 300);
+		Physical::set_position({ 0.f, 1000.f, -Cali::World::c_horizon_distance / 10 });
+		Physical::set_scale(Cali::World::c_horizon_distance / 300);
 
 		std::string vertex_shader_file = construct_shader_path("sun.hlslv");
 		std::string pixel_shader_file = construct_shader_path("sun.hlslf");
@@ -67,7 +67,7 @@ namespace Cali
 		// O_o
 		global_state->sun_intensity = IvVector3(50000000000000000000.0f, 50000000000000000000.0f, 50000000000000000000.0f);
 		global_state->sun_attenuation = IvVector3(0.0f, 0.0f, 0.0000125f);
-		global_state->sun_color = Atmosphere::sun_zenith_color;
+		global_state->sun_color = World::sun_zenith_color;
 
 	}
 }

@@ -8,8 +8,8 @@ VS_OUTPUT vs_sky( float3 normal : NORMAL, float4 pos : POSITION )
 {
     VS_OUTPUT output = (VS_OUTPUT) 0;
 
-    output.position = mul(IvModelViewProjectionMatrix, pos);
-    output.worldPos = (float3) (mul(modelMatrix, pos));
+    output.screen_position = mul(IvModelViewProjectionMatrix, pos);
+    output.world_position = (float3) (mul(modelMatrix, pos));
     output.normal = (float3) (mul(IvNormalMatrix, float4(normal, 0)));
     return output;
 }

@@ -29,13 +29,13 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Sun.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Atomsphere.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="PostEffect.h" />
     <ClInclude Include="Bruneton.h" />
     <ClInclude Include="shaders\BrunetonCommonDefs.h" />
     <ClInclude Include="TerrainQuadTree.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">

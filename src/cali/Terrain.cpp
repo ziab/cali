@@ -11,6 +11,8 @@
 
 #include <vector>
 
+#include "World.h"
+
 namespace Cali
 {
 	void Terrain::update(float dt)
@@ -26,7 +28,9 @@ namespace Cali
 		m_hd_grid(c_hd_gird_dimention, c_hd_gird_dimention, 1.0f),
 		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
-		m_overlapping_edge_cells(c_hd_gird_dimention / 32)
+		m_overlapping_edge_cells(c_hd_gird_dimention / 32),
+		m_planet_center(Cali::World::c_earth_center),
+		m_planet_radius(Cali::World::c_earth_radius)
 	{
 		std::string vertex_shader = construct_shader_path("terrain.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -125,6 +129,8 @@ namespace Cali
 		    IvVector3{ grid_scale_factor, grid_scale_factor, 0.0f},
 			0);
 
+		m_shader->GetUniform("planet_center")->SetValue(m_planet_center, 0);
+		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
 
 		level_grid.set_transformation_matrix(renderer);
 		level_grid.render(renderer, m_shader);

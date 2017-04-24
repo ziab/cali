@@ -13,7 +13,7 @@
 #include <string>
 
 #include "CommonFileSystem.h"
-#include "Atomsphere.h"
+#include "World.h"
 
 namespace Cali
 {
@@ -40,7 +40,7 @@ namespace Cali
 		auto& renderer = *IvRenderer::mRenderer;
 		auto& resman = *renderer.GetResourceManager();
 
-		create_sky_box(Cali::Atmosphere::c_sky_box_size);
+		create_sky_box(Cali::World::c_sky_box_size);
 		m_sky_shader = resman.CreateShaderProgram(
 			resman.CreateVertexShaderFromFile(
 				vertex_shader_file.c_str(), "vs_sky"),

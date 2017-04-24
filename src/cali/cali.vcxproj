@@ -538,7 +538,7 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferWrapper.h" />
     <ClInclude Include="DebugInfo.h" />
-    <ClInclude Include="Atomsphere.h" />
+    <ClInclude Include="World.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="InputController.h" />

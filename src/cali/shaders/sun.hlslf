@@ -2,7 +2,7 @@
 
 float4 ps_sun(VS_OUTPUT input) : SV_TARGET
 {
-    float3 current_position = float3(input.worldPos.x, input.worldPos.y, input.worldPos.z);
+    float3 current_position = float3(input.world_position.x, input.world_position.y, input.world_position.z);
     float3 distance_vector = sun_position - current_position;
     float distance = abs(length(distance_vector));
 

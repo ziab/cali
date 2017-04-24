@@ -2,11 +2,11 @@
 
 float4 ps_sky(VS_OUTPUT input) : SV_TARGET
 {
-    float angle_cos = dot(input.worldPos, world_up) / (length(input.worldPos) * length(world_up));
+    float angle_cos = dot(input.world_position, world_up) / (length(input.world_position) * length(world_up));
 
     if (angle_cos < 0.0) return float4 (1.0, 1.0, 1.0, 1.0);
 
-    float sun_angle_to_current_point_cos = dot(input.worldPos, sun_position) / (length(input.worldPos) * length(sun_position));
+    float sun_angle_to_current_point_cos = dot(input.world_position, sun_position) / (length(input.world_position) * length(sun_position));
     sun_angle_to_current_point_cos = pow(sun_angle_to_current_point_cos, 5);
 
     angle_cos = sqrt(angle_cos);

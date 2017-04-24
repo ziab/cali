@@ -32,7 +32,7 @@ float4 ps_sky(VS_OUTPUT input) : SV_TARGET
     const float shadow_length = 0.0;
     ////////////////////////////////////////////////////////////////////////////
 
-    float3 view_ray = input.worldPos - camera_position;
+    float3 view_ray = input.world_position - camera_position;
     float3 view_direction = normalize(view_ray);
     float3 sun_direction = normalize(sun_position - camera_position);
 

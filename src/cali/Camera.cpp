@@ -4,7 +4,7 @@
 #include <IvMath.h>
 #include "DebugInfo.h"
 #include "Constants.h"
-#include "Atomsphere.h"
+#include "World.h"
 #include "ConstantBuffer.h"
 
 #ifndef UNREFERENCED_PARAMETER
@@ -65,7 +65,7 @@ namespace Cali
 
 		m_fov = 60.0f;
 		m_near = 0.1f;
-		m_far = Cali::Atmosphere::c_camera_far;
+		m_far = Cali::World::c_camera_far;
 
 		m_velocity = { 0.f, 0.f, 0.f };
 		m_yaw_inertia = 0.f;

@@ -1,16 +1,15 @@
-struct VS_UPWND
+struct VS_UPWN
 {
     float2 uv : TEXCOORD0;
-    float4 position : SV_POSITION;
-    float3 worldPos : TEXCOORD1;
+    float4 screen_position : SV_POSITION;
+    float3 world_position : TEXCOORD1;
     float3 normal : NORMAL;
-    float4 depth : TEXTURE0;
 };
 
 struct VS_OUTPUT
 {
-    float4 position : SV_POSITION;
-    float3 worldPos : TEXCOORD0;
+    float4 screen_position : SV_POSITION;
+    float3 world_position : TEXCOORD0;
     float3 normal : NORMAL;
 };
 
