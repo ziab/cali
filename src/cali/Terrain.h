@@ -64,11 +64,25 @@ namespace Cali
 
 		void render_levels(
 			IvRenderer& renderer, 
+			Grid& level_grid,
 			size_t level, 
 			size_t max_level, 
 			float offset_from_viewer, 
 			float grid_scale_factor,
 			float grid_uv_scale_factor);
+
+		struct RenderLevelParamerters
+		{
+			Grid* initial_level_grid;
+			float initial_scale;
+			IvVector3 initial_position;
+			float curvature;
+		};
+
+		RenderLevelParamerters calculate_render_level_parameters(
+			const IvVector3& position, 
+			const IvVector3& planet_center, 
+			double radius);
 
 	public:
 		virtual void update(float dt) override;

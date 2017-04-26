@@ -138,6 +138,7 @@ namespace Cali
 
 	void Terrain::render_levels(
 		IvRenderer& renderer,
+		Grid& level_grid,
 		size_t level,
 		size_t max_level,
 		float offset_from_viewer,
@@ -148,32 +149,34 @@ namespace Cali
 
 		if (level == 0)
 		{
-			render_level(renderer, m_hd_grid, { 0.0f, 0.0f, 0.0f }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { 0.0f, 0.0f, 0.0f }, grid_scale_factor, grid_uv_scale_factor);
 			
 			render_levels(
-				renderer, 
+				renderer,
+				m_ld_grid,
 				level + 1, 
 				max_level, 
-				(m_hd_grid.width() - m_hd_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor,
+				(level_grid.width() - level_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor,
 				grid_scale_factor, 
 				grid_uv_scale_factor);
 		}
 		else
 		{
-			render_level(renderer, m_ld_grid, { 0.0,                 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { offset_from_viewer,  0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { 0.0,                 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
-			render_level(renderer, m_ld_grid, { -offset_from_viewer, 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { 0.0,                 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { offset_from_viewer,  0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { offset_from_viewer,  0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { offset_from_viewer,  0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { 0.0,                 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { -offset_from_viewer, 0.0, -offset_from_viewer }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { -offset_from_viewer, 0.0, 0.0                 }, grid_scale_factor, grid_uv_scale_factor);
+			render_level(renderer, level_grid, { -offset_from_viewer, 0.0, offset_from_viewer  }, grid_scale_factor, grid_uv_scale_factor);
 
 			render_levels(
-				renderer, 
+				renderer,
+				m_ld_grid,
 				level + 1, 
 				max_level, 
-				offset_from_viewer + (m_ld_grid.width() - m_ld_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor * 2.0f,
+				offset_from_viewer + (level_grid.width() - level_grid.stride() * m_overlapping_edge_cells) * grid_scale_factor * 2.0f,
 				grid_scale_factor * 3.0f, 
 				grid_uv_scale_factor * 3.0f);
 		}
@@ -182,7 +185,7 @@ namespace Cali
 	void Terrain::render(IvRenderer& renderer)
 	{
 		renderer.SetBlendFunc(kSrcAlphaBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
-		render_levels(renderer, 0, 5, 0.0f, 1.0f, 0.15f);
+		render_levels(renderer, m_hd_grid, 0, 5, 0.0f, 1.0f, 0.15f);
 	}
 
 	AABB::AABB()
