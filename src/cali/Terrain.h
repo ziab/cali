@@ -74,6 +74,7 @@ namespace Cali
 		struct RenderLevelParamerters
 		{
 			Grid* initial_level_grid;
+			size_t max_level;
 			float initial_scale;
 			IvVector3 initial_position;
 			float curvature;

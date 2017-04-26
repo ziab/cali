@@ -15,6 +15,30 @@
 
 namespace Cali
 {
+	Terrain::RenderLevelParamerters Terrain::calculate_render_level_parameters(
+		const IvVector3 & position, const IvVector3 & planet_center, double radius)
+	{
+		RenderLevelParamerters params = {};
+		params.initial_scale = 1.0f;
+		params.max_level = 5;
+		double distance_from_surface = abs((double)(position - planet_center).Length() - radius);
+
+		if (distance_from_surface < m_hd_grid.width())
+		{
+			params.initial_level_grid = &m_hd_grid;
+		}
+		else
+		{
+			params.initial_level_grid = &m_ld_grid;
+		}
+
+		if (distance_from_surface > 1000.0)
+		{
+			params.initial_scale = 2.0f;
+		}
+
+		return params;
+	}
 	void Terrain::update(float dt)
 	{
 	}
@@ -185,7 +209,9 @@ namespace Cali
 	void Terrain::render(IvRenderer& renderer)
 	{
 		renderer.SetBlendFunc(kSrcAlphaBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
-		render_levels(renderer, m_hd_grid, 0, 5, 0.0f, 1.0f, 0.15f);
+
+		auto params = calculate_render_level_parameters(m_viewer_position, m_planet_center, m_planet_radius);
+		render_levels(renderer, *params.initial_level_grid, 0, params.max_level, 0.0f, params.initial_scale, 0.15f * params.initial_scale);
 	}
 
 	AABB::AABB()
