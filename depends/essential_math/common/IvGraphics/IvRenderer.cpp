@@ -167,6 +167,11 @@ const IvMatrix44& IvRenderer::GetProjectionMatrix()
     return mProjectionMat;
 }
 
+const IvMatrix44& IvRenderer::GetWVPMatrix()
+{
+	return mWVPMat;
+}
+
 //-------------------------------------------------------------------------------
 // @ IvRenderer::SetProjectionMatrix()
 //-------------------------------------------------------------------------------

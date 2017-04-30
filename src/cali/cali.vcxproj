@@ -522,6 +522,7 @@
     <ClCompile Include="CommonFileSystem.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Icosahedron.cpp" />
     <ClCompile Include="InputController.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="PostEffect.cpp" />
@@ -530,6 +531,7 @@
     <ClCompile Include="Sun.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="TerrainIcosahedron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bruneton.h" />
@@ -538,6 +540,8 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferWrapper.h" />
     <ClInclude Include="DebugInfo.h" />
+    <ClInclude Include="Icosahedron.h" />
+    <ClInclude Include="TerrainIcosahedron.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Game.h" />

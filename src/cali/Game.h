@@ -1,20 +1,7 @@
-//===============================================================================
-// @ Game.h
-// ------------------------------------------------------------------------------
-// Game core
-//
-// Copyright (C) 2008-2015 by James M. Van Verth and Lars M. Bishop.
-// All rights reserved.
-//
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-//
-//
-//
-//===============================================================================
-
 #ifndef __GameDefs__
 #define __GameDefs__
+
+//#define WORK_ON_ICOSAHEDRON
 
 //-------------------------------------------------------------------------------
 //-- Dependencies ---------------------------------------------------------------
@@ -41,13 +28,18 @@
 namespace Cali
 {
 	class Terrain;
+	class TerrainIcosahedron;
 }
 
 using namespace Cali;
 
 class Game : public IvGame
 {
+#ifndef WORK_ON_ICOSAHEDRON
 	std::unique_ptr<Cali::Terrain> m_terrain;
+#else
+	std::unique_ptr<Cali::TerrainIcosahedron> m_terrain;
+#endif // !WORK_ON_ICOSAHEDRON
 	std::unique_ptr<Cali::Sky> m_sky;
 	std::unique_ptr<Cali::Sun> m_sun;
 	std::unique_ptr<IvRenderTexture> m_main_screen_buffer;

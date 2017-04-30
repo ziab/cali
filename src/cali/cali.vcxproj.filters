@@ -14,6 +14,8 @@
     <ClCompile Include="PostEffect.cpp" />
     <ClCompile Include="Bruneton.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="Icosahedron.cpp" />
+    <ClCompile Include="TerrainIcosahedron.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -36,6 +38,8 @@
     <ClInclude Include="TerrainQuadTree.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="World.h" />
+    <ClInclude Include="Icosahedron.h" />
+    <ClInclude Include="TerrainIcosahedron.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">

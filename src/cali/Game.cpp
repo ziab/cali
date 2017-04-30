@@ -24,9 +24,13 @@
 #include <thread>
 
 #include "Game.h"
-#include "Terrain.h"
 #include "Constants.h"
 
+#ifndef WORK_ON_ICOSAHEDRON
+#include "Terrain.h"
+#else
+#include "TerrainIcosahedron.h"
+#endif // !WORK_ON_ICOSAHEDRON
 
 //-------------------------------------------------------------------------------
 //-- Static Members -------------------------------------------------------------
@@ -92,8 +96,13 @@ Game::PostRendererInitialize()
     // Set up base class 
     IvGame::PostRendererInitialize();
 	setup_controls();
-    
+
+#ifndef WORK_ON_ICOSAHEDRON
 	m_terrain = std::unique_ptr<Cali::Terrain>(new Cali::Terrain);
+#else
+	m_terrain = std::unique_ptr<Cali::TerrainIcosahedron>(new Cali::TerrainIcosahedron);
+#endif // !WORK_ON_ICOSAHEDRON
+    
 	if (!m_terrain)	return false;
 
 	m_sky = std::unique_ptr<Cali::Sky>(new Cali::Sky);

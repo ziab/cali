@@ -15,12 +15,21 @@
 
 namespace Cali
 {
-	Terrain::RenderLevelParamerters Terrain::calculate_render_level_parameters(
-		const IvVector3 & position, const IvVector3 & planet_center, double radius)
+	float lerp(float a, float b, float f)
 	{
+		return a + f * (b - a);
+	}
+
+	Terrain::RenderLevelParamerters Terrain::calculate_render_level_parameters(
+		IvRenderer& renderer, const IvVector3 & position, const IvVector3 & planet_center, double radius)
+	{
+		////////////////////////////////////////////////////////////////////
+		// A very hacky implementation
+		////////////////////////////////////////////////////////////////////
+
 		RenderLevelParamerters params = {};
 		params.initial_scale = 1.0f;
-		params.max_level = 5;
+		params.curvature = 0.0f;
 		double distance_from_surface = abs((double)(position - planet_center).Length() - radius);
 
 		if (distance_from_surface < m_hd_grid.width())
@@ -32,13 +41,25 @@ namespace Cali
 			params.initial_level_grid = &m_ld_grid;
 		}
 
-		if (distance_from_surface > 1000.0)
+		params.initial_scale = 1.0f;
+		float distance_by_grid = (float)floor(distance_from_surface / m_ld_grid.width());
+		if (distance_by_grid > 1.0f)
 		{
-			params.initial_scale = 2.0f;
+			params.initial_scale = distance_by_grid;
+		}
+
+		params.max_level = size_t(abs(floor(lerp(5.0f, 1.0f, (float)distance_from_surface / (m_planet_radius / 10.0f)))));
+		if (params.max_level > 5) params.max_level = 5;
+
+		if (distance_from_surface > m_ld_grid.width())
+		{
+			params.curvature = lerp(0.0f, 1.0f, float(distance_from_surface - m_ld_grid.width()) / (m_planet_radius / 1000.0f));
+			if (params.curvature > 1.0f) params.curvature = 1.0f;
 		}
 
 		return params;
 	}
+
 	void Terrain::update(float dt)
 	{
 	}
@@ -210,7 +231,9 @@ namespace Cali
 	{
 		renderer.SetBlendFunc(kSrcAlphaBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 
-		auto params = calculate_render_level_parameters(m_viewer_position, m_planet_center, m_planet_radius);
+		auto params = calculate_render_level_parameters(renderer, m_viewer_position, m_planet_center, m_planet_radius);
+		m_shader->GetUniform("curvature")->SetValue(params.curvature, 0);
+
 		render_levels(renderer, *params.initial_level_grid, 0, params.max_level, 0.0f, params.initial_scale, 0.15f * params.initial_scale);
 	}
 

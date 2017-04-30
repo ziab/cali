@@ -37,6 +37,7 @@ namespace Cali
 		static const float movement_max_velocity;
 		static const float roatation_sensitivity;
 		static const float rotation_inertia_decay;
+		static const float addtional_acceleration;
 
 		float m_addtional_acceleration;
 
