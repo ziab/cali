@@ -35,14 +35,3 @@ cbuffer SunLight : register(b1)
     float3 sun_attenuation;
     float4 sun_color;
 }
-
-float map_in_range(float value_to_map, float input_min, float input_max, float output_min, float output_max)
-{
-    // TODO : optimize!
-    /*
-        // more readable way:
-        slope = (output_end - output_start) / (input_end - input_start)
-        output = output_start + slope * (input - input_start)
-    */
-    return output_min + ((output_max - output_min) / (input_max - input_min)) * (value_to_map - input_min);
-}

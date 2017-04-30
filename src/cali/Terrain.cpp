@@ -48,7 +48,7 @@ namespace Cali
 			params.initial_scale = distance_by_grid;
 		}
 
-		params.max_level = size_t(abs(floor(lerp(5.0f, 1.0f, (float)distance_from_surface / (m_planet_radius / 10.0f)))));
+		params.max_level = size_t(abs(floor(lerp(6.0f, 1.0f, (float)distance_from_surface / (m_planet_radius / 10.0f)))));
 		if (params.max_level > 5) params.max_level = 5;
 
 		if (distance_from_surface > m_ld_grid.width())
@@ -234,7 +234,7 @@ namespace Cali
 		auto params = calculate_render_level_parameters(renderer, m_viewer_position, m_planet_center, m_planet_radius);
 		m_shader->GetUniform("curvature")->SetValue(params.curvature, 0);
 
-		render_levels(renderer, *params.initial_level_grid, 0, params.max_level, 0.0f, params.initial_scale, 0.15f * params.initial_scale);
+		render_levels(renderer, *params.initial_level_grid, 0, params.max_level, 0.0f, params.initial_scale, 0.05f * params.initial_scale);
 	}
 
 	AABB::AABB()

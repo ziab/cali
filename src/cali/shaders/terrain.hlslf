@@ -35,7 +35,7 @@ lightSampleValues computePointLightValues(float3 surfacePosition)
 /////////////////////////////////////////////////////////////
 
 static const float resolution = 0.01;
-static const float far_plane = 50000.0;
+static const float far_plane = 100000.0;
 
 /////////////////////////////////////////////////////////////
 // Main
@@ -46,13 +46,13 @@ float4 main(VS_OUTPUT input) : SV_TARGET
     lightSampleValues lightValues = computePointLightValues(input.world_position);
 
     float3 lighting = clamp(dot(normalize(input.normal), lightValues.dir), 0.0, 1.0) * lightValues.L;
-    float4 fragColor = float4(lighting.r, lighting.g, lighting.b, 1.0);
+    float4 frag_color = float4(lighting.r, lighting.g, lighting.b, 1.0);
 
     float depth_value = log(resolution * input.screen_position.w + 1) / log(resolution * far_plane + 1);
 
-    fragColor.r = map_in_range(depth_value, 0.0f, 1.f, fragColor.r, 113.f / 255.f);
-    fragColor.g = map_in_range(depth_value, 0.0f, 1.f, fragColor.g, 149.f / 255.f);
-    fragColor.b = map_in_range(depth_value, 0.0f, 1.f, fragColor.b, 206.f / 255.f);
+    frag_color.r = lerp(frag_color.r, 113.f / 255.f, depth_value);
+    frag_color.g = lerp(frag_color.g, 149.f / 255.f, depth_value);
+    frag_color.b = lerp(frag_color.b, 206.f / 255.f, depth_value);
     
-	return fragColor;
+    return frag_color;
 }
