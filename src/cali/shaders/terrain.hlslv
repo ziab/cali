@@ -8,12 +8,11 @@
 // Local functions
 /////////////////////////////////////////////////////////////
 
-float3 get_noramal_from_heightmap_tex(Texture2D tex, SamplerState samp, float2 uv)
+float3 get_normal_from_heightmap_tex(Texture2D tex, SamplerState samp, float2 uv, float texel_size, float scale_factor)
 {
-    float texel_size = 0.001;
-    float h1 = tex.SampleLevel(samp, uv, 0);
-    float h2 = tex.SampleLevel(samp, uv + float2(texel_size, 0.0), 0);
-    float h3 = tex.SampleLevel(samp, uv + float2(texel_size, texel_size), 0);
+    float h1 = tex.SampleLevel(samp, uv, 0) * scale_factor;
+    float h2 = tex.SampleLevel(samp, uv + float2(texel_size, 0.0), 0) * scale_factor;
+    float h3 = tex.SampleLevel(samp, uv + float2(texel_size, texel_size), 0) * scale_factor;
 
     float3 v1 = float3(uv.x, h1, uv.y);
     float3 v2 = float3(uv.x + texel_size, h2, uv.y);
@@ -22,6 +21,21 @@ float3 get_noramal_from_heightmap_tex(Texture2D tex, SamplerState samp, float2 u
     float3 normal = cross(normalize(v3 - v1), normalize(v2 - v1));
 
     return normal;
+}
+
+float3 filter_normal(Texture2D tex, SamplerState samp, float2 uv, float texelSize, float texelAspect)
+{
+    float4 h;
+    h[0] = tex.SampleLevel(samp, uv + texelSize * float2(0, -1), 0).r * texelAspect;
+    h[1] = tex.SampleLevel(samp, uv + texelSize * float2(-1, 0), 0).r * texelAspect;
+    h[2] = tex.SampleLevel(samp, uv + texelSize * float2(1, 0), 0).r * texelAspect;
+    h[3] = tex.SampleLevel(samp, uv + texelSize * float2(0, 1), 0).r * texelAspect;
+    float3 n;
+    n.z = h[0] - h[3];
+    n.x = h[1] - h[2];
+    n.y = 2;
+
+    return normalize(n);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +172,8 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
 
     output.screen_position = (float4) mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
-    output.normal = (float3) (mul(IvNormalMatrix, float4(get_noramal_from_heightmap_tex(height_map, height_mapSampler, translated_uv), 0)));
+    output.normal = (float3) (mul(IvNormalMatrix, float4(
+        get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, grid_uv_quad_size.x / grid_cols, grid_stride), 0)
+    ));
     return output;
 }

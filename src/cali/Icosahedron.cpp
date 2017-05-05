@@ -32,6 +32,11 @@ namespace Cali
 		};
 	}
 
+	void create_icosahedron_model(VertexList& veticies, TriangleList& triangles, size_t subdivisions)
+	{
+
+	}
+
 	void Icosahedron::create_icosahedron()
 	{
 		const size_t indices_total = icosahedron::triangles.size() * 3;

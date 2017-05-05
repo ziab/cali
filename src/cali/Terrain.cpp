@@ -12,12 +12,26 @@
 #include <vector>
 
 #include "World.h"
+#include "DebugInfo.h"
 
 namespace Cali
 {
 	float lerp(float a, float b, float f)
 	{
 		return a + f * (b - a);
+	}
+
+	double get_scale_from_distance(double distance, double min_distance)
+	{
+		double scale = 1.0;
+
+		while (distance > min_distance)
+		{
+			distance /= 2.0;
+			scale *= 2.0;
+		}
+
+		return scale;
 	}
 
 	Terrain::RenderLevelParamerters Terrain::calculate_render_level_parameters(
@@ -32,21 +46,12 @@ namespace Cali
 		params.curvature = 0.0f;
 		double distance_from_surface = abs((double)(position - planet_center).Length() - radius);
 
-		if (distance_from_surface < m_hd_grid.width())
-		{
-			params.initial_level_grid = &m_hd_grid;
-		}
-		else
-		{
-			params.initial_level_grid = &m_ld_grid;
-		}
+		params.initial_level_grid = &m_hd_grid;
 
-		params.initial_scale = 1.0f;
-		float distance_by_grid = (float)floor(distance_from_surface / m_ld_grid.width());
-		if (distance_by_grid > 1.0f)
-		{
-			params.initial_scale = distance_by_grid;
-		}
+		params.initial_scale = (float)get_scale_from_distance(distance_from_surface, m_hd_grid.width());
+
+		auto& info = Cali::DebugInfo::get_debug_info();
+		info.set_debug_string(L"initial_scale", params.initial_scale);
 
 		params.max_level = size_t(abs(floor(lerp(6.0f, 1.0f, (float)distance_from_surface / (m_planet_radius / 10.0f)))));
 		if (params.max_level > 5) params.max_level = 5;
