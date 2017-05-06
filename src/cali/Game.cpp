@@ -26,10 +26,12 @@
 #include "Game.h"
 #include "Constants.h"
 
-#ifndef WORK_ON_ICOSAHEDRON
-#include "Terrain.h"
-#else
+#if defined WORK_ON_ICOSAHEDRON
 #include "TerrainIcosahedron.h"
+#elif defined WORK_ON_QUAD_TREE
+#include "TerrainQuad.h"
+#else
+#include "Terrain.h"
 #endif // !WORK_ON_ICOSAHEDRON
 
 //-------------------------------------------------------------------------------
@@ -97,10 +99,12 @@ Game::PostRendererInitialize()
     IvGame::PostRendererInitialize();
 	setup_controls();
 
-#ifndef WORK_ON_ICOSAHEDRON
-	m_terrain = std::unique_ptr<Cali::Terrain>(new Cali::Terrain);
-#else
+#if defined WORK_ON_ICOSAHEDRON
 	m_terrain = std::unique_ptr<Cali::TerrainIcosahedron>(new Cali::TerrainIcosahedron);
+#elif defined WORK_ON_QUAD_TREE
+	m_terrain = std::unique_ptr<Cali::TerrainQuad>(new Cali::TerrainQuad);
+#else
+	m_terrain = std::unique_ptr<Cali::Terrain>(new Cali::Terrain);
 #endif // !WORK_ON_ICOSAHEDRON
     
 	if (!m_terrain)	return false;

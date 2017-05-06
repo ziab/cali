@@ -2,6 +2,7 @@
 #define __GameDefs__
 
 //#define WORK_ON_ICOSAHEDRON
+//#define WORK_ON_QUAD_TREE
 
 //-------------------------------------------------------------------------------
 //-- Dependencies ---------------------------------------------------------------
@@ -29,16 +30,19 @@ namespace Cali
 {
 	class Terrain;
 	class TerrainIcosahedron;
+	class TerrainQuad;
 }
 
 using namespace Cali;
 
 class Game : public IvGame
 {
-#ifndef WORK_ON_ICOSAHEDRON
-	std::unique_ptr<Cali::Terrain> m_terrain;
-#else
+#if defined WORK_ON_ICOSAHEDRON
 	std::unique_ptr<Cali::TerrainIcosahedron> m_terrain;
+#elif defined WORK_ON_QUAD_TREE
+	std::unique_ptr<Cali::TerrainQuad> m_terrain;
+#else
+	std::unique_ptr<Cali::Terrain> m_terrain;
 #endif // !WORK_ON_ICOSAHEDRON
 	std::unique_ptr<Cali::Sky> m_sky;
 	std::unique_ptr<Cali::Sun> m_sun;

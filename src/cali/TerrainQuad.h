@@ -19,6 +19,8 @@
 #include "Renderable.h"
 #include "Model.h"
 #include "Grid.h"
+#include "TerrainQuadTree.h"
+#include "AABB.h"
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
@@ -26,8 +28,10 @@
 
 namespace Cali
 {
-	class Terrain : public Renderable
+	class TerrainQuad : public Renderable
 	{
+		TerrainQuadTree m_qtree;
+		AABB m_aabb;
 		Grid m_hd_grid;
 		Grid m_ld_grid;
 		IvVector3 m_viewer_position;
@@ -38,16 +42,14 @@ namespace Cali
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
 
-	private:
-		void read_height_map(const std::string & path, BufferRAIIWrapper<IvVertexBuffer, IvNPVertex>& vertices, size_t width, size_t height);
-		IvTexture* load_height_map_texture(const std::string & path);
+		static const uint32_t c_hd_gird_dimention = 256;
 
 	public:
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer& renderer) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		Terrain();
-		~Terrain();
+		TerrainQuad();
+		~TerrainQuad();
 	};
 }

@@ -158,7 +158,7 @@ namespace Cali
 			indices[i] = indices_mem[i];
 	}
 	
-	void create_box(Model<kNPFormat, IvNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals);
+	void create_box(Model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals);
 
 	template<IvVertexFormat vertex_format_code, typename t_VertexFormat>
 	void create_quad(Model<vertex_format_code, t_VertexFormat>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)

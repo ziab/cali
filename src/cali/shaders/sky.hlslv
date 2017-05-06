@@ -4,7 +4,7 @@ float4x4 IvModelViewProjectionMatrix;
 float4x4 IvNormalMatrix;
 float4x4 modelMatrix;
 
-VS_OUTPUT vs_sky( float3 normal : NORMAL, float4 pos : POSITION )
+VS_OUTPUT vs_sky(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 pos : POSITION)
 {
     VS_OUTPUT output = (VS_OUTPUT) 0;
 

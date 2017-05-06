@@ -12,7 +12,7 @@ namespace Cali
 	{
 		Bruneton m_bruneton;
 
-		Model<kNPFormat, IvNPVertex> m_sky_box;
+		Model<kTNPFormat, IvTNPVertex> m_sky_box;
 		IvShaderProgram* m_sky_shader;
 
 	private:

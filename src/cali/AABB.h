@@ -21,7 +21,7 @@ namespace Cali
 {
 	class AABB : public Physical, public Renderable
 	{
-		Model<kNPFormat, IvNPVertex> m_box;
+		Model<kTNPFormat, IvTNPVertex> m_box;
 		IvShaderProgram* m_shader;
 
 	public:
