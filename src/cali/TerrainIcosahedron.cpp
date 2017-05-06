@@ -4,6 +4,7 @@
 #include <IvResourceManager.h>
 #include <IvTexture.h>
 #include "CommonFileSystem.h"
+#include "CommonTexture.h"
 
 #pragma warning(disable : 4996)
 #include "..\..\depends\bitmap_image\bitmap_image.hpp"
@@ -40,7 +41,7 @@ namespace Cali
 
 		if (!m_shader) throw std::exception("TerrainIcosahedron: failed to load shader program");
 
-		m_height_map_texture = load_height_map_texture(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
+		m_height_map_texture = Texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
 		if (!m_height_map_texture) throw("TerrainIcosahedron: failed to load height map texture");
 
 		//m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
@@ -60,57 +61,6 @@ namespace Cali
 		uint8_t green;
 		uint8_t blue;
 	};
-
-	void TerrainIcosahedron::read_height_map(
-		const std::string & path,
-		BufferRAIIWrapper<IvVertexBuffer, IvNPVertex>& vertices,
-		size_t width,
-		size_t height)
-	{
-		bitmap_image hmap(path);
-		if (!hmap) return;
-
-		float wstep = (float)hmap.width() / width;
-		float hstep = (float)hmap.height() / height;
-
-		const float scale = 0.04f;
-
-		size_t index = 0;
-		for (size_t vy = 0, by = 0; vy < height; ++vy)
-		{
-			for (size_t vx = 0, bx = 0; vx < width; ++vx)
-			{
-				Pixel pixel;
-				hmap.get_pixel((unsigned int)bx, (unsigned int)by, pixel);
-
-				vertices[index++].position.y = (float)pixel.blue * scale;
-
-				bx += (size_t)wstep;
-			}
-
-			by += (size_t)hstep;
-		}
-	}
-
-	IvTexture* TerrainIcosahedron::load_height_map_texture(const std::string & path)
-	{
-		auto& renderer = *IvRenderer::mRenderer;
-		auto& resman = *renderer.GetResourceManager();
-
-		bitmap_image hmap(path);
-		if (!hmap) return nullptr;
-
-		IvTexture* texture = resman.CreateTexture(kRGB24TexFmt, hmap.width(), hmap.height(), hmap.data(), kDefaultUsage);
-
-		if (!texture) return nullptr;
-
-		texture->SetAddressingU(kClampTexAddr);
-		texture->SetAddressingV(kClampTexAddr);
-		texture->SetMagFiltering(kBilerpTexMagFilter);
-		texture->SetMinFiltering(kBilerpTexMinFilter);
-
-		return texture;
-	}
 
 	void TerrainIcosahedron::render(IvRenderer& renderer)
 	{

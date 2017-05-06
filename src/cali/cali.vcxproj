@@ -517,9 +517,11 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AABB.cpp" />
     <ClCompile Include="Bruneton.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonFileSystem.cpp" />
+    <ClCompile Include="CommonTexture.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Icosahedron.cpp" />
@@ -534,13 +536,16 @@
     <ClCompile Include="TerrainIcosahedron.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AABB.h" />
     <ClInclude Include="Bruneton.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonFileSystem.h" />
+    <ClInclude Include="CommonTexture.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferWrapper.h" />
     <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="Icosahedron.h" />
+    <ClInclude Include="QuadTerrain.h" />
     <ClInclude Include="TerrainIcosahedron.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="Constants.h" />
