@@ -32,8 +32,7 @@ namespace Cali
 	{
 		TerrainQuadTree m_qtree;
 		AABB m_aabb;
-		Grid m_hd_grid;
-		Grid m_ld_grid;
+		Grid m_grid;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
 		const IvVector3 m_planet_center;
@@ -42,10 +41,11 @@ namespace Cali
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
 
-		static const uint32_t c_hd_gird_dimention = 256;
+		static const uint32_t c_gird_dimention = 33;
 
 	public:
 		virtual void update(float dt) override;
+		void render_grid(IvRenderer & renderer, Grid & level_grid, const IvVector3 & offset, float scale, float grid_scale_factor);
 		virtual void render(IvRenderer& renderer) override;
 		void set_viewer(const IvVector3 & camera_position);
 

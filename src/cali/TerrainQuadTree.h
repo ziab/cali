@@ -60,13 +60,41 @@ namespace Cali
 				half_size = rhv.half_size;
 			}
 
+			double width() const { return half_size.x * 2.0; }
+			double height() const { return half_size.y * 2.0; }
 		};
 
-		class Node
+		struct Circle
+		{
+			Point center;
+			double radius;
+			Circle(Point _center, double _radius) : center(_center), radius(_radius) {};
+
+			inline bool intersects(const Quad& quad) const
+			{
+				double x_dist = abs(center.x - quad.center.x);
+				double y_dist = abs(center.y - quad.center.y);
+
+				if (x_dist > (quad.half_size.x + radius)) return false;
+				if (y_dist > (quad.half_size.y + radius)) return false;
+
+				if (x_dist <= (quad.half_size.x)) return true;
+				if (y_dist <= (quad.half_size.y)) return true;
+
+				double corner_distance_sq = (x_dist - quad.half_size.x * 2.0) * (x_dist - quad.half_size.x * 2.0) + 
+					(y_dist - quad.half_size.y * 2.0) * (quad.half_size.y * 2.0);
+
+				return (corner_distance_sq <= (radius * radius));
+			}
+
+			Circle operator* (double x) const { return Circle{ center, radius * x }; }
+		};
+
+		struct Node
 		{
 		private:
 			Quad m_quad;
-			size_t m_depth;
+			int m_depth;
 			Node* m_tl;
 			Node* m_tr;
 			Node* m_bl;
@@ -103,7 +131,7 @@ namespace Cali
 			{
 			}
 
-			Node(Quad _quad, size_t _depth, Node* _parent) :
+			Node(Quad _quad, int _depth, Node* _parent) :
 				m_quad(_quad),
 				m_depth(_depth),
 				m_tl(nullptr),
@@ -165,7 +193,7 @@ namespace Cali
 					else
 					{
 						if (point.y <= m_quad.center.y + m_quad.half_size.y)
-							return m_tr;
+							return m_bl;
 					}
 				}
 				else if (
@@ -175,7 +203,7 @@ namespace Cali
 					if (point.y <= m_quad.center.y)
 					{
 						if (point.y >= m_quad.center.y - m_quad.half_size.y)
-							return m_bl;
+							return m_tr;
 					}
 					else
 					{
@@ -185,6 +213,18 @@ namespace Cali
 				}
 
 				return nullptr;
+			}
+
+			typedef Node* QuadNodes[4];
+
+			void get_child_nodes_at(const Circle& circle, QuadNodes& nodes)
+			{
+				memset(&nodes, 0, sizeof(QuadNodes));
+
+				if (circle.intersects(m_tl->m_quad)) nodes[0] = m_tl;
+				if (circle.intersects(m_tr->m_quad)) nodes[1] = m_tr;
+				if (circle.intersects(m_bl->m_quad)) nodes[2] = m_bl;
+				if (circle.intersects(m_br->m_quad)) nodes[3] = m_br;
 			}
 
 			const Node* get_child_node_at(const Point& point) const
@@ -219,40 +259,74 @@ namespace Cali
 				m_bl->query_nodes(vec);
 				m_br->query_nodes(vec);
 			}
+
+			double get_scale_factor()
+			{
+				return 1.0 / m_depth;
+			}
+
+			void divide(Point _where, int depth)
+			{
+				if (depth <= 0) return;
+
+				if (!has_child()) divide();
+
+				Node* node_at_point = get_child_node_at(_where);
+				assert(node_at_point != nullptr);
+
+				node_at_point->divide(_where, depth - 1);
+			}
+
+			void divide(const Circle& circle, int depth)
+			{
+				if (depth <= 0) return;
+
+				if (!has_child()) divide();
+
+				QuadNodes nodes;
+				get_child_nodes_at(circle, nodes);
+
+				for (auto* node : nodes)
+				{
+					if (!node) continue;
+					node->divide(circle, depth - 1);
+				}
+
+				/*
+				get_child_nodes_at(circle * exp((double)depth), nodes);
+
+				for (auto* node : nodes)
+				{
+					if (!node) continue;
+					node->divide(circle, depth - 2);
+				}
+				*/
+			}
 		};
 
 	private:
 		Node m_root;
 
-		void divide(Point _where, size_t depth, Node& node)
-		{
-			if (depth == 0) return;
-
-			Node* node_at_point = node.get_child_node_at(_where);
-			if (!node_at_point)
-			{
-				node.divide();
-				node_at_point = node.get_child_node_at(_where);
-			}
-
-			assert(node_at_point != nullptr);
-
-			divide(_where, depth - 1, *node_at_point);
-		}
-
 	public:
 
 		TerrainQuadTree(Quad quad) :
-			m_root(quad, 0, nullptr)
+			m_root(quad, 1, nullptr)
 		{
 		};
 
 		~TerrainQuadTree() {};
 
-		bool divide(Point _where, size_t depth)
+		bool divide(Point _where, int depth)
 		{
 			if (!m_root.get_centred_quad().contains(_where)) return false;
-			divide(_where, depth, m_root);
+			m_root.divide(_where, depth);
+			return true;
+		}
+
+		bool divide(Circle _where, int depth)
+		{
+			if (!_where.intersects(m_root.get_centred_quad())) return false;
+			m_root.divide(_where, depth);
 			return true;
 		}
 
@@ -277,5 +351,13 @@ namespace Cali
 		{
 
 		}
+
+		void collapse()
+		{
+			m_root.collapse();
+		}
+
+		double width() const { return m_root.get_centred_quad().width(); };
+		double height() const { return m_root.get_centred_quad().height(); };
 	};
 }

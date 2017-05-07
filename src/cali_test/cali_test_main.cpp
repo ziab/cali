@@ -31,6 +31,14 @@ TEST(TerrainQuadTree, test_building_tree)
 	ASSERT_TRUE(nodes.size() == 13);
 }
 
+TEST(TerrainQuadTree, test_high_prescision)
+{
+	Cali::TerrainQuadTree tqtree({ { 0.0, 0.0 },{ 10e3, 10e3 } });
+
+	ASSERT_TRUE(tqtree.divide({ -5001.8784179687500,-3296.0344238281250 }, 3));
+	ASSERT_TRUE(tqtree.get_node_at({ -5001.8784179687500,-3296.0344238281250 }) != nullptr);
+}
+
 void main(int argc, char** argv)
 {
 	try

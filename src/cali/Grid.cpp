@@ -70,6 +70,7 @@ namespace Cali
 
 	void Grid::render(IvRenderer & renderer, IvShaderProgram * shader) const
 	{
+		Physical::set_transformation_matrix(renderer);
 		m_model.render(renderer, shader);
 	}
 

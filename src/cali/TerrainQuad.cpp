@@ -11,15 +11,14 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { 0.5, 0.5 } }),
-		m_hd_grid(c_hd_gird_dimention, c_hd_gird_dimention, 1.0f),
-		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f),
+		m_qtree({ { 0.0, 0.0 }, { 10e3, 10e3 } }),
+		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
-		m_overlapping_edge_cells(c_hd_gird_dimention / 32),
+		m_overlapping_edge_cells(4),
 		m_planet_center(Cali::World::c_earth_center),
 		m_planet_radius(Cali::World::c_earth_radius)
 	{
-		std::string vertex_shader = construct_shader_path("terrain.hlslv");
+		std::string vertex_shader = construct_shader_path("terrain_quad.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
 
 		m_shader = IvRenderer::mRenderer->GetResourceManager()->CreateShaderProgram(
@@ -33,16 +32,10 @@ namespace Cali
 		m_height_map_texture = Texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
 		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
 
-		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
-
-		m_qtree.divide({ 0.2, 0.2 }, 10);
+		//m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
 	}
 
 	TerrainQuad::~TerrainQuad()
-	{
-	}
-
-	void TerrainQuad::update(float dt)
 	{
 	}
 
@@ -51,9 +44,40 @@ namespace Cali
 		return IvVector3{ (float)quad.center.x, 0.0f, (float)quad.center.y };
 	}
 
-	IvVector3 quad_size_to_vector(const TerrainQuadTree::Quad& quad, float scale_factor)
+	double quad_size(const TerrainQuadTree::Quad& quad)
 	{
-		return IvVector3{ (float)quad.half_size.x * 2.0f * scale_factor, 5.0f, (float)quad.half_size.y * 2.0f * scale_factor };
+		return quad.half_size.x * 2.0;
+	}
+
+	void TerrainQuad::render_grid(
+		IvRenderer & renderer,
+		Grid & grid,
+		const IvVector3& offset,
+		float scale,
+		float grid_scale_factor)
+	{
+		grid.set_current_origin(m_viewer_position + offset, { scale, 1.0f, scale });
+
+		m_shader->GetUniform("modelMatrix")->SetValue(grid.get_transformation_matrix(), 0);
+		m_shader->GetUniform("grid_stride")->SetValue(grid.stride() * scale, 0);
+		m_shader->GetUniform("grid_cols")->SetValue((float)grid.cols(), 0);
+		m_shader->GetUniform("grid_rows")->SetValue((float)grid.rows(), 0);
+		m_shader->GetUniform("grid_camera_offset")->SetValue(offset, 0);
+		m_shader->GetUniform("grid_uv_quad_size")->SetValue(
+			IvVector3{ grid_scale_factor, grid_scale_factor, 0.0f },
+			0);
+
+		m_shader->GetUniform("planet_center")->SetValue(m_planet_center, 0);
+		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
+
+		grid.render(renderer, m_shader);
+	}
+
+	void TerrainQuad::update(float dt)
+	{
+		m_qtree.collapse();
+		TerrainQuadTree::Circle circle{ { m_viewer_position.x, m_viewer_position.z }, 300};
+		m_qtree.divide(circle, 6);
 	}
 
 	void TerrainQuad::render(IvRenderer & renderer)
@@ -64,13 +88,22 @@ namespace Cali
 		for (auto&& node : nodes)
 		{
 			auto& quad = node->get_centred_quad();
-			m_aabb.set_position(quad_center_to_vector_on_surf(quad) * 1000.0f);
-			m_aabb.set_scale(quad_size_to_vector(quad, 1000.f));
-			m_aabb.render(renderer);
+			m_grid.set_position(quad_center_to_vector_on_surf(quad));
+
+			float scale = (float)quad_size(quad) / (m_grid.width() - m_grid.stride());
+			m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
+
+			m_shader->GetUniform("modelMatrix")->SetValue(m_grid.get_transformation_matrix(), 0);
+			m_grid.render(renderer, m_shader);
+
+			/*m_aabb.set_position(quad_center_to_vector_on_surf(quad));
+			m_aabb.set_scale((float)quad_size(quad));
+			m_aabb.render(renderer);*/
 		}
 	}
 
 	void TerrainQuad::set_viewer(const IvVector3 & camera_position)
 	{
+		m_viewer_position = camera_position;
 	}
 }

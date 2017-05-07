@@ -191,8 +191,8 @@ Game::UpdateObjects(float dt)
 
 	m_camera.update(dt);
 	m_controller.read_input(dt);
-	m_terrain->update(dt);
 	m_terrain->set_viewer(m_camera.get_position());
+	m_terrain->update(dt);
 	m_sun->update(dt);
 
 	m_sun->look_at(m_camera.get_position(), Cali::Constants::c_world_up);

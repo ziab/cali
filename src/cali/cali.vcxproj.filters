@@ -120,6 +120,9 @@
     <None Include="shaders\simple.hlslv">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shaders\terrain_quad.hlslv">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="shaders">

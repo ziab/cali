@@ -128,7 +128,6 @@ namespace Cali
 		m_shader->GetUniform("planet_center")->SetValue(m_planet_center, 0);
 		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
 
-		level_grid.set_transformation_matrix(renderer);
 		level_grid.render(renderer, m_shader);
 	}
 

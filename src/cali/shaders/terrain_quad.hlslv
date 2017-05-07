@@ -1,0 +1,148 @@
+#include "cali_common.fx"
+
+/////////////////////////////////////////////////////////////
+// Type Definitions
+/////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////
+// Local functions
+/////////////////////////////////////////////////////////////
+
+float3 get_normal_from_heightmap_tex(Texture2D tex, SamplerState samp, float2 uv, float texel_size, float scale_factor)
+{
+    float h1 = tex.SampleLevel(samp, uv, 0) * scale_factor;
+    float h2 = tex.SampleLevel(samp, uv + float2(texel_size, 0.0), 0) * scale_factor;
+    float h3 = tex.SampleLevel(samp, uv + float2(texel_size, texel_size), 0) * scale_factor;
+
+    float3 v1 = float3(uv.x, h1, uv.y);
+    float3 v2 = float3(uv.x + texel_size, h2, uv.y);
+    float3 v3 = float3(uv.x + texel_size, h3, uv.y + texel_size);
+
+    float3 normal = cross(normalize(v3 - v1), normalize(v2 - v1));
+
+    return normal;
+}
+
+float3 filter_normal(Texture2D tex, SamplerState samp, float2 uv, float texelSize, float texelAspect)
+{
+    float4 h;
+    h[0] = tex.SampleLevel(samp, uv + texelSize * float2(0, -1), 0).r * texelAspect;
+    h[1] = tex.SampleLevel(samp, uv + texelSize * float2(-1, 0), 0).r * texelAspect;
+    h[2] = tex.SampleLevel(samp, uv + texelSize * float2(1, 0), 0).r * texelAspect;
+    h[3] = tex.SampleLevel(samp, uv + texelSize * float2(0, 1), 0).r * texelAspect;
+    float3 n;
+    n.z = h[0] - h[3];
+    n.x = h[1] - h[2];
+    n.y = 2;
+
+    return normalize(n);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+// https://gamedev.stackexchange.com/questions/96459/fast-ray-sphere-collision-code
+/////////////////////////////////////////////////////////////////////////////////////
+bool intersect_sphere(
+    in float3 s, // the start point of the ray
+    in float3 d, // a unit vector in the direction of the ray.
+    in float3 c, // the center point of the sphere
+    in float r, // its radius
+    out float3 intersection,
+    out float3 normal
+)
+{
+    // Calculate ray start's offset from the sphere center
+    float3 p = s - c;
+
+    float r_squared = r * r;
+    float p_d = dot(p, d);
+
+    // The sphere is behind or surrounding the start point.
+    if (p_d > 0 || dot(p, p) < r_squared)
+        return false;
+
+    // Flatten p into the plane passing through c perpendicular to the ray.
+    // This gives the closest approach of the ray to the center.
+    float3 a = p - p_d * d;
+
+    float a_squared = dot(a, a);
+
+    // Closest approach is outside the sphere.
+    if (a_squared > r_squared)
+        return false;
+
+    // Calculate distance from plane where ray enters/exits the sphere.    
+    float h = sqrt(r_squared - a_squared);
+
+    // Calculate intersection point relative to sphere center.
+    float3 i = a - h * d;
+
+    intersection = c + i;
+    normal = i / r;
+    // We've taken a shortcut here to avoid a second square root.
+    // Note numerical errors can make the normal have length slightly different from 1.
+    // If you need higher precision, you may need to perform a conventional normalization.
+
+    return true;
+}
+
+float2 get_texture_size(Texture2D _texture)
+{
+    uint tex_width, tex_height;
+    _texture.GetDimensions(tex_width, tex_height);
+    return float2(tex_width, tex_height);
+}
+
+static const float PI = 3.1415926;
+
+float4 grid_to_sphere_position(float4 p, float R, float3 C)
+{
+    float longitude = p.x / R;
+    float latitude = 2 * atan(exp(p.z / R)) - PI / 2.0;
+
+    float cos_latitude = cos(latitude);
+
+    float4 ps;
+    ps.x = R * cos_latitude * sin(longitude);
+    ps.y = R * cos_latitude * cos(longitude);
+    ps.z = R * sin(latitude);
+    ps.w = p.w;
+
+    return ps + float4(C, 0.0);
+}
+
+
+/////////////////////////////////////////////////////////////
+// Global Resources
+/////////////////////////////////////////////////////////////
+
+float4x4 IvModelViewProjectionMatrix;
+float4x4 IvNormalMatrix;
+float4x4 IvViewProjectionMatrix;
+float4x4 modelMatrix;
+
+Texture2D height_map;
+SamplerState height_mapSampler;
+
+float grid_stride;
+float grid_cols;
+float grid_rows;
+float3 grid_camera_offset;
+float3 grid_uv_quad_size;
+
+float3 planet_center;
+float planet_radius;
+float curvature;
+
+/////////////////////////////////////////////////////////////
+// Main
+/////////////////////////////////////////////////////////////
+
+VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : POSITION)
+{
+    VS_OUTPUT output;
+ 
+    output.screen_position = (float4) mul(IvModelViewProjectionMatrix, position);
+    output.world_position = (float4) mul(modelMatrix, position);
+    output.normal = (float3) mul(modelMatrix, float4(normal, 0.0));
+    return output;
+}
