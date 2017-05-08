@@ -30,6 +30,11 @@ namespace Cali
 		virtual void render(IvRenderer& renderer) = 0;
 	};
 
+	class CompoundRenderable
+	{
+		virtual void render(IvRenderer& renderer, const class Frustum& frustum) = 0;
+	};
+
 	class Physical
 	{
 		IvMatrix44 m_model_matrix;

@@ -1,7 +1,9 @@
 #include "Frustum.h"
 
+
 namespace Cali
 {
+	/*
 	void Frustum::construct_frustum(float screenDepth, IvMatrix44 projectionMatrix, IvMatrix44 viewMatrix)
 	{
 		// Create the frustum matrix from the view matrix and updated projection matrix.
@@ -51,15 +53,43 @@ namespace Cali
 
 		return;
 	}
+	*/
 
-	bool Frustum::visible(const IvOBB & box)
+	void Frustum::construct_frustum(const IvMatrix44& iv_projection_matrix, const IvMatrix44& iv_view_matrix)
 	{
-		for (auto&& plane : m_planes)
+		using namespace DirectX;
+
+		const float* proj_data = iv_projection_matrix;
+		const float* view_data = iv_view_matrix;
+
+		assert(sizeof(XMFLOAT4X4A) == sizeof(IvMatrix44));
+
+		XMFLOAT4X4A projection_matrix, view_matrix;
+		memcpy(projection_matrix.m, proj_data, sizeof(XMFLOAT4X4A));
+		memcpy(view_matrix.m, view_data, sizeof(XMFLOAT4X4A));
+
+		BoundingFrustum::CreateFromMatrix(m_frustum, XMLoadFloat4x4A(&projection_matrix));
+		BoundingFrustum tmp(XMLoadFloat4x4A(&projection_matrix));
+		XMVECTOR det;
+		tmp.Transform(m_frustum, XMMatrixInverse(&det, XMLoadFloat4x4A(&view_matrix)));
+		m_frustum.Near = 1.0f;
+	}
+
+	bool Frustum::visible(const IvOBB & box) const
+	{
+		/*for (auto&& plane : m_planes)
 		{
 			if (box.Classify(plane) >= 0.0f) continue;
 			return false;
 		}
-
+		*/
 		return true;
+	}
+	bool Frustum::contains_aligned_bounding_box(float x, float y, float z, float extent_x, float extent_y, float extent_z) const
+	{
+		using namespace DirectX;
+		BoundingBox box(XMFLOAT3{ x, y, z }, XMFLOAT3{ extent_x, extent_y, extent_z });
+
+		return m_frustum.Contains(box) != DISJOINT;
 	}
 }

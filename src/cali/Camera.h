@@ -13,6 +13,7 @@
 
 #include "ConstantBufferWrapper.h"
 #include "ConstantBuffer.h"
+#include "Frustum.h"
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
@@ -41,6 +42,8 @@ namespace Cali
 
 		float m_addtional_acceleration;
 
+		Frustum m_frustum;
+
 	private:
 		//////////////////////////////////////////////
 		// Movable ?
@@ -66,6 +69,8 @@ namespace Cali
 		void update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state);
 
 		void enable_speed_mode(float dt);
+
+		const Frustum& get_frustum();
 
 		//////////////////////////////////////////////
 		// Movable ?

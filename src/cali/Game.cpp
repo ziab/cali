@@ -34,6 +34,8 @@
 #include "Terrain.h"
 #endif // !WORK_ON_ICOSAHEDRON
 
+#include <D3D11\IvRendererD3D11.h>
+
 //-------------------------------------------------------------------------------
 //-- Static Members -------------------------------------------------------------
 //-------------------------------------------------------------------------------
@@ -178,8 +180,7 @@ void Game::on_window_resize(size_t width, size_t height)
 //-------------------------------------------------------------------------------
 // Main update loop
 //-------------------------------------------------------------------------------
-void
-Game::UpdateObjects(float dt)
+void Game::UpdateObjects(float dt)
 {
 	m_debug_info.set_debug_string(L"delta", dt);
 	m_debug_info.set_debug_string(L"fps", 1 / dt);
@@ -205,9 +206,8 @@ Game::UpdateObjects(float dt)
 //-------------------------------------------------------------------------------
 // Render stuff
 //-------------------------------------------------------------------------------
-#include <D3D11\IvRendererD3D11.h>
-void 
-Game::Render() // Here's Where We Do All The Drawing
+
+void Game::Render() // Here's Where We Do All The Drawing
 {
 	IvRenderer& renderer = *IvRenderer::mRenderer;
 	//renderer.ClearRenderTarget(m_main_screen_buffer.get(), kColorClear, { 0.0, 0.0, 0.0, 0.0 });
@@ -219,7 +219,7 @@ Game::Render() // Here's Where We Do All The Drawing
 
 	IvDrawAxes();
 	m_sky->render(renderer);
-	m_terrain->render(renderer);
+	m_terrain->render(renderer, m_camera.get_frustum());
 	//m_sun->render(renderer);
 
 	//renderer.ReleaseRenderTarget();

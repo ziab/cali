@@ -84,7 +84,7 @@ namespace Cali
 
 			m_sprite_batch->End();
 
-			current_line.y += DirectX::XMVectorGetY(name_length);
+			current_line.y += DirectX::XMVectorGetY(name_length) / 2.0f;
 		}
 
 		// Restore the cached state back

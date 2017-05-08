@@ -29,7 +29,7 @@
 
 namespace Cali
 {
-	class TerrainQuad : public Renderable
+	class TerrainQuad : public Renderable, public CompoundRenderable
 	{
 		TerrainQuadTree m_qtree;
 		AABB m_aabb;
@@ -42,13 +42,12 @@ namespace Cali
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
 
-		Frustum m_frustum;
-
 		static const uint32_t c_gird_dimention = 129;
 
 	public:
 		virtual void update(float dt) override;
-		virtual void render(IvRenderer& renderer) override;
+		virtual void render(IvRenderer & renderer) override;
+		virtual void render(IvRenderer & renderer, const Frustum& frustum) override;
 		void set_viewer(const IvVector3 & camera_position);
 
 		TerrainQuad();

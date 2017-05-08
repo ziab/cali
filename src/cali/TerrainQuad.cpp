@@ -46,11 +46,6 @@ namespace Cali
 		return IvVector3{ (float)quad.center.x, 0.0f, (float)quad.center.y };
 	}
 
-	double quad_size(const Quad& quad)
-	{
-		return quad.half_size.x * 2.0;
-	}
-
 	struct LevelDesc
 	{
 		int level;
@@ -90,12 +85,17 @@ namespace Cali
 		m_qtree.divide(circle * 32, level_desc.level - 4);
 	}
 
+	void TerrainQuad::render(IvRenderer & renderer)
+	{
+		assert("TerrainQuad::render() is not supported");
+	}
+
 	static float lerp(float a, float b, float f)
 	{
 		return a + f * (b - a);
 	}
 
-	void TerrainQuad::render(IvRenderer & renderer)
+	void TerrainQuad::render(IvRenderer & renderer, const Frustum& frustum)
 	{
 		auto height = m_viewer_position.y;
 
@@ -104,28 +104,30 @@ namespace Cali
 		m_qtree.get_nodes_inside(circle, nodes);
 
 		float curvature = 0.0;
-		if (height > 5000.0f)
+		if (height > 1000.0f)
 		{
 			curvature = lerp(0.0f, 1.0f, float(height) / (m_planet_radius / 1000.0f));
 			if (curvature > 1.0f) curvature = 1.0f;
 		}
 
-		//m_frustum.construct_frustum(renderer.GetFarPlane(), renderer.GetProjectionMatrix(), renderer.GetViewMatrix());
-
 		m_shader->GetUniform("planet_center")->SetValue(m_planet_center, 0);
 		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
 		m_shader->GetUniform("curvature")->SetValue(curvature, 0);
 
+		size_t rendered_nodes = 0;
 		for (auto&& node : nodes)
 		{
 			auto& quad = node->get_centred_quad();
 			m_grid.set_position(quad_center_to_vector_on_surf(quad));
 
-			float scale = (float)quad_size(quad) / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
+			float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 
-			IvOBB box;
-			box.SetCenter({ (float)quad.center.x, 0.0, (float)quad.center.y });
-			box.SetExtents({ (float)quad.width(), 1.0f, (float)quad.width() });
+			if (!frustum.contains_aligned_bounding_box(
+				(float)quad.center.x, 0.0f, (float)quad.center.y,
+				(float)quad.width(), 1.0f, (float)quad.width()))
+			{
+				continue;
+			}
 
 			m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
 			m_shader->GetUniform("modelMatrix")->SetValue(m_grid.get_transformation_matrix(), 0);
@@ -138,10 +140,14 @@ namespace Cali
 			m_shader->GetUniform("grid_center")->SetValue(m_grid.get_position(), 0);
 			m_grid.render(renderer, m_shader);
 
+			++rendered_nodes;
 			/*m_aabb.set_position(quad_center_to_vector_on_surf(quad));
-			m_aabb.set_scale((float)quad_size(quad));
+			m_aabb.set_scale((float)(quad.width()));
 			m_aabb.render(renderer);*/
 		}
+
+		auto& info = DebugInfo::get_debug_info();
+		info.set_debug_string(L"rendered_ndoes", (float)rendered_nodes);
 	}
 
 	void TerrainQuad::set_viewer(const IvVector3 & camera_position)

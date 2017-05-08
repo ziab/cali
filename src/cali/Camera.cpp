@@ -146,7 +146,9 @@ namespace Cali
 	void Camera::render(IvRenderer & renderer)
 	{
 		normalize();
-		IvRenderer::mRenderer->SetViewMatrix(get_view_matrix());
+		auto view_matrix = get_view_matrix();
+		m_frustum.construct_frustum(renderer.GetProjectionMatrix(), view_matrix);
+		IvRenderer::mRenderer->SetViewMatrix(view_matrix);
 	}
 
 	void Camera::update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state)
@@ -157,6 +159,11 @@ namespace Cali
 	void Camera::enable_speed_mode(float dt)
 	{
 		m_addtional_acceleration = addtional_acceleration;
+	}
+
+	const Frustum & Camera::get_frustum()
+	{
+		return m_frustum;
 	}
 
 	void Camera::move_forward(float dt)
