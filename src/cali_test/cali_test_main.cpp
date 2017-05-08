@@ -3,7 +3,7 @@
 
 TEST(TerrainQuadTree, quad)
 {
-	Cali::TerrainQuadTree::Quad quad{ { 0.5, 0.5 }, { 0.5, 0.5 } };
+	Cali::Quad quad{ { 0.5, 0.5 }, { 0.5, 0.5 } };
 
 	ASSERT_TRUE(quad.contains({ 0.5, 0.5 }));
 	ASSERT_TRUE(quad.contains({ 0.99, 0.99 }));

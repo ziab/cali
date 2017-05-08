@@ -2,7 +2,7 @@
 #define __GameDefs__
 
 //#define WORK_ON_ICOSAHEDRON
-//#define WORK_ON_QUAD_TREE
+#define WORK_ON_QUAD_TREE
 
 //-------------------------------------------------------------------------------
 //-- Dependencies ---------------------------------------------------------------

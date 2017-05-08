@@ -5,91 +5,92 @@
 
 namespace Cali
 {
+	struct Point
+	{
+		double x, y;
+		Point(double _x, double _y) : x(_x), y(_y) {}
+
+		Point operator+(const Point& rhv) const
+		{
+			return Point{ x + rhv.x, y + rhv.y };
+		}
+
+		Point operator-(const Point& rhv) const
+		{
+			return Point{ x - rhv.x, y - rhv.y };
+		}
+
+		Point operator/(double rhv) const
+		{
+			return Point{ x / rhv, y / rhv };
+		}
+
+		Point& operator=(const Point& rhv)
+		{
+			x = rhv.x;
+			y = rhv.y;
+		}
+	};
+
+	struct Quad
+	{
+		Point center;
+		Point half_size;
+		Quad(Point _center, Point _half_size) :
+			center(_center), half_size(_half_size) {}
+
+		bool contains(Point a) const
+		{
+			if (a.x < center.x + half_size.x && a.x > center.x - half_size.x)
+			{
+				if (a.y < center.y + half_size.y && a.y > center.y - half_size.y)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		Quad& operator=(const Quad& rhv)
+		{
+			center = rhv.center;
+			half_size = rhv.half_size;
+		}
+
+		double width() const { return half_size.x * 2.0; }
+		double height() const { return half_size.y * 2.0; }
+	};
+
+	struct Circle
+	{
+		Point center;
+		double radius;
+		Circle(Point _center, double _radius) : center(_center), radius(_radius) {};
+
+		// NOTE: quad is supposed to be axis-aligned
+		inline bool intersects(const Quad& quad) const
+		{
+			double x_dist = abs(center.x - quad.center.x);
+			double y_dist = abs(center.y - quad.center.y);
+
+			if (x_dist > (quad.half_size.x + radius)) return false;
+			if (y_dist > (quad.half_size.y + radius)) return false;
+
+			if (x_dist <= (quad.half_size.x)) return true;
+			if (y_dist <= (quad.half_size.y)) return true;
+
+			double corner_distance_sq = (x_dist - quad.half_size.x * 2.0) * (x_dist - quad.half_size.x * 2.0) +
+				(y_dist - quad.half_size.y * 2.0) * (quad.half_size.y * 2.0);
+
+			return (corner_distance_sq <= (radius * radius));
+		}
+
+		Circle operator* (double x) const { return Circle{ center, radius * x }; }
+	};
+
 	class TerrainQuadTree
 	{
 	public:
-		struct Point
-		{
-			double x, y;
-			Point(double _x, double _y) : x(_x), y(_y) {}
-
-			Point operator+(const Point& rhv) const
-			{
-				return Point{ x + rhv.x, y + rhv.y };
-			}
-
-			Point operator-(const Point& rhv) const
-			{
-				return Point{ x - rhv.x, y - rhv.y };
-			}
-
-			Point operator/(double rhv) const
-			{
-				return Point{ x / rhv, y / rhv };
-			}
-
-			Point& operator=(const Point& rhv)
-			{
-				x = rhv.x;
-				y = rhv.y;
-			}
-		};
-
-		struct Quad
-		{
-			Point center;
-			Point half_size;
-			Quad(Point _center, Point _half_size) :
-				center(_center), half_size(_half_size) {}
-
-			bool contains(Point a) const
-			{
-				if (a.x < center.x + half_size.x && a.x > center.x - half_size.x)
-				{
-					if (a.y < center.y + half_size.y && a.y > center.y - half_size.y)
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-
-			Quad& operator=(const Quad& rhv)
-			{
-				center = rhv.center;
-				half_size = rhv.half_size;
-			}
-
-			double width() const { return half_size.x * 2.0; }
-			double height() const { return half_size.y * 2.0; }
-		};
-
-		struct Circle
-		{
-			Point center;
-			double radius;
-			Circle(Point _center, double _radius) : center(_center), radius(_radius) {};
-
-			inline bool intersects(const Quad& quad) const
-			{
-				double x_dist = abs(center.x - quad.center.x);
-				double y_dist = abs(center.y - quad.center.y);
-
-				if (x_dist > (quad.half_size.x + radius)) return false;
-				if (y_dist > (quad.half_size.y + radius)) return false;
-
-				if (x_dist <= (quad.half_size.x)) return true;
-				if (y_dist <= (quad.half_size.y)) return true;
-
-				double corner_distance_sq = (x_dist - quad.half_size.x * 2.0) * (x_dist - quad.half_size.x * 2.0) + 
-					(y_dist - quad.half_size.y * 2.0) * (quad.half_size.y * 2.0);
-
-				return (corner_distance_sq <= (radius * radius));
-			}
-
-			Circle operator* (double x) const { return Circle{ center, radius * x }; }
-		};
-
 		struct Node
 		{
 		private:
@@ -152,24 +153,24 @@ namespace Cali
 				if (has_child()) return;
 
 				m_tl = new Node(
+					{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
+					m_depth + 1,
+					this);
+
+				m_bl = new Node(
 					{ m_quad.center - m_quad.half_size / 2, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
 				m_tr = new Node(
-					{ m_quad.center + Point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
-					m_depth + 1,
-					this);
-
-				m_bl = new Node(
-					{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
+					{ m_quad.center + m_quad.half_size / 2, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
 				m_br = new Node(
-					{ m_quad.center + m_quad.half_size / 2, m_quad.half_size / 2 },
+					{ m_quad.center + Point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
 					m_depth + 1,
-					this);
+					this);				
 			}
 
 			void collapse()
@@ -182,32 +183,34 @@ namespace Cali
 
 			Node* get_child_node_at(const Point& point)
 			{
+				// left
 				if (point.x <= m_quad.center.x  &&
 					point.x >= m_quad.center.x - m_quad.half_size.x)
 				{
-					if (point.y <= m_quad.center.y)
+					if (point.y >= m_quad.center.y)
 					{
-						if (point.y >= m_quad.center.y - m_quad.half_size.y)
+						if (point.y <= m_quad.center.y + m_quad.half_size.y)
 							return m_tl;
 					}
 					else
 					{
-						if (point.y <= m_quad.center.y + m_quad.half_size.y)
+						if (point.y >= m_quad.center.y - m_quad.half_size.y)
 							return m_bl;
 					}
 				}
+				//right
 				else if (
 					point.x >= m_quad.center.x  &&
 					point.x <= m_quad.center.x + m_quad.half_size.x)
 				{
-					if (point.y <= m_quad.center.y)
+					if (point.y >= m_quad.center.y)
 					{
-						if (point.y >= m_quad.center.y - m_quad.half_size.y)
+						if (point.y <= m_quad.center.y + m_quad.half_size.y)
 							return m_tr;
 					}
 					else
 					{
-						if (point.y <= m_quad.center.y + m_quad.half_size.y)
+						if (point.y >= m_quad.center.y - m_quad.half_size.y)
 							return m_br;
 					}
 				}
@@ -291,16 +294,6 @@ namespace Cali
 					if (!node) continue;
 					node->divide(circle, depth - 1);
 				}
-
-				/*
-				get_child_nodes_at(circle * exp((double)depth), nodes);
-
-				for (auto* node : nodes)
-				{
-					if (!node) continue;
-					node->divide(circle, depth - 2);
-				}
-				*/
 			}
 		};
 

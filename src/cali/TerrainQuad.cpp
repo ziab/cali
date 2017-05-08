@@ -39,12 +39,12 @@ namespace Cali
 	{
 	}
 
-	IvVector3 quad_center_to_vector_on_surf(const TerrainQuadTree::Quad& quad)
+	IvVector3 quad_center_to_vector_on_surf(const Quad& quad)
 	{
 		return IvVector3{ (float)quad.center.x, 0.0f, (float)quad.center.y };
 	}
 
-	double quad_size(const TerrainQuadTree::Quad& quad)
+	double quad_size(const Quad& quad)
 	{
 		return quad.half_size.x * 2.0;
 	}
@@ -76,8 +76,8 @@ namespace Cali
 	void TerrainQuad::update(float dt)
 	{
 		m_qtree.collapse();
-		TerrainQuadTree::Circle circle{ { m_viewer_position.x, m_viewer_position.z }, 300};
-		m_qtree.divide(circle, 6);
+		Circle circle{ { m_viewer_position.x, m_viewer_position.z }, 300};
+		m_qtree.divide({ m_viewer_position.x, m_viewer_position.z }, 6);
 	}
 
 	void TerrainQuad::render(IvRenderer & renderer)
