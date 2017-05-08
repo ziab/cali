@@ -201,7 +201,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliOGL.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\OGLRelease;..\..\depends\essential_math\common\Libs\Win32Release;..\..\depends\essential_math\gl;..\..\depends\essential_math\glew-1.12.0\lib\Release\Win32;..\..\depends\essential_math\glfw-3.1.1\lib-vc2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -244,7 +244,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliOGL.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\OGLRelease;..\..\depends\essential_math\common\Libs\Win32Release;..\..\depends\essential_math\gl;..\..\depends\essential_math\glew-1.12.0\lib\Release\Win32;..\..\depends\essential_math\glfw-3.1.1\lib-vc2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -286,7 +286,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliOGL_d.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\OGLDebug;..\..\depends\essential_math\common\Libs\Win32Debug;..\..\depends\essential_math\gl;..\..\depends\essential_math\glew-1.12.0\lib\Release\Win32;..\..\depends\essential_math\glfw-3.1.1\lib-vc2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -329,7 +329,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;opengl32.lib;glew32s.lib;glfw3.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliOGL_d.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\OGLDebug;..\..\depends\essential_math\common\Libs\Win32Debug;..\..\depends\essential_math\gl;..\..\depends\essential_math\glew-1.12.0\lib\Release\Win32;..\..\depends\essential_math\glfw-3.1.1\lib-vc2012;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -372,7 +372,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliD3D11_d.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\D3D11Debug;..\..\depends\essential_math\common\Libs\Win32Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -415,7 +415,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliD3D11_d.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\D3D11Debug;..\..\depends\essential_math\common\Libs\Win32Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -458,7 +458,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliD3D11.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\D3D11Release;..\..\depends\essential_math\common\Libs\Win32Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -502,7 +502,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>IvGraphics.lib;IvEngine.lib;IvMath.lib;IvUtility.lib;IvCollision.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;comctl32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>caliD3D11.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\depends\essential_math\common\Libs\D3D11Release;..\..\depends\essential_math\common\Libs\Win32Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -523,6 +523,7 @@
     <ClCompile Include="CommonFileSystem.cpp" />
     <ClCompile Include="CommonTexture.cpp" />
     <ClCompile Include="DebugInfo.cpp" />
+    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Icosahedron.cpp" />
     <ClCompile Include="InputController.cpp" />
@@ -545,6 +546,7 @@
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="ConstantBufferWrapper.h" />
     <ClInclude Include="DebugInfo.h" />
+    <ClInclude Include="Frustum.h" />
     <ClInclude Include="Icosahedron.h" />
     <ClInclude Include="TerrainQuad.h" />
     <ClInclude Include="TerrainIcosahedron.h" />

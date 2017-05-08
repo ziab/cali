@@ -126,8 +126,8 @@ SamplerState height_mapSampler;
 float grid_stride;
 float grid_cols;
 float grid_rows;
-float3 grid_camera_offset;
 float3 grid_uv_quad_size;
+float3 grid_center;
 
 float3 planet_center;
 float planet_radius;
@@ -140,9 +140,34 @@ float curvature;
 VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : POSITION)
 {
     VS_OUTPUT output;
- 
-    output.screen_position = (float4) mul(IvModelViewProjectionMatrix, position);
-    output.world_position = (float4) mul(modelMatrix, position);
-    output.normal = (float3) mul(modelMatrix, float4(normal, 0.0));
+
+    float2 texture_size = get_texture_size(height_map);
+    float2 grid_quad_size = float2(grid_uv_quad_size.x, grid_uv_quad_size.y);
+    float2 grid_size = float2(grid_cols, grid_rows);
+
+    float2 grid_center_uv = float2(grid_center.x, grid_center.z) / (grid_size * grid_stride);
+
+    float2 translated_uv = (grid_center_uv + uv) * grid_quad_size;
+
+    // loop the texture
+    translated_uv = frac(abs(translated_uv));
+
+    //position.y = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.65;
+    float4 world_position = mul(modelMatrix, position);
+    float4 world_normal = float4(0.0, 1.0, 0.0, 1.0);
+
+    if (curvature != 0.0)
+    {
+        world_position = (1.0 - curvature) * world_position + curvature * grid_to_sphere_position(world_position, planet_radius, planet_center);
+        world_normal = float4(normalize(world_position.xyz - planet_center), 1.0);
+    }
+
+    world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 2.3, 0.0);
+
+    output.screen_position = (float4) mul(IvViewProjectionMatrix, world_position);
+    output.world_position = world_position;
+    output.normal = (float3) (mul(IvNormalMatrix, float4(
+        get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, grid_uv_quad_size.x / grid_cols, grid_stride), 0)
+    ));
     return output;
 }

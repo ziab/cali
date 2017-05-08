@@ -26,3 +26,8 @@ Bin
 x64/Debug/cali_test.exe
 *.enc
 src/cali/Debug.txt
+depends/essential_math/common/Includes/IvAABB.h
+depends/essential_math/common/Includes/IvCapsule.h
+depends/essential_math/common/Includes/IvBoundingSphere.h
+depends/essential_math/common/Includes/IvCovariance.h
+depends/essential_math/common/Includes/IvOBB.h

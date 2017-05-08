@@ -21,6 +21,7 @@
 #include "Grid.h"
 #include "TerrainQuadTree.h"
 #include "AABB.h"
+#include "Frustum.h"
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
@@ -41,11 +42,12 @@ namespace Cali
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
 
-		static const uint32_t c_gird_dimention = 33;
+		Frustum m_frustum;
+
+		static const uint32_t c_gird_dimention = 129;
 
 	public:
 		virtual void update(float dt) override;
-		void render_grid(IvRenderer & renderer, Grid & level_grid, const IvVector3 & offset, float scale, float grid_scale_factor);
 		virtual void render(IvRenderer& renderer) override;
 		void set_viewer(const IvVector3 & camera_position);
 

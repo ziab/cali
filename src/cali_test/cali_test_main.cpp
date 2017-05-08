@@ -21,13 +21,13 @@ TEST(TerrainQuadTree, test_building_tree)
 	tqtree.get_node_at({ 0.75, 0.75 });
 
 	std::vector<const Cali::TerrainQuadTree::Node*> nodes;
-	tqtree.query_nodes(nodes);
+	tqtree.get_nodes(nodes);
 	ASSERT_TRUE(nodes.size() == 7);
 
 	ASSERT_TRUE(tqtree.divide({ 0.76, 0.76 }, 3));
 
 	nodes.clear();
-	tqtree.query_nodes(nodes);
+	tqtree.get_nodes(nodes);
 	ASSERT_TRUE(nodes.size() == 13);
 }
 

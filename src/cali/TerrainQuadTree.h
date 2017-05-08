@@ -220,7 +220,7 @@ namespace Cali
 
 			typedef Node* QuadNodes[4];
 
-			void get_child_nodes_at(const Circle& circle, QuadNodes& nodes)
+			void get_child_nodes_at(const Circle& circle, QuadNodes& nodes) const
 			{
 				memset(&nodes, 0, sizeof(QuadNodes));
 
@@ -249,7 +249,7 @@ namespace Cali
 				return this;
 			}
 
-			void query_nodes(std::vector<const Node*>& vec) const
+			void get_nodes(std::vector<const Node*>& vec) const
 			{
 				if (!has_child())
 				{
@@ -257,10 +257,27 @@ namespace Cali
 					return;
 				}
 
-				m_tl->query_nodes(vec);
-				m_tr->query_nodes(vec);
-				m_bl->query_nodes(vec);
-				m_br->query_nodes(vec);
+				m_tl->get_nodes(vec);
+				m_tr->get_nodes(vec);
+				m_bl->get_nodes(vec);
+				m_br->get_nodes(vec);
+			}
+
+			void get_nodes_inside(const Circle& circle, std::vector<const Node*>& vec) const
+			{
+				if (!has_child())
+				{
+					vec.push_back(this);
+					return;
+				}
+
+				QuadNodes selected_child_nodes;
+				get_child_nodes_at(circle, selected_child_nodes);
+
+				for (auto* node : selected_child_nodes)
+				{
+					if (node) node->get_nodes_inside(circle, vec);
+				}
 			}
 
 			double get_scale_factor()
@@ -282,7 +299,8 @@ namespace Cali
 
 			void divide(const Circle& circle, int depth)
 			{
-				if (depth <= 0) return;
+				if (depth <= 0) 
+					return;
 
 				if (!has_child()) divide();
 
@@ -334,15 +352,16 @@ namespace Cali
 			return &m_root;
 		}
 
-		void query_nodes(std::vector<const Node*>& vec) const
+		void get_nodes(std::vector<const Node*>& vec) const
 		{
 			vec.clear();
-			m_root.query_nodes(vec);
+			m_root.get_nodes(vec);
 		}
 
-		void query_nodes(const Point& point, double radius) const
+		void get_nodes_inside(const Circle& circle, std::vector<const Node*>& vec) const
 		{
-
+			vec.clear();
+			m_root.get_nodes_inside(circle, vec);
 		}
 
 		void collapse()

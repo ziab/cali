@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IvEngine", "depends\essential_math\common\IvEngine\IvEngine.vcxproj", "{63820BF9-B862-44F7-AA0F-996F2F465B26}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cali_test", "src\cali_test\cali_test.vcxproj", "{5742CD9F-D9E2-4578-95F6-9AFFC9128664}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "precompiled_depends", "src\precompiled_depends\precompiled_depends.vcxproj", "{AD813E61-C624-4C17-8E22-AB10FA869567}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IvCollision", "depends\essential_math\common\IvCollision\IvCollision.vcxproj", "{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -223,6 +225,28 @@ Global
 		{AD813E61-C624-4C17-8E22-AB10FA869567}.Release|Win32.Build.0 = Release|Win32
 		{AD813E61-C624-4C17-8E22-AB10FA869567}.Release|x64.ActiveCfg = Release|x64
 		{AD813E61-C624-4C17-8E22-AB10FA869567}.Release|x64.Build.0 = Release|x64
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug D3D11|Win32.ActiveCfg = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug D3D11|Win32.Build.0 = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug D3D11|x64.ActiveCfg = Debug|x64
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug D3D11|x64.Build.0 = Debug|x64
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug OGL|Win32.ActiveCfg = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug OGL|Win32.Build.0 = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug OGL|x64.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug OGL|x64.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug|Win32.Build.0 = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Debug|x64.ActiveCfg = Debug|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release D3D11|Win32.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release D3D11|Win32.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release D3D11|x64.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release D3D11|x64.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release OGL|Win32.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release OGL|Win32.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release OGL|x64.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release OGL|x64.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release|Win32.ActiveCfg = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release|Win32.Build.0 = Release|Win32
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
