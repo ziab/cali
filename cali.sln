@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IvEngine", "depends\essential_math\common\IvEngine\IvEngine.vcxproj", "{63820BF9-B862-44F7-AA0F-996F2F465B26}"
 EndProject
@@ -14,6 +14,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTK_Desktop_2015", "depends\DirectXTK-master\DirectXTK_Desktop_2015.vcxproj", "{E0B52AE7-E160-4D32-BF3F-910B785E5A8E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cali", "src\cali\cali.vcxproj", "{7A165EC8-22E5-454A-9385-2C2D0B772FFC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2} = {54E9690D-DCB3-4489-B6B6-96DAFD2BB5D2}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cali_test", "src\cali_test\cali_test.vcxproj", "{5742CD9F-D9E2-4578-95F6-9AFFC9128664}"
 EndProject
