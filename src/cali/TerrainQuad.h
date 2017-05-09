@@ -42,12 +42,25 @@ namespace Cali
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
 
+		size_t m_nodes_rendered_per_frame;
+
 		static const uint32_t c_gird_dimention = 129;
 
+		struct RenderContext
+		{
+			IvRenderer& renderer;
+			const Frustum& frustum;
+		};
+
 	public:
+		// Renderable
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer & renderer) override;
+
+		// CompoundRenderable
 		virtual void render(IvRenderer & renderer, const Frustum& frustum) override;
+
+		void render_node(const struct TerrainQuadTree::Node& node, void* render_context);
 		void set_viewer(const IvVector3 & camera_position);
 
 		TerrainQuad();

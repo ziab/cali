@@ -162,7 +162,7 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
         world_normal = float4(normalize(world_position.xyz - planet_center), 1.0);
     }
 
-    world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 2.3, 0.0);
+    world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 3.0, 0.0);
 
     output.screen_position = (float4) mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;

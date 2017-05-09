@@ -34,8 +34,8 @@ lightSampleValues computePointLightValues(float3 surfacePosition)
 // Global Resources
 /////////////////////////////////////////////////////////////
 
-static const float resolution = 0.01;
-static const float far_plane = 100000.0;
+static const float resolution = 0.005;
+static const float far_plane = 1000000.0;
 
 /////////////////////////////////////////////////////////////
 // Main

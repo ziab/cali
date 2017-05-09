@@ -2,6 +2,7 @@
 #include <vector>
 #include <exception>
 #include <assert.h>
+#include <functional>
 
 namespace Cali
 {
@@ -91,6 +92,9 @@ namespace Cali
 	class TerrainQuadTree
 	{
 	public:
+		struct Node;
+		typedef void VisitorCallback(const Node& node, void* private_data);
+
 		struct Node
 		{
 		private:
@@ -113,10 +117,10 @@ namespace Cali
 				}
 			}
 
-			bool has_child() const
+			bool is_leaf() const
 			{
-				if (m_tl && m_tr && m_bl && m_br) return true;
-				assert(!(m_tl || m_tr || m_bl || m_br));
+				if (!m_tl && !m_tr && !m_bl && !m_br) return true;
+				assert(m_tl || m_tr || m_bl || m_br);
 				return false;
 			}
 
@@ -150,7 +154,7 @@ namespace Cali
 
 			void divide()
 			{
-				if (has_child()) return;
+				if (!is_leaf()) return;
 
 				m_tl = new Node(
 					{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
@@ -251,7 +255,7 @@ namespace Cali
 
 			void get_nodes(std::vector<const Node*>& vec) const
 			{
-				if (!has_child())
+				if (is_leaf())
 				{
 					vec.push_back(this);
 					return;
@@ -265,7 +269,7 @@ namespace Cali
 
 			void get_nodes_inside(const Circle& circle, std::vector<const Node*>& vec) const
 			{
-				if (!has_child())
+				if (is_leaf())
 				{
 					vec.push_back(this);
 					return;
@@ -280,6 +284,47 @@ namespace Cali
 				}
 			}
 
+			void visit(const Circle& circle, const std::function<VisitorCallback>& callback, void* private_data) const
+			{
+				// this is the leaf node therefore we call visitor
+				if (is_leaf())
+				{
+					callback(*this, private_data);
+					return;
+				}
+
+				QuadNodes selected_child_nodes;
+				get_child_nodes_at(circle, selected_child_nodes);
+
+				for (auto* node : selected_child_nodes)
+				{
+					if (node) node->visit(circle, callback, private_data);
+				}
+			}
+
+			template<typename TObject>
+			void visit(
+				const Circle& circle,
+				TObject& object,
+				void (TObject::*callback)(const Node&, void* render_context),
+				void* private_data = nullptr) const
+			{
+				// this is the leaf node therefore we call visitor
+				if (is_leaf())
+				{
+					(object.*callback)(*this, private_data);
+					return;
+				}
+
+				QuadNodes selected_child_nodes;
+				get_child_nodes_at(circle, selected_child_nodes);
+
+				for (auto* node : selected_child_nodes)
+				{
+					if (node) node->visit(circle, object, callback, private_data);
+				}
+			}
+
 			double get_scale_factor()
 			{
 				return 1.0 / m_depth;
@@ -289,7 +334,7 @@ namespace Cali
 			{
 				if (depth <= 0) return;
 
-				if (!has_child()) divide();
+				if (is_leaf()) divide();
 
 				Node* node_at_point = get_child_node_at(_where);
 				assert(node_at_point != nullptr);
@@ -302,7 +347,7 @@ namespace Cali
 				if (depth <= 0) 
 					return;
 
-				if (!has_child()) divide();
+				if (is_leaf()) divide();
 
 				QuadNodes nodes;
 				get_child_nodes_at(circle, nodes);
@@ -367,6 +412,22 @@ namespace Cali
 		void collapse()
 		{
 			m_root.collapse();
+		}
+
+		void visit(const Circle& circle, const std::function<VisitorCallback>& callback, void* private_data = nullptr)
+		{
+			m_root.visit(circle, callback, private_data);
+		}
+
+		/// using std::function has some overhead so this method is supposed to work faster
+		template<typename TObject>
+		void visit(
+			const Circle& circle, 
+			TObject& object, 
+			void (TObject::*callback)(const Node&, void* render_context),
+			void* private_data = nullptr) const
+		{
+			m_root.visit<TObject>(circle, object, callback, private_data);
 		}
 
 		double width() const { return m_root.get_centred_quad().width(); };

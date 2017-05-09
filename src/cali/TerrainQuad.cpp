@@ -99,10 +99,6 @@ namespace Cali
 	{
 		auto height = m_viewer_position.y;
 
-		Circle circle({ m_viewer_position.x, m_viewer_position.z }, height * 32 < 100000.0f ? 100000.0f : height * 32);
-		std::vector<const TerrainQuadTree::Node*> nodes;		
-		m_qtree.get_nodes_inside(circle, nodes);
-
 		float curvature = 0.0;
 		if (height > 1000.0f)
 		{
@@ -114,40 +110,47 @@ namespace Cali
 		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
 		m_shader->GetUniform("curvature")->SetValue(curvature, 0);
 
-		size_t rendered_nodes = 0;
-		for (auto&& node : nodes)
-		{
-			auto& quad = node->get_centred_quad();
-			m_grid.set_position(quad_center_to_vector_on_surf(quad));
+		Circle circle({ m_viewer_position.x, m_viewer_position.z }, height * 32 < 100000.0f ? 100000.0f : height * 32);
+		
+		m_nodes_rendered_per_frame = 0;
 
-			float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
+		RenderContext render_context{ renderer, frustum };
 
-			if (!frustum.contains_aligned_bounding_box(
-				(float)quad.center.x, 0.0f, (float)quad.center.y,
-				(float)quad.width(), 1.0f, (float)quad.width()))
-			{
-				continue;
-			}
-
-			m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
-			m_shader->GetUniform("modelMatrix")->SetValue(m_grid.get_transformation_matrix(), 0);
-			m_shader->GetUniform("grid_stride")->SetValue(m_grid.stride() * scale, 0);
-			m_shader->GetUniform("grid_cols")->SetValue((float)m_grid.cols(), 0);
-			m_shader->GetUniform("grid_rows")->SetValue((float)m_grid.rows(), 0);
-			m_shader->GetUniform("grid_uv_quad_size")->SetValue(
-				IvVector3{ scale * 0.01f, scale * 0.01f, 0.0f },
-				0);
-			m_shader->GetUniform("grid_center")->SetValue(m_grid.get_position(), 0);
-			m_grid.render(renderer, m_shader);
-
-			++rendered_nodes;
-			/*m_aabb.set_position(quad_center_to_vector_on_surf(quad));
-			m_aabb.set_scale((float)(quad.width()));
-			m_aabb.render(renderer);*/
-		}
+		m_qtree.visit(circle, *this, &TerrainQuad::render_node, &render_context);
 
 		auto& info = DebugInfo::get_debug_info();
-		info.set_debug_string(L"rendered_ndoes", (float)rendered_nodes);
+		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
+	}
+
+	void TerrainQuad::render_node(const TerrainQuadTree::Node& node, void* render_context_ptr)
+	{
+		assert(render_context_ptr != nullptr);
+		const RenderContext& render_context = *reinterpret_cast<RenderContext*>(render_context_ptr);
+
+		auto& quad = node.get_centred_quad();
+
+		if (!render_context.frustum.contains_aligned_bounding_box(
+			(float)quad.center.x, 0.0f, (float)quad.center.y,
+			(float)quad.width(), 1.0f, (float)quad.width()))
+		{
+			return;
+		}
+
+		m_grid.set_position(quad_center_to_vector_on_surf(quad));
+		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
+
+		m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
+		m_shader->GetUniform("modelMatrix")->SetValue(m_grid.get_transformation_matrix(), 0);
+		m_shader->GetUniform("grid_stride")->SetValue(m_grid.stride() * scale, 0);
+		m_shader->GetUniform("grid_cols")->SetValue((float)m_grid.cols(), 0);
+		m_shader->GetUniform("grid_rows")->SetValue((float)m_grid.rows(), 0);
+		m_shader->GetUniform("grid_uv_quad_size")->SetValue(
+			IvVector3{ scale * 0.01f, scale * 0.01f, 0.0f },
+			0);
+		m_shader->GetUniform("grid_center")->SetValue(m_grid.get_position(), 0);
+		m_grid.render(render_context.renderer, m_shader);
+
+		++m_nodes_rendered_per_frame;
 	}
 
 	void TerrainQuad::set_viewer(const IvVector3 & camera_position)
