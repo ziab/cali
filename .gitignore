@@ -31,6 +31,3 @@ depends/essential_math/common/Includes/IvCapsule.h
 depends/essential_math/common/Includes/IvBoundingSphere.h
 depends/essential_math/common/Includes/IvCovariance.h
 depends/essential_math/common/Includes/IvOBB.h
-x64/Release/cali_test.exe
-x64/Release/cali_test.iobj
-x64/Release/cali_test.ipdb
