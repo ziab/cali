@@ -116,7 +116,6 @@ namespace Cali
 	{
 		level_grid.set_current_origin(m_viewer_position + offset, { scale, 1.0f, scale } );
 
-		m_shader->GetUniform("modelMatrix")->SetValue(level_grid.get_transformation_matrix(), 0);
 		m_shader->GetUniform("grid_stride")->SetValue(level_grid.stride() * scale, 0);
 		m_shader->GetUniform("grid_cols")->SetValue((float)level_grid.cols(), 0);
 		m_shader->GetUniform("grid_rows")->SetValue((float)level_grid.rows(), 0);

@@ -55,12 +55,10 @@ void on_window_resize(unsigned int width, unsigned int height)
 //-------------------------------------------------------------------------------
 // Static constructor
 //-------------------------------------------------------------------------------
-bool
-IvGame::Create()
+bool IvGame::Create()
 {
     IvGame::mGame = new Game();
     return ( IvGame::mGame != 0 );
-
 }   // End of IvGame::Create()
 
 //-------------------------------------------------------------------------------
@@ -119,6 +117,8 @@ Game::PostRendererInitialize()
 
 	auto& renderer = *IvRenderer::mRenderer;
 	renderer.RegisterOnResizeCbk(&(::on_window_resize));
+
+	renderer.SetRenderInViewSpace(true);
 
 	m_main_screen_buffer = std::unique_ptr<IvRenderTexture>(
 		renderer.GetResourceManager()->CreateRenderTexture(renderer.GetWidth(), renderer.GetHeight(), IvTextureFormat::kRGBA32TexFmt));

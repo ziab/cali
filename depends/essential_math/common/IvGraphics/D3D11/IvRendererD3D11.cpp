@@ -906,6 +906,11 @@ void IvRendererD3D11::UpdateUniforms()
 		// be computed on demand or when the components are updated?
 		viewproj->SetValue(mProjectionMat * mViewMat, 0);
 	}
+	IvUniform* model = mShader->GetUniform("IvModelMatrix");
+	if (model)
+	{
+		model->SetValue(mWorldMat, 0);
+	}
     IvUniform* normalMat = mShader->GetUniform("IvNormalMatrix");
     if (normalMat)
     {

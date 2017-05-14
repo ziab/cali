@@ -118,7 +118,7 @@ float4 grid_to_sphere_position(float4 p, float R, float3 C)
 float4x4 IvModelViewProjectionMatrix;
 float4x4 IvNormalMatrix;
 float4x4 IvViewProjectionMatrix;
-float4x4 modelMatrix;
+float4x4 IvModelMatrix;
 
 Texture2D height_map;
 SamplerState height_mapSampler;
@@ -159,7 +159,7 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     translated_uv = frac(abs(translated_uv));
 
     //position.y = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.65;
-    float4 world_position = mul(modelMatrix, position);
+    float4 world_position = mul(IvModelMatrix, position);
     float4 world_normal = float4(0.0, 1.0, 0.0, 1.0);
 
     if (curvature != 0.0)

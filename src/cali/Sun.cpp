@@ -48,9 +48,6 @@ namespace Cali
 	void Sun::render(IvRenderer & renderer)
 	{
 		set_transformation_matrix(renderer);
-
-		m_shader->GetUniform("modelMatrix")->SetValue(get_transformation_matrix(), 0);
-
 		renderer.SetBlendFunc(kOneBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 		m_sun_rect.render(renderer, m_shader);
 	}

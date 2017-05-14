@@ -166,10 +166,14 @@ public:
     virtual IvDepthTestFunc GetDepthTest() = 0;
     virtual void SetDepthWrite(bool write) = 0;
 
+	void SetRenderInViewSpace(bool val);
+	const IvVector3& GetViewPosition();
+
     const IvMatrix44& GetWorldMatrix();
     virtual void SetWorldMatrix(const IvMatrix44& matrix);
     const IvMatrix44& GetViewMatrix();
     virtual void SetViewMatrix(const IvMatrix44& matrix);
+	virtual void SetViewMatrixAndViewPosition(const IvMatrix44& matrix, const IvVector3& viewPosition);
     const IvMatrix44& GetProjectionMatrix();
     virtual void SetProjectionMatrix(const IvMatrix44& matrix);
 	const IvMatrix44& GetWVPMatrix();
@@ -219,6 +223,7 @@ protected:
     virtual ~IvRenderer();
 
     bool            mIsActive;
+	bool            mRenderInViewSpace;
 
     unsigned int mWidth;        // current width, height
     unsigned int mHeight;
@@ -233,6 +238,7 @@ protected:
 
     IvMatrix44        mWorldMat;
     IvMatrix44        mViewMat;
+	IvVector3         mViewPosition;
     IvMatrix44        mProjectionMat;
 
     IvMatrix44        mWVPMat;
@@ -244,6 +250,9 @@ protected:
     IvVector4         mLightDirection;
 
 private:
+
+	void RecalculateMVPMat();
+
     // copy operations
     IvRenderer(const IvRenderer& other);
     IvRenderer& operator=(const IvRenderer& other);

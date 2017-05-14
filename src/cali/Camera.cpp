@@ -14,8 +14,8 @@
 namespace Cali
 {
 	const float Camera::movement_inertia_decay = 1.2f;
-	const float Camera::movement_acceleration = 1000.f; // m/s ?
-	const float Camera::movement_max_velocity = 300.f; // m/s
+	const float Camera::movement_acceleration = 100.f; // m/s ?
+	const float Camera::movement_max_velocity = 30.f; // m/s
 	const float Camera::roatation_sensitivity = 0.15f;
 	const float Camera::rotation_inertia_decay = 0.2f;
 	const float Camera::addtional_acceleration = 100.0f;
@@ -148,7 +148,7 @@ namespace Cali
 		normalize();
 		auto view_matrix = get_view_matrix();
 		m_frustum.construct_frustum(renderer.GetProjectionMatrix(), view_matrix);
-		IvRenderer::mRenderer->SetViewMatrix(view_matrix);
+		IvRenderer::mRenderer->SetViewMatrixAndViewPosition(view_matrix, get_position());
 	}
 
 	void Camera::update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state)

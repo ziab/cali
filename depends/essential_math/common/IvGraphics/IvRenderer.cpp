@@ -16,9 +16,11 @@
 //-------------------------------------------------------------------------------
 
 #include <stdlib.h>
+#include <assert.h>
 
 #include "IvRenderer.h"
 #include "IvMatrix33.h"
+#include "IvMatrix44.h"
 
 //-------------------------------------------------------------------------------
 //-- Static Members -------------------------------------------------------------
@@ -36,7 +38,8 @@ IvRenderer* IvRenderer::mRenderer = 0;
 // Default constructor
 //-------------------------------------------------------------------------------
 IvRenderer::IvRenderer() : 
-    mIsActive( true )
+    mIsActive( true ),
+	mRenderInViewSpace(false)
 {
     mWidth = 0;
     mHeight = 0;
@@ -63,7 +66,6 @@ IvRenderer::~IvRenderer()
 {
     
 }   // End of IvRenderer::~IvRenderer()
-    
 
 //-------------------------------------------------------------------------------
 // @ IvRenderer::Destroy()
@@ -109,6 +111,16 @@ IvResourceManager* IvRenderer::GetResourceManager()
     return mResourceManager;
 }
 
+void IvRenderer::SetRenderInViewSpace(bool val)
+{
+	mRenderInViewSpace = val;
+}
+
+const IvVector3& IvRenderer::GetViewPosition()
+{
+	return mViewPosition;
+}
+
 //-------------------------------------------------------------------------------
 // @ IvRenderer::GetWorldMatrix()
 //-------------------------------------------------------------------------------
@@ -119,6 +131,12 @@ const IvMatrix44& IvRenderer::GetWorldMatrix()
     return mWorldMat;
 }
 
+
+inline void IvRenderer::RecalculateMVPMat()
+{
+	mWVPMat = mProjectionMat*mViewMat*mWorldMat;
+}
+
 //-------------------------------------------------------------------------------
 // @ IvRenderer::SetWorldMatrix()
 //-------------------------------------------------------------------------------
@@ -126,8 +144,19 @@ const IvMatrix44& IvRenderer::GetWorldMatrix()
 //-------------------------------------------------------------------------------
 void IvRenderer::SetWorldMatrix(const IvMatrix44& matrix)
 {
-    mWorldMat = matrix;
-    mWVPMat = mProjectionMat*mViewMat*mWorldMat;
+	mWorldMat = matrix;
+	
+	if (mRenderInViewSpace)
+	{
+		// if we render in camera space then the models position should be calculated
+		// against camera position in world's space
+		mWorldMat(0, 3) = mWorldMat(0, 3) - mViewPosition.x;
+		mWorldMat(1, 3) = mWorldMat(1, 3) - mViewPosition.y;
+		mWorldMat(2, 3) = mWorldMat(2, 3) - mViewPosition.z;
+	}
+
+	RecalculateMVPMat();
+
     IvMatrix33 worldMat3x3;
     IvVector3 col0(mWorldMat(0,0), mWorldMat(1,0), mWorldMat(2,0));
     IvVector3 col1(mWorldMat(0,1), mWorldMat(1,1), mWorldMat(2,1));
@@ -154,7 +183,31 @@ const IvMatrix44& IvRenderer::GetViewMatrix()
 void IvRenderer::SetViewMatrix(const IvMatrix44& matrix)
 {
     mViewMat = matrix;
-    mWVPMat = mProjectionMat*mViewMat*mWorldMat;
+	
+	if (mRenderInViewSpace)
+	{
+		mViewMat(0, 3) = 0.0f;
+		mViewMat(1, 3) = 0.0f;
+		mViewMat(2, 3) = 0.0f;
+	}
+
+	RecalculateMVPMat();
+}
+
+void IvRenderer::SetViewMatrixAndViewPosition(const IvMatrix44 & matrix, const IvVector3 & viewPosition)
+{
+	mViewMat = matrix;
+
+	if (mRenderInViewSpace)
+	{
+		mViewMat(0, 3) = 0.0f;
+		mViewMat(1, 3) = 0.0f;
+		mViewMat(2, 3) = 0.0f;
+	}
+
+	RecalculateMVPMat();
+
+	mViewPosition = viewPosition;
 }
 
 //-------------------------------------------------------------------------------
@@ -180,7 +233,7 @@ const IvMatrix44& IvRenderer::GetWVPMatrix()
 void IvRenderer::SetProjectionMatrix(const IvMatrix44& matrix)
 {
     mProjectionMat = matrix;
-    mWVPMat = mProjectionMat*mViewMat*mWorldMat;
+	RecalculateMVPMat();
 }
 
 //-------------------------------------------------------------------------------

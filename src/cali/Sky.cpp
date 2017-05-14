@@ -67,9 +67,6 @@ namespace Cali
 	void Sky::render(IvRenderer & renderer)
 	{
 		Physical::set_transformation_matrix(renderer);
-
-		m_sky_shader->GetUniform("modelMatrix")->SetValue(Physical::get_transformation_matrix(), 0);
-
 		m_sky_box.render(renderer, m_sky_shader);
 	}
 }

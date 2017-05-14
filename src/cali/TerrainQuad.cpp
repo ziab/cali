@@ -13,7 +13,7 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { 20e6, 20e6 } }),
+		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI , World::c_earth_radius * kPI } }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_dimention / 16),
@@ -71,7 +71,8 @@ namespace Cali
 	{
 		m_qtree.collapse();
 
-		float height = m_viewer_position.y;
+		auto planet_center_relative_to_viewer = m_planet_center - m_viewer_position;
+		auto height = abs(planet_center_relative_to_viewer.Length() - m_planet_radius);
 
 		auto level_desc = get_level_from_distance((double)height, m_qtree.width(), 22);
 		auto& info = DebugInfo::get_debug_info();
@@ -95,22 +96,102 @@ namespace Cali
 		return a + f * (b - a);
 	}
 
+	inline float sum(const IvVector3& vec)
+	{
+		return vec.x + vec.y + vec.z;
+	}
+
+	inline bool intersect(const IvVector3& raydir, const IvVector3& rayorig, const IvVector3& pos,
+		const float& rad, IvVector3& hitpoint, float& distance, IvVector3& normal)
+	{
+		float a = sum(raydir*raydir);
+		float b = sum(raydir * (2.0f * (rayorig - pos)));
+		float c = sum(pos*pos) + sum(rayorig*rayorig) - 2.0f*sum(rayorig*pos) - rad*rad;
+		float D = b*b + (-4.0f)*a*c;
+
+		// If ray can not intersect then stop
+		if (D < 0)
+			return false;
+		D = sqrtf(D);
+
+		// Ray can intersect the sphere, solve the closer hitpoint
+		float t = (-0.5f)*(b + D) / a;
+		if (t > 0.0f)
+		{
+			distance = sqrtf(a)*t;
+			hitpoint = rayorig + t*raydir;
+			normal = (hitpoint - pos) / rad;
+		}
+		else
+		{
+			return false;
+		}
+		
+		return true;
+	}
+
+	inline void get_lon_lat_from_point_on_sphere(const IvVector3& sphere_center, float sphere_radius, 
+		const IvVector3& point, double& lon, double& lat)
+	{
+		IvVector3 point_coord_related_to_sphere = point - sphere_center;
+		// note that the origin is shifted by (kPI / 2.0)
+		lat = acos(- point_coord_related_to_sphere.z / sphere_radius) - (kPI / 2.0);
+		lon = atan(-point_coord_related_to_sphere.y / point_coord_related_to_sphere.x) - (kPI / 2.0);
+
+		if (point_coord_related_to_sphere.x >= 0.0)
+			lon += kPI;
+	}
+
+	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, float sphere_radius, const IvVector3& viewer,
+		double& lon, double& lat, IvVector3& hit_point)
+	{
+		auto ray_direction = sphere_center - viewer;
+		ray_direction.Normalize();
+
+		float distance; IvVector3 normal; 
+		intersect(ray_direction, viewer, sphere_center, sphere_radius, hit_point, distance, normal);
+
+		get_lon_lat_from_point_on_sphere(sphere_center, sphere_radius, hit_point, lon, lat);
+
+		auto& info = DebugInfo::get_debug_info();
+		info.set_debug_string(L"lon", (float)lon);
+		info.set_debug_string(L"lat", (float)lat);
+	}
+
 	void TerrainQuad::render(IvRenderer & renderer, const Frustum& frustum)
 	{
-		auto height = m_viewer_position.y;
+		auto planet_center_relative_to_viewer = m_planet_center - m_viewer_position;
+		auto height = abs(planet_center_relative_to_viewer.Length() - m_planet_radius);
 
-		float curvature = 0.0;
-		if (height > 1000.0f)
+		float curvature = 1.0;
+		/*if (height > 1000.0f)
 		{
 			curvature = lerp(0.0f, 1.0f, float(height) / (m_planet_radius / 1000.0f));
 			if (curvature > 1.0f) curvature = 1.0f;
-		}
+		}*/
 
-		m_shader->GetUniform("planet_center")->SetValue(m_planet_center, 0);
+		m_shader->GetUniform("planet_center")->SetValue(planet_center_relative_to_viewer, 0);
 		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
 		m_shader->GetUniform("curvature")->SetValue(curvature, 0);
 
-		Circle circle({ m_viewer_position.x, m_viewer_position.z }, height * 32 < 100000.0f ? 100000.0f : height * 32);
+		double lon, lat; IvVector3 hit_point;
+		get_map_lon_lat_form_viewer_position(m_planet_center, m_planet_radius, m_viewer_position, lon, lat, hit_point);
+
+		m_shader->GetUniform("planet_lon")->SetValue((float)lon, 0);
+		m_shader->GetUniform("planet_lat")->SetValue((float)lat, 0);
+
+		double map_x = lon * m_planet_radius;
+		double map_y = lat * m_planet_radius;
+
+		m_aabb.set_position(hit_point);
+		m_aabb.set_scale(1.0f);
+		m_aabb.render(renderer);
+
+		auto& info = DebugInfo::get_debug_info();
+		info.set_debug_string(L"map_x", (float)map_x);
+		info.set_debug_string(L"map_y", (float)map_y);
+
+		Circle circle({ map_x, map_y }, height * 32 < 1000.0f ? 1000.0f : height * 32);
 		
 		m_nodes_rendered_per_frame = 0;
 
@@ -118,7 +199,6 @@ namespace Cali
 
 		m_qtree.visit(circle, *this, &TerrainQuad::render_node, &render_context);
 
-		auto& info = DebugInfo::get_debug_info();
 		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
 	}
 
@@ -129,23 +209,22 @@ namespace Cali
 
 		auto& quad = node.get_centred_quad();
 
-		if (!render_context.frustum.contains_aligned_bounding_box(
-			(float)quad.center.x, 0.0f, (float)quad.center.y,
-			(float)quad.width(), 1.0f, (float)quad.width()))
-		{
-			return;
-		}
+		//if (!render_context.frustum.contains_aligned_bounding_box(
+		//	(float)quad.center.x, 0.0f, (float)quad.center.y,
+		//	(float)quad.width(), 1.0f, (float)quad.width()))
+		//{
+		//	return;
+		//}
 
 		m_grid.set_position(quad_center_to_vector_on_surf(quad));
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 
 		m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
-		m_shader->GetUniform("modelMatrix")->SetValue(m_grid.get_transformation_matrix(), 0);
 		m_shader->GetUniform("grid_stride")->SetValue(m_grid.stride() * scale, 0);
 		m_shader->GetUniform("grid_cols")->SetValue((float)m_grid.cols(), 0);
 		m_shader->GetUniform("grid_rows")->SetValue((float)m_grid.rows(), 0);
 		m_shader->GetUniform("grid_uv_quad_size")->SetValue(
-			IvVector3{ scale * 0.01f, scale * 0.01f, 0.0f },
+			IvVector3{ scale * 0.1f, scale * 0.1f, 0.0f },
 			0);
 		m_shader->GetUniform("grid_center")->SetValue(m_grid.get_position(), 0);
 		m_grid.render(render_context.renderer, m_shader);
