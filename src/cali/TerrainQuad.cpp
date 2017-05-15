@@ -13,7 +13,7 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI , World::c_earth_radius * kPI } }),
+		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI / 1.5 , World::c_earth_radius * kPI / 1.5} }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_dimention / 16),

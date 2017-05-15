@@ -139,7 +139,7 @@ static const AtmosphereParameters ATMOSPHERE =
     float3(1.474000, 1.850400, 1.911980), // solar_irradiance
     0.004675, // sun_angular_radius
     6360.000000, // bottom_radius
-    6420.000000, // top_radius
+    6600.000000, // top_radius
     8.000000, // rayleigh_scale_height
     float3(0.005802, 0.013558, 0.033100), // rayleigh_scattering
     1.200000, // mie_scale_height
