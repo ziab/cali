@@ -219,6 +219,7 @@ copy .\Iv*.h ..\Includes
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IvDoubleVector3.cpp" />
     <ClCompile Include="IvGaussianElim.cpp" />
     <ClCompile Include="IvLine3.cpp" />
     <ClCompile Include="IvLineSegment3.cpp" />
@@ -234,6 +235,7 @@ copy .\Iv*.h ..\Includes
     <ClCompile Include="IvVector4.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IvDoubleVector3.h" />
     <ClInclude Include="IvGaussianElim.h" />
     <ClInclude Include="IvLine3.h" />
     <ClInclude Include="IvLineSegment3.h" />

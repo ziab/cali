@@ -99,6 +99,11 @@ inline float IvRecipSqrt( float val )
 #endif
 }
 
+inline double IvRecipSqrt(double val)
+{
+	return 1.0f / sqrt(val);
+}
+
 
 //-------------------------------------------------------------------------------
 // @ IvAbs()
@@ -106,6 +111,7 @@ inline float IvRecipSqrt( float val )
 // Absolute value
 //-------------------------------------------------------------------------------
 inline float IvAbs( float f )           { return fabsf(f); }
+inline double IvAbs(double f) { return fabs(f); }
 
 
 //-------------------------------------------------------------------------------
@@ -116,6 +122,12 @@ inline float IvAbs( float f )           { return fabsf(f); }
 inline bool IvIsZero( float a, float epsilon = kEpsilon ) 
 {
     return (IvAbs(a) <= epsilon);
+
+}   // End of IvIsZero()
+
+inline bool IvIsZero(double a, double epsilon = kEpsilon)
+{
+	return (IvAbs(a) <= epsilon);
 
 }   // End of IvIsZero()
 
@@ -130,6 +142,14 @@ inline bool IvAreEqual( float a, float b, float epsilon = kEpsilon )
 
 }   // End of IvAreEqual()
 
+////////////////////////////////////////////////////
+// TODO: redefine epsilon for doubles
+////////////////////////////////////////////////////
+inline bool IvAreEqual(double a, double b, double epsilon = kEpsilon)
+{
+	return (IvAbs(a - b) <= epsilon*(IvAbs(a) + IvAbs(b) + 1.0f));
+
+}   // End of IvAreEqual()
 
 //-------------------------------------------------------------------------------
 // @ IvSin()
