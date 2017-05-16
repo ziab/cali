@@ -143,6 +143,9 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
 {
     VS_OUTPUT output;
 
+    ///////////////////////////////////////////////
+    // calculate grid parameters
+
     float2 texture_size = get_texture_size(height_map);
     float2 grid_quad_size = float2(grid_uv_quad_size.x, grid_uv_quad_size.y);
     float2 grid_size = float2(grid_cols, grid_rows);
@@ -154,16 +157,15 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     // loop the texture
     translated_uv = frac(abs(translated_uv));
 
-    //position.y = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.65;
+    ///////////////////////////////////////////////
+    // matrix multiplication 
+
     float4 world_position = mul(IvModelMatrix, position);
     float4 world_normal = float4(0.0, 1.0, 0.0, 1.0);
 
-    if (curvature != 0.0)
-    {
-        world_position = (1.0 - curvature) * world_position + curvature * grid_to_sphere_position(world_position, planet_radius, planet_center);
-        world_normal = float4(normalize(world_position.xyz - planet_center), 1.0);
-    }
-
+    ///////////////////////////////////////////////
+    // calculate height
+    
     world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.1, 0.0);
 
     output.screen_position = (float4) mul(IvViewProjectionMatrix, world_position);

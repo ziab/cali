@@ -10,6 +10,8 @@
 
 #include "DebugInfo.h"
 
+#include "IvDoubleVector3.h"
+
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
@@ -101,6 +103,9 @@ namespace Cali
 		return vec.x + vec.y + vec.z;
 	}
 
+	//////////////////////////////////////////////////////
+	// TODO: make it using double prescision
+	//////////////////////////////////////////////////////
 	inline bool intersect(const IvVector3& raydir, const IvVector3& rayorig, const IvVector3& pos,
 		const float& rad, IvVector3& hitpoint, float& distance, IvVector3& normal)
 	{
@@ -142,6 +147,33 @@ namespace Cali
 			lon += kPI;
 	}
 
+	void position_on_sphere(double lon, double lat, double R, const IvDoubleVector3& C, 
+		IvDoubleVector3& position, IvDoubleVector3& normal)
+	{
+		double cos_lat = cos(lat);
+
+		IvDoubleVector3 ps;
+		ps.x = R * cos_lat * sin(lon);
+		ps.y = R * cos_lat * cos(lon);
+		ps.z = R * sin(lat);
+
+		position = ps + C;
+		normal = ps;
+		normal.Normalize();
+	}
+
+	/// R is sphere radius
+	/// C is sphere center position
+	/// x,y - are coordinates on surface
+	void position_on_sphere_from_surface(double x, double y, double R, const IvDoubleVector3& C, 
+		IvDoubleVector3& position, IvDoubleVector3& normal)
+	{
+		double lon = x / R;
+		double lat = 2 * atan(exp(y / R)) - kPI / 2.0;
+
+		return position_on_sphere(lon, lat, R, C, position, normal);
+	}
+
 	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, float sphere_radius, const IvVector3& viewer,
 		double& lon, double& lat, IvVector3& hit_point)
 	{
@@ -171,7 +203,7 @@ namespace Cali
 		}*/
 
 		m_shader->GetUniform("planet_center")->SetValue(planet_center_relative_to_viewer, 0);
-		m_shader->GetUniform("planet_radius")->SetValue(m_planet_radius, 0);
+		m_shader->GetUniform("planet_radius")->SetValue((float)m_planet_radius, 0);
 		m_shader->GetUniform("curvature")->SetValue(curvature, 0);
 
 		double lon, lat; IvVector3 hit_point;
@@ -216,7 +248,10 @@ namespace Cali
 		//	return;
 		//}
 
-		m_grid.set_position(quad_center_to_vector_on_surf(quad));
+		IvDoubleVector3 position, normal;
+		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal);
+
+		m_grid.set_position(position);
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 
 		m_grid.set_scale(IvVector3{ scale, 1.0f, scale });

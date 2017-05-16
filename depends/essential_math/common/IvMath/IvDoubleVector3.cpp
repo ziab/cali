@@ -16,6 +16,7 @@
 //-------------------------------------------------------------------------------
 
 #include "IvDoubleVector3.h"
+#include "IvVector3.h"
 #include "IvMath.h"
 
 //-------------------------------------------------------------------------------
@@ -65,6 +66,26 @@ IvDoubleVector3::operator=(const IvDoubleVector3& other)
 
 }   // End of IvDoubleVector3::operator=()
 
+IvDoubleVector3::IvDoubleVector3(const IvVector3 & other) :
+	x(other.x),
+	y(other.y),
+	z(other.z)
+{
+}
+
+IvDoubleVector3 & IvDoubleVector3::operator=(const IvVector3 & other)
+{
+	x = other.x;
+	y = other.y;
+	z = other.z;
+
+	return *this;
+}
+
+IvDoubleVector3::operator IvVector3() const
+{
+	return IvVector3((float)x, (float)y, (float)z);
+}
 
 //-------------------------------------------------------------------------------
 // @ operator<<()

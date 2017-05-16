@@ -38,6 +38,7 @@ class IvDoubleVector3
     friend class IvPlane;
     friend class IvQuat;
     friend class IvRay3;
+	friend class IvVector3;
     
 public:
     // constructor/destructor
@@ -51,6 +52,10 @@ public:
     // copy operations
     IvDoubleVector3(const IvDoubleVector3& other);
     IvDoubleVector3& operator=(const IvDoubleVector3& other);
+	IvDoubleVector3(const IvVector3& other);
+	IvDoubleVector3& operator=(const IvVector3& other);
+
+	operator IvVector3() const;
 
     // text output (for debugging)
     friend IvWriter& operator<<(IvWriter& out, const IvDoubleVector3& source);

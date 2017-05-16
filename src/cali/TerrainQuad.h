@@ -7,6 +7,7 @@
 #include <IvMatrix33.h>
 #include <IvVector2.h>
 #include <IvVector3.h>
+#include <IvDoubleVector3.h>
 #include <IvVector4.h>
 #include <IvVertexShader.h>
 #include <IvVertexBuffer.h>
@@ -36,8 +37,8 @@ namespace Cali
 		Grid m_grid;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
-		const IvVector3 m_planet_center;
-		const float m_planet_radius;
+		const IvDoubleVector3 m_planet_center;
+		const double m_planet_radius;
 
 		IvShaderProgram* m_shader;
 		IvTexture* m_height_map_texture;
