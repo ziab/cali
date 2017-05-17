@@ -47,6 +47,8 @@ namespace Cali
 
 		static const uint32_t c_gird_dimention = 129;
 
+		std::vector<IvTexture*> m_quad_data_textures;
+
 		struct RenderContext
 		{
 			IvRenderer& renderer;
@@ -60,6 +62,9 @@ namespace Cali
 
 		// CompoundRenderable
 		virtual void render(IvRenderer & renderer, const Frustum& frustum) override;
+
+		void calculate_displacement_data(const Cali::Quad & quad, int level);
+		void calculate_displacement_data_for_detail_levels();
 
 		void render_node(const struct TerrainQuadTree::Node& node, void* render_context);
 		void set_viewer(const IvVector3 & camera_position);

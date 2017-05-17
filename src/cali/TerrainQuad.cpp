@@ -5,6 +5,7 @@
 #include <IvUniform.h>
 
 #include "World.h"
+#include "Constants.h"
 #include "CommonFileSystem.h"
 #include "CommonTexture.h"
 
@@ -15,7 +16,7 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI / 1.5 , World::c_earth_radius * kPI / 1.5} }),
+		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI, World::c_earth_radius * kPI } }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_dimention / 16),
@@ -37,6 +38,8 @@ namespace Cali
 		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
+
+		calculate_displacement_data_for_detail_levels();
 	}
 
 	TerrainQuad::~TerrainQuad()
@@ -98,7 +101,7 @@ namespace Cali
 		return a + f * (b - a);
 	}
 
-	inline float sum(const IvVector3& vec)
+	inline double sum(const IvDoubleVector3& vec)
 	{
 		return vec.x + vec.y + vec.z;
 	}
@@ -106,26 +109,26 @@ namespace Cali
 	//////////////////////////////////////////////////////
 	// TODO: make it using double prescision
 	//////////////////////////////////////////////////////
-	inline bool intersect(const IvVector3& raydir, const IvVector3& rayorig, const IvVector3& pos,
-		const float& rad, IvVector3& hitpoint, float& distance, IvVector3& normal)
+	inline bool intersect(const IvDoubleVector3& raydir, const IvDoubleVector3& rayorig, const IvDoubleVector3& spherepos,
+		double rad, IvDoubleVector3& hitpoint, double& distance, IvDoubleVector3& normal)
 	{
-		float a = sum(raydir*raydir);
-		float b = sum(raydir * (2.0f * (rayorig - pos)));
-		float c = sum(pos*pos) + sum(rayorig*rayorig) - 2.0f*sum(rayorig*pos) - rad*rad;
-		float D = b*b + (-4.0f)*a*c;
+		double a = sum(raydir*raydir);
+		double b = sum(raydir * (2.0 * (rayorig - spherepos)));
+		double c = sum(spherepos*spherepos) + sum(rayorig*rayorig) - 2.0*sum(rayorig*spherepos) - rad*rad;
+		double D = b*b + (-4.0)*a*c;
 
 		// If ray can not intersect then stop
 		if (D < 0)
 			return false;
-		D = sqrtf(D);
+		D = sqrt(D);
 
 		// Ray can intersect the sphere, solve the closer hitpoint
-		float t = (-0.5f)*(b + D) / a;
-		if (t > 0.0f)
+		double t = (-0.5)*(b + D) / a;
+		if (t > 0.0)
 		{
-			distance = sqrtf(a)*t;
-			hitpoint = rayorig + t*raydir;
-			normal = (hitpoint - pos) / rad;
+			distance = sqrt(a) * t;
+			hitpoint = rayorig + t * raydir;
+			normal = (hitpoint - spherepos) / rad;
 		}
 		else
 		{
@@ -135,7 +138,40 @@ namespace Cali
 		return true;
 	}
 
-	inline void get_lon_lat_from_point_on_sphere(const IvVector3& sphere_center, float sphere_radius, 
+	// Intersects ray r = p + td, |d| = 1, with sphere s and, if intersecting, 
+	// returns t value of intersection and intersection point q 
+	int intersect_ray_sphere(const IvDoubleVector3 p, const IvDoubleVector3& d, const IvDoubleVector3& C, 
+		double R, IvDoubleVector3& hit, double &t, IvDoubleVector3& normal)
+	{
+		IvDoubleVector3 m = p - C;
+		double b = Dot(m, d);
+		double c = Dot(m, m) - R * R;
+
+		// Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0) 
+		if (c > 0.0f && b > 0.0f) return 0;
+		double discr = b*b - c;
+
+		// A negative discriminant corresponds to ray missing sphere 
+		if (discr < 0.0f) return 0;
+
+		// Ray now found to intersect sphere, compute smallest t value of intersection
+		t = -b - sqrt(discr);
+
+		// If t is negative, ray started inside sphere
+		if (t < 0.0f)
+		{
+			double a = Dot(d, d);
+			t /= (2 * a);
+		}
+
+		hit = p + t * d;
+
+		normal = hit - C / R;
+
+		return 1;
+	}
+
+	inline void get_lon_lat_from_point_on_sphere(const IvVector3& sphere_center, double sphere_radius, 
 		const IvVector3& point, double& lon, double& lat)
 	{
 		IvVector3 point_coord_related_to_sphere = point - sphere_center;
@@ -148,7 +184,7 @@ namespace Cali
 	}
 
 	void position_on_sphere(double lon, double lat, double R, const IvDoubleVector3& C, 
-		IvDoubleVector3& position, IvDoubleVector3& normal)
+		IvDoubleVector3& position, IvDoubleVector3& normal, IvDoubleVector3& tangent)
 	{
 		double cos_lat = cos(lat);
 
@@ -160,28 +196,33 @@ namespace Cali
 		position = ps + C;
 		normal = ps;
 		normal.Normalize();
+
+		double sin_lon = cos(lat);
+
+		tangent = normal.Cross(IvDoubleVector3::zAxis);
+		tangent.Normalize();
 	}
 
 	/// R is sphere radius
 	/// C is sphere center position
 	/// x,y - are coordinates on surface
 	void position_on_sphere_from_surface(double x, double y, double R, const IvDoubleVector3& C, 
-		IvDoubleVector3& position, IvDoubleVector3& normal)
+		IvDoubleVector3& position, IvDoubleVector3& normal, IvDoubleVector3& tangent)
 	{
 		double lon = x / R;
 		double lat = 2 * atan(exp(y / R)) - kPI / 2.0;
 
-		return position_on_sphere(lon, lat, R, C, position, normal);
+		return position_on_sphere(lon, lat, R, C, position, normal, tangent);
 	}
 
-	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, float sphere_radius, const IvVector3& viewer,
-		double& lon, double& lat, IvVector3& hit_point)
+	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, double sphere_radius, const IvVector3& viewer,
+		double& lon, double& lat, IvDoubleVector3& hit_point)
 	{
 		auto ray_direction = sphere_center - viewer;
 		ray_direction.Normalize();
 
-		float distance; IvVector3 normal; 
-		intersect(ray_direction, viewer, sphere_center, sphere_radius, hit_point, distance, normal);
+		double distance; IvDoubleVector3 normal;
+		intersect_ray_sphere(viewer, ray_direction, sphere_center, sphere_radius, hit_point, distance, normal);
 
 		get_lon_lat_from_point_on_sphere(sphere_center, sphere_radius, hit_point, lon, lat);
 
@@ -206,7 +247,7 @@ namespace Cali
 		m_shader->GetUniform("planet_radius")->SetValue((float)m_planet_radius, 0);
 		m_shader->GetUniform("curvature")->SetValue(curvature, 0);
 
-		double lon, lat; IvVector3 hit_point;
+		double lon, lat; IvDoubleVector3 hit_point;
 		get_map_lon_lat_form_viewer_position(m_planet_center, m_planet_radius, m_viewer_position, lon, lat, hit_point);
 
 		m_shader->GetUniform("planet_lon")->SetValue((float)lon, 0);
@@ -234,6 +275,56 @@ namespace Cali
 		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
 	}
 
+	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level)
+	{
+		/*     -  
+		   /       \
+			 A - B
+		  |  |   |  |
+			 C - D
+			       /
+			   -
+		*/
+
+		double step = quad.half_size.x * 2.0 / c_gird_dimention;
+		IvDoubleVector3 A, B, C;
+		IvDoubleVector3 position, normal, tangent;
+		double distance;
+		position_on_sphere_from_surface(-quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, A, normal, tangent);
+		position_on_sphere_from_surface(quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, B, normal, tangent);
+		position_on_sphere_from_surface(-quad.half_size.x, -quad.half_size.y, m_planet_radius, m_planet_center, C, normal, tangent);
+
+		IvDoubleVector3 x_step_vector = (B - A) / c_gird_dimention;
+		IvDoubleVector3	y_step_vector = (A - C) / c_gird_dimention;
+
+		IvDoubleVector3 current_vertex;
+		for (int32_t y = 0; y < c_gird_dimention; ++y)
+		{
+			current_vertex = A + y * y_step_vector;
+			for (int32_t x = 0; x < c_gird_dimention; ++x)
+			{
+				IvDoubleVector3 direction = current_vertex - m_planet_center;
+				direction.Normalize();
+				intersect_ray_sphere(current_vertex, direction, m_planet_center, m_planet_radius, position, distance, normal);
+
+				IvVector3 displacement = position - current_vertex;
+
+				current_vertex += x_step_vector;
+			}
+		}
+	}
+
+	void TerrainQuad::calculate_displacement_data_for_detail_levels()
+	{
+		Quad current_quad{ { 0.0, 0.0 },{ m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
+		for (int i = 0; i < 22; ++i)
+		{
+			calculate_displacement_data(current_quad, i);
+			current_quad.half_size.x /= 2;
+			current_quad.half_size.y /= 2;
+		}
+	}
+
 	void TerrainQuad::render_node(const TerrainQuadTree::Node& node, void* render_context_ptr)
 	{
 		assert(render_context_ptr != nullptr);
@@ -248,13 +339,14 @@ namespace Cali
 		//	return;
 		//}
 
-		IvDoubleVector3 position, normal;
-		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal);
+		IvDoubleVector3 position, normal, tangent;
+		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
 
 		m_grid.set_position(position);
+		m_grid.set_direction(normal, {1.0, 0.0, 0.0});
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 
-		m_grid.set_scale(IvVector3{ scale, 1.0f, scale });
+		m_grid.set_scale(IvVector3{ scale, scale, 1.0f });
 		m_shader->GetUniform("grid_stride")->SetValue(m_grid.stride() * scale, 0);
 		m_shader->GetUniform("grid_cols")->SetValue((float)m_grid.cols(), 0);
 		m_shader->GetUniform("grid_rows")->SetValue((float)m_grid.rows(), 0);

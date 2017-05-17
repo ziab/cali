@@ -118,6 +118,9 @@ float planet_lon;
 float planet_lat;
 float curvature;
 
+Texture3D patch_data;
+SamplerState patch_dataSampler;
+
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
@@ -161,7 +164,7 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     // matrix multiplication 
 
     float4 world_position = mul(IvModelMatrix, position);
-    float4 world_normal = float4(0.0, 1.0, 0.0, 1.0);
+    float4 world_normal = mul(IvNormalMatrix, float4(normal, 1.0));
 
     ///////////////////////////////////////////////
     // calculate height

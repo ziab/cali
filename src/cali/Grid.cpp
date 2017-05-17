@@ -31,11 +31,11 @@ namespace Cali
 			{
 				auto& curr = vertices[i++];
 
-				curr.normal = { 0.0f, 1.0f, 0.0f };
+				curr.normal = { 0.0f, 0.0f, 1.0f };
 				//curr.color = { 0, 255, 0, 255 };
 				curr.position.x = (float)x * stride;
-				curr.position.y = 0.f;
-				curr.position.z = (float)y * stride;
+				curr.position.y = (float)y * stride;
+				curr.position.z = 0.0f;
 				curr.texturecoord = { u, v };
 				u += u_stride;
 			}
@@ -58,12 +58,12 @@ namespace Cali
 				*/
 
 				indices[i++] = r * rows + c;             // 1
-				indices[i++] = r * rows + (c + 1);       // 2
 				indices[i++] = (r + 1) * rows + c;       // 3
+				indices[i++] = r * rows + (c + 1);       // 2
 
 				indices[i++] = (r + 1) * rows + c;       // 3
-				indices[i++] = r * rows + (c + 1);       // 2
 				indices[i++] = (r + 1) * rows + (c + 1); // 4
+				indices[i++] = r * rows + (c + 1);       // 2
 			}
 		}
 	}

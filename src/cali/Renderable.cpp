@@ -47,13 +47,17 @@ namespace Cali
 		m_model_matrix(2, 1) = up.z;
 		m_model_matrix(2, 2) = m_direction.z;
 
-		m_model_matrix(0, 0) *= m_scale.x;
-		m_model_matrix(1, 1) *= m_scale.y;
-		m_model_matrix(2, 2) *= m_scale.z;
-
 		m_model_matrix(0, 3) = m_position.x;
 		m_model_matrix(1, 3) = m_position.y;
 		m_model_matrix(2, 3) = m_position.z;
+
+		IvMatrix44 scale_matrix;
+
+		scale_matrix(0, 0) = m_scale.x;
+		scale_matrix(1, 1) = m_scale.y;
+		scale_matrix(2, 2) = m_scale.z;
+
+		m_model_matrix = m_model_matrix * scale_matrix;
 	}
 
 	void Physical::normalize()
