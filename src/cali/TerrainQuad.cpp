@@ -2,6 +2,7 @@
 
 #include <IvShaderProgram.h>
 #include <IvTexture.h>
+#include <IvRenderTexture.h>
 #include <IvUniform.h>
 
 #include "World.h"
@@ -79,7 +80,7 @@ namespace Cali
 		auto planet_center_relative_to_viewer = m_planet_center - m_viewer_position;
 		auto height = abs(planet_center_relative_to_viewer.Length() - m_planet_radius);
 
-		auto level_desc = get_level_from_distance((double)height, m_qtree.width(), 22);
+		auto level_desc = get_level_from_distance((double)height, m_qtree.width(), c_detail_levels);
 		auto& info = DebugInfo::get_debug_info();
 		info.set_debug_string(L"lod_level", (float)level_desc.level);
 
@@ -275,21 +276,41 @@ namespace Cali
 		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
 	}
 
-	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level)
+	void set_quad_data_texture(void* quad_data_texture, size_t width, size_t height, size_t x, size_t y,
+		const IvVector3& displacement, const IvVector3& normal)
+	{
+		float* data = reinterpret_cast<float*>(quad_data_texture);
+		float& displacement_x = data[(x + y * width)    ];
+		float& displacement_y = data[(x + y * width) * 2];
+		float& displacement_z = data[(x + y * width) * 3];
+		float& normal_x       = data[(x + y * width) * 4];
+		float& normal_y       = data[(x + y * width) * 5];
+		float& normal_z       = data[(x + y * width) * 6];
+
+		displacement_x = displacement.x;
+		displacement_y = displacement.y;
+		displacement_z = displacement.z;
+
+		normal_x = normal.x;
+		normal_y = normal.y;
+		normal_z = normal.z;
+	}
+
+	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level, void* quad_data_texture)
 	{
 		/*     -  
-		   /       \
-			 A - B
-		  |  |   |  |
-			 C - D
-			       /
-			   -
+		Z  /       \
+		|	 A - B
+		| |  |   |  |
+		|	 C - D
+		|	       /
+		|	   -
+		.------------X
 		*/
 
 		double step = quad.half_size.x * 2.0 / c_gird_dimention;
 		IvDoubleVector3 A, B, C;
 		IvDoubleVector3 position, normal, tangent;
-		double distance;
 		position_on_sphere_from_surface(-quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, A, normal, tangent);
 		position_on_sphere_from_surface(quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, B, normal, tangent);
 		position_on_sphere_from_surface(-quad.half_size.x, -quad.half_size.y, m_planet_radius, m_planet_center, C, normal, tangent);
@@ -297,29 +318,41 @@ namespace Cali
 		IvDoubleVector3 x_step_vector = (B - A) / c_gird_dimention;
 		IvDoubleVector3	y_step_vector = (A - C) / c_gird_dimention;
 
-		IvDoubleVector3 current_vertex;
+		IvDoubleVector3 current_vertex_3d;
+		double surface_grid_step = quad.half_size.x * 2.0 / c_gird_dimention;
+		double surface_x = 0.0, surface_y = -((double)c_gird_dimention / 2.0) * surface_grid_step;
 		for (int32_t y = 0; y < c_gird_dimention; ++y)
 		{
-			current_vertex = A + y * y_step_vector;
+			surface_x = -((double)c_gird_dimention / 2.0) * surface_grid_step;
+			current_vertex_3d = C + y * y_step_vector;
 			for (int32_t x = 0; x < c_gird_dimention; ++x)
 			{
-				IvDoubleVector3 direction = current_vertex - m_planet_center;
-				direction.Normalize();
-				intersect_ray_sphere(current_vertex, direction, m_planet_center, m_planet_radius, position, distance, normal);
+				position_on_sphere_from_surface(surface_x, surface_y, m_planet_radius, m_planet_center, position, normal, tangent);
+				IvVector3 displacement = position - current_vertex_3d;
 
-				IvVector3 displacement = position - current_vertex;
+				set_quad_data_texture(quad_data_texture, c_gird_dimention, c_gird_dimention, x, y, displacement, normal);
 
-				current_vertex += x_step_vector;
+				surface_x += surface_grid_step;
+				current_vertex_3d += x_step_vector;
 			}
+
+			surface_y += surface_grid_step;
 		}
 	}
 
 	void TerrainQuad::calculate_displacement_data_for_detail_levels()
 	{
-		Quad current_quad{ { 0.0, 0.0 },{ m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
-		for (int i = 0; i < 22; ++i)
+		auto resman = IvRenderer::mRenderer->GetResourceManager();
+		m_quad_data_textures.resize(c_detail_levels);
+		Quad current_quad{ { 0.0, 0.0 }, { m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
+		for (int i = 0; i < c_detail_levels; ++i)
 		{
-			calculate_displacement_data(current_quad, i);
+			auto texture = resman->CreateRenderTexture(c_gird_dimention, c_gird_dimention, 6, kFloat32Fmt);
+			m_quad_data_textures[i] = texture;
+			calculate_displacement_data(current_quad, i, texture->BeginLoadData());
+
+			texture->EndLoadData();
+
 			current_quad.half_size.x /= 2;
 			current_quad.half_size.y /= 2;
 		}

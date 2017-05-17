@@ -16,12 +16,6 @@
 
 #include "IvConstantTableD3D11.h"
 
-// 24-bit formats aren't supported in D3D11
-// will need to convert before creating
-static unsigned int sInternalTextureFormatSize[kTexFmtCount] = {4, 4};
-static unsigned int sExternalTextureFormatSize[kTexFmtCount] = {4, 3};
-static DXGI_FORMAT  sD3DTextureFormat[kTexFmtCount] = { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
-
 //-------------------------------------------------------------------------------
 // @ IvTextureD3D11::IvTextureD3D11()
 //-------------------------------------------------------------------------------
@@ -91,6 +85,7 @@ IvTextureD3D11::Create(unsigned int width, unsigned int height, IvTextureFormat 
 
     mWidth = width;
     mHeight = height;
+	mDepth = 1; // WARNING
     mFormat = format;
     mUsage = usage;
 
@@ -208,6 +203,7 @@ IvTextureD3D11::CreateMipmapped(unsigned int width, unsigned int height, IvTextu
 
     mWidth = width;
     mHeight = height;
+	mDepth = 1; // WARNING
     mFormat = format;
     mUsage = usage;
 
@@ -481,7 +477,7 @@ bool  IvTextureD3D11::EndLoadData(unsigned int level)
             Convert24Bit(pixelData, mLevels[level].mData, mLevels[level].mWidth, mLevels[level].mHeight);
         }
 
-        d3dContext->UpdateSubresource(mTexturePtr, level, nullptr, pixelData, 4 * mLevels[level].mWidth, (ULONG) mLevels[level].mSize);
+        d3dContext->UpdateSubresource(mTexturePtr, level, nullptr, pixelData, 4 * mLevels[level].mWidth, (ULONG) mLevels[level].mSize / mDepth);
 
         if (kRGB24TexFmt == mFormat)
         {

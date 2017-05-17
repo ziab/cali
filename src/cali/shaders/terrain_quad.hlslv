@@ -118,8 +118,8 @@ float planet_lon;
 float planet_lat;
 float curvature;
 
-Texture3D patch_data;
-SamplerState patch_dataSampler;
+Texture3D quad_data;
+SamplerState quad_dataSampler;
 
 /////////////////////////////////////////////////////////////
 // Main

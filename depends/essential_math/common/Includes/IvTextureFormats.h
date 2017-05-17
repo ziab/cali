@@ -22,14 +22,14 @@
 //-------------------------------------------------------------------------------
 
 // enum for requesting format
-enum IvTextureFormat 
+enum IvTextureFormat
 {
-    kRGBA32TexFmt,
-    kRGB24TexFmt,
+	kRGBA32TexFmt,
+	kRGB24TexFmt,
 	kRGBAFloat16TexFmt,
-	kRGBFloat16TexFmt,
+	kFloat32Fmt,
     
-    kLastTexFmt = kRGBAFloat16TexFmt
+    kLastTexFmt = kFloat32Fmt
 };
 static const int kTexFmtCount = kLastTexFmt+1;
 
