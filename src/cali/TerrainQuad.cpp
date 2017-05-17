@@ -373,8 +373,18 @@ namespace Cali
 		//}
 
 		IvDoubleVector3 position, normal, tangent;
-		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
+		IvDoubleVector3 A, B, C, D;
+		position_on_sphere_from_surface(quad.center.x - quad.half_size.x, quad.center.y + quad.half_size.y, m_planet_radius, m_planet_center, A, normal, tangent);
+		position_on_sphere_from_surface(quad.center.x + quad.half_size.x, quad.center.y + quad.half_size.y, m_planet_radius, m_planet_center, B, normal, tangent);
+		position_on_sphere_from_surface(quad.center.x - quad.half_size.x, quad.center.y - quad.half_size.y, m_planet_radius, m_planet_center, C, normal, tangent);
+		position_on_sphere_from_surface(quad.center.x + quad.half_size.x, quad.center.y - quad.half_size.y, m_planet_radius, m_planet_center, D, normal, tangent);
 
+		m_shader->GetUniform("quad_a")->SetValue((IvVector3)A - m_viewer_position, 0);
+		m_shader->GetUniform("quad_b")->SetValue((IvVector3)B - m_viewer_position, 0);
+		m_shader->GetUniform("quad_c")->SetValue((IvVector3)C - m_viewer_position, 0);
+		m_shader->GetUniform("quad_d")->SetValue((IvVector3)D - m_viewer_position, 0);
+
+		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
 		m_grid.set_position(position);
 		m_grid.set_direction(normal, {1.0, 0.0, 0.0});
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);

@@ -121,6 +121,21 @@ float curvature;
 Texture3D quad_data;
 SamplerState quad_dataSampler;
 
+/*     -  
+Z  /       \
+|	 A - B
+| |  |   |  |
+|	 C - D
+|	       /
+|	   -
+.------------X
+*/
+
+float3 quad_a;
+float3 quad_b;
+float3 quad_c;
+float3 quad_d;
+
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
@@ -161,15 +176,22 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     translated_uv = frac(abs(translated_uv));
 
     ///////////////////////////////////////////////
+    //
+
+    float3 world_position_inter = lerp(quad_a, quad_b, uv.x + 0.5);
+    world_position_inter += lerp(float3(0.0, 0.0, 0.0), quad_c - quad_a, uv.y + 0.5);
+    float4 world_position = float4(world_position_inter, 1.0);
+
+    ///////////////////////////////////////////////
     // matrix multiplication 
 
-    float4 world_position = mul(IvModelMatrix, position);
+    //float4 world_position = mul(IvModelMatrix, position);
     float4 world_normal = mul(IvNormalMatrix, float4(normal, 1.0));
 
     ///////////////////////////////////////////////
     // calculate height
     
-    world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.1, 0.0);
+    //world_position += float4(world_normal.xyz * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.1, 0.0);
 
     output.screen_position = (float4) mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
