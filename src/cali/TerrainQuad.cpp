@@ -17,7 +17,7 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI, World::c_earth_radius * kPI } }),
+		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI / 4.0, World::c_earth_radius * kPI / 4.0 } }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_dimention / 16),
@@ -280,20 +280,24 @@ namespace Cali
 		const IvVector3& displacement, const IvVector3& normal)
 	{
 		float* data = reinterpret_cast<float*>(quad_data_texture);
-		float& displacement_x = data[(x + y * width)    ];
-		float& displacement_y = data[(x + y * width) * 2];
-		float& displacement_z = data[(x + y * width) * 3];
-		float& normal_x       = data[(x + y * width) * 4];
-		float& normal_y       = data[(x + y * width) * 5];
-		float& normal_z       = data[(x + y * width) * 6];
+		float& displacement_x = data[(x * 4     + y * width * 4)    ];
+		float& displacement_y = data[(x * 4 + 1 + y * width * 4)    ];
+		float& displacement_z = data[(x * 4 + 2 + y * width * 4)    ];
+		float& displacement_w = data[(x * 4 + 3 + y * width * 4)    ];
+		float& normal_x       = data[(x * 4     + y * width * 4) + height * width * 4];
+		float& normal_y       = data[(x * 4 + 1 + y * width * 4) + height * width * 4];
+		float& normal_z       = data[(x * 4 + 2 + y * width * 4) + height * width * 4];
+		float& normal_w       = data[(x * 4 + 3 + y * width * 4) + height * width * 4];
 
 		displacement_x = displacement.x;
 		displacement_y = displacement.y;
 		displacement_z = displacement.z;
+		displacement_w = 1.0f;
 
 		normal_x = normal.x;
 		normal_y = normal.y;
 		normal_z = normal.z;
+		normal_w = 1.0f;
 	}
 
 	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level, void* quad_data_texture)
@@ -347,7 +351,7 @@ namespace Cali
 		Quad current_quad{ { 0.0, 0.0 }, { m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
 		for (int i = 0; i < c_detail_levels; ++i)
 		{
-			auto texture = resman->CreateRenderTexture(c_gird_dimention, c_gird_dimention, 6, kFloat32Fmt);
+			auto texture = resman->CreateRenderTexture(c_gird_dimention, c_gird_dimention, 2, kFloat128Fmt);
 			m_quad_data_textures[i] = texture;
 			calculate_displacement_data(current_quad, i, texture->BeginLoadData());
 
@@ -364,6 +368,9 @@ namespace Cali
 		const RenderContext& render_context = *reinterpret_cast<RenderContext*>(render_context_ptr);
 
 		auto& quad = node.get_centred_quad();
+		auto detail_level = node.get_depth() - 1;
+
+		//if (detail_level != 12) return;
 
 		//if (!render_context.frustum.contains_aligned_bounding_box(
 		//	(float)quad.center.x, 0.0f, (float)quad.center.y,
@@ -387,6 +394,7 @@ namespace Cali
 		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
 		m_grid.set_position(position);
 		m_grid.set_direction(normal, {1.0, 0.0, 0.0});
+		m_shader->GetUniform("rotation_matrix")->SetValue(m_grid.get_rotation(), 0);
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 
 		m_grid.set_scale(IvVector3{ scale, scale, 1.0f });
@@ -397,6 +405,9 @@ namespace Cali
 			IvVector3{ scale * 0.1f, scale * 0.1f, 0.0f },
 			0);
 		m_shader->GetUniform("grid_center")->SetValue(m_grid.get_position(), 0);
+
+		m_shader->GetUniform("quad_data")->SetValue(m_quad_data_textures[detail_level]);
+
 		m_grid.render(render_context.renderer, m_shader);
 
 		++m_nodes_rendered_per_frame;

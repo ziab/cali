@@ -113,6 +113,26 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
+	IvMatrix44 Physical::get_rotation()
+	{
+		auto up = m_direction.Cross(m_right);
+
+		IvMatrix44 matrix;
+		matrix(0, 0) = m_right.x;
+		matrix(0, 1) = up.x;
+		matrix(0, 2) = m_direction.x;
+
+		matrix(1, 0) = m_right.y;
+		matrix(1, 1) = up.y;
+		matrix(1, 2) = m_direction.y;
+
+		matrix(2, 0) = m_right.z;
+		matrix(2, 1) = up.z;
+		matrix(2, 2) = m_direction.z;
+
+		return matrix;
+	}
+
 	void Physical::look_at(const IvVector3 & point, const IvVector3 & up)
 	{
 		auto direction = point - m_position;

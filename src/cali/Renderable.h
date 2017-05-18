@@ -60,7 +60,7 @@ namespace Cali
 		void set_direction(const IvVector3& dir, const IvVector3& up);
 
 		const IvVector3& get_scale() const { return m_scale; }
-		const IvMatrix33& get_rotation();
+		IvMatrix44 get_rotation();
 		const IvVector3& get_position() const { return m_position; }
 		const IvVector3& get_direction() const { return m_direction; }
 		const IvVector3& get_right() const { return m_right; }

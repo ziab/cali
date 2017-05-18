@@ -477,7 +477,9 @@ bool  IvTextureD3D11::EndLoadData(unsigned int level)
             Convert24Bit(pixelData, mLevels[level].mData, mLevels[level].mWidth, mLevels[level].mHeight);
         }
 
-        d3dContext->UpdateSubresource(mTexturePtr, level, nullptr, pixelData, 4 * mLevels[level].mWidth, (ULONG) mLevels[level].mSize / mDepth);
+        d3dContext->UpdateSubresource(mTexturePtr, level, nullptr, pixelData, 
+			(ULONG)sInternalTextureFormatSize[mFormat] * mLevels[level].mWidth,
+			(ULONG)sInternalTextureFormatSize[mFormat] * mLevels[level].mWidth * mLevels[level].mHeight);
 
         if (kRGB24TexFmt == mFormat)
         {

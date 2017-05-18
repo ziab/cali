@@ -28,8 +28,9 @@ enum IvTextureFormat
 	kRGB24TexFmt,
 	kRGBAFloat16TexFmt,
 	kFloat32Fmt,
+	kFloat128Fmt,
     
-    kLastTexFmt = kFloat32Fmt
+    kLastTexFmt = kFloat128Fmt
 };
 static const int kTexFmtCount = kLastTexFmt+1;
 

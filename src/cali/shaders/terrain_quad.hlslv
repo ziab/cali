@@ -103,6 +103,8 @@ float4x4 IvNormalMatrix;
 float4x4 IvViewProjectionMatrix;
 float4x4 IvModelMatrix;
 
+float4x4 rotation_matrix;
+
 Texture2D height_map;
 SamplerState height_mapSampler;
 
@@ -118,7 +120,7 @@ float planet_lon;
 float planet_lat;
 float curvature;
 
-Texture3D quad_data;
+Texture3D<float4> quad_data;
 SamplerState quad_dataSampler;
 
 /*     -  
@@ -180,7 +182,11 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
 
     float3 world_position_inter = lerp(quad_a, quad_b, uv.x + 0.5);
     world_position_inter += lerp(float3(0.0, 0.0, 0.0), quad_c - quad_a, uv.y + 0.5);
-    float4 world_position = float4(world_position_inter, 1.0);
+
+    float4 displacement = quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 0.0), 0);
+
+    float4 displacement_world = mul(rotation_matrix, displacement);
+    float4 world_position = float4(world_position_inter, 1.0) + displacement;
 
     ///////////////////////////////////////////////
     // matrix multiplication 

@@ -330,6 +330,11 @@ namespace Cali
 				return 1.0 / m_depth;
 			}
 
+			int get_depth() const
+			{
+				return m_depth;
+			}
+
 			void divide(Point _where, int depth)
 			{
 				if (depth <= 0) return;
