@@ -117,13 +117,17 @@ namespace Cali
 			return position_on_sphere(lon, lat, R, C, position, normal, tangent);
 		}
 
-		inline IvDoubleVector3 cube_to_sphere(IvDoubleVector3 cube, double sphere_radius, const IvDoubleVector3& sphere_center)
+		inline IvDoubleVector3 cube_to_sphere(IvDoubleVector3 cube, double sphere_radius, 
+			const IvDoubleVector3& sphere_center, IvDoubleVector3& normal)
 		{
 			cube /= sphere_radius;
 			IvDoubleVector3 sphere;
 			sphere.x = cube.x * sqrt(1.0 - cube.y * cube.y * 0.5 - cube.z * cube.z * 0.5 + cube.y * cube.y * cube.z * cube.z / 3.0);
 			sphere.y = cube.y * sqrt(1.0 - cube.z * cube.z * 0.5 - cube.x * cube.x * 0.5 + cube.z * cube.z * cube.x * cube.x / 3.0);
 			sphere.z = cube.z * sqrt(1.0 - cube.x * cube.x * 0.5 - cube.y * cube.y * 0.5 + cube.x * cube.x * cube.y * cube.y / 3.0);
+			
+			normal = sphere;
+
 			return sphere * sphere_radius + sphere_center;
 		}
 	}

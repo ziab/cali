@@ -21,8 +21,8 @@ namespace Cali
 
 		// TODO: make the ordering cache-friendly
 
-		float u_stride = 1.f / (float)cols;
-		float v_stride = 1.f / (float)rows;
+		float u_stride = 1.f / (float)(cols - 1);
+		float v_stride = 1.f / (float)(rows - 1);
 		float u = -0.5f, v = -0.5f;
 		for (int32_t y = -rows / 2; y < rows / 2 + rows % 2; ++y)
 		{

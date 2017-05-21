@@ -168,4 +168,25 @@ namespace Cali
 
 		calculate_model_matrix();
 	}
+
+	void Physical::rotate(const IvVector3 & from, const IvVector3 & to)
+	{
+		if (from == to)
+		{
+			return;
+		}
+
+		auto axis = to.Cross(from);
+		float angle = asin(axis.Length());
+		axis.Normalize();
+
+		IvMatrix33 rotation_matrix;
+		rotation_matrix.Rotation(axis, angle);
+
+		m_direction = m_direction * rotation_matrix;
+		m_right = m_right * rotation_matrix;
+
+		calculate_model_matrix();
+
+	}
 }

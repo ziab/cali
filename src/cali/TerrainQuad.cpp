@@ -22,7 +22,7 @@ namespace Cali
 		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius, World::c_earth_radius } }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
-		m_overlapping_edge_cells(c_gird_dimention / 16),
+		m_overlapping_edge_cells(c_gird_dimention / 32),
 		m_planet_center(Cali::World::c_earth_center),
 		m_planet_radius(Cali::World::c_earth_radius)
 	{
@@ -197,13 +197,14 @@ namespace Cali
 		//  d------------ c    1
 		//
 
+		IvDoubleVector3 normal;
 		IvDoubleVector3 A, B, C, D;
-		A = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center);
-		B = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center);
-		C = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center);
-		D = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center);
+		A = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center, normal);
+		B = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center, normal);
+		C = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center, normal);
+		D = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center, normal);
 
-		double surface_grid_step = quad.half_size.x * 2.0 / c_gird_dimention;
+		double surface_grid_step = quad.half_size.x * 2.0 / (c_gird_dimention - 1);
 		double surface_x = 0.0, surface_y = ((double)c_gird_dimention / 2.0) * surface_grid_step;
 		for (int32_t y = 0; y < c_gird_dimention; ++y)
 		{
@@ -214,8 +215,7 @@ namespace Cali
 
 				IvDoubleVector3 current_vertex_3d = Math::quad_lerp(A, B, C, D, u, v);
 
-				IvDoubleVector3 normal; 
-				IvDoubleVector3 position = Math::cube_to_sphere({surface_x, m_planet_radius, surface_y }, m_planet_radius, m_planet_center);
+				IvDoubleVector3 position = Math::cube_to_sphere({surface_x, m_planet_radius, surface_y }, m_planet_radius, m_planet_center, normal);
 				IvVector3 displacement = position - current_vertex_3d;
 
 				set_quad_data_texture(quad_data_texture, c_gird_dimention, c_gird_dimention, x, y, displacement, normal);
@@ -264,24 +264,26 @@ namespace Cali
 
 		IvDoubleVector3 position, normal, tangent;
 		IvDoubleVector3 A, B, C, D;
-		A = Math::cube_to_sphere({ quad.center.x - quad.half_size.x, m_planet_radius, quad.center.y + quad.half_size.y }, m_planet_radius, m_planet_center);
-		B = Math::cube_to_sphere({ quad.center.x + quad.half_size.x, m_planet_radius, quad.center.y + quad.half_size.y }, m_planet_radius, m_planet_center);
-		C = Math::cube_to_sphere({ quad.center.x + quad.half_size.x, m_planet_radius, quad.center.y - quad.half_size.y }, m_planet_radius, m_planet_center);
-		D = Math::cube_to_sphere({ quad.center.x - quad.half_size.x, m_planet_radius, quad.center.y - quad.half_size.y }, m_planet_radius, m_planet_center);
+		double overlapping_area = (quad.width() / c_gird_dimention) * (m_overlapping_edge_cells / 2.0f);
+		A = Math::cube_to_sphere({ quad.center.x - quad.half_size.x - overlapping_area, m_planet_radius, quad.center.y + quad.half_size.y + overlapping_area }, m_planet_radius, m_planet_center, normal);
+		B = Math::cube_to_sphere({ quad.center.x + quad.half_size.x + overlapping_area, m_planet_radius, quad.center.y + quad.half_size.y + overlapping_area }, m_planet_radius, m_planet_center, normal);
+		C = Math::cube_to_sphere({ quad.center.x + quad.half_size.x + overlapping_area, m_planet_radius, quad.center.y - quad.half_size.y - overlapping_area }, m_planet_radius, m_planet_center, normal);
+		D = Math::cube_to_sphere({ quad.center.x - quad.half_size.x - overlapping_area, m_planet_radius, quad.center.y - quad.half_size.y - overlapping_area }, m_planet_radius, m_planet_center, normal);
 
-		m_aabb.set_position(A); m_aabb.render(render_context.renderer);
-		m_aabb.set_position(B); m_aabb.render(render_context.renderer);
-		m_aabb.set_position(C); m_aabb.render(render_context.renderer);
-		m_aabb.set_position(D); m_aabb.render(render_context.renderer);
+		//m_aabb.set_position(A); m_aabb.render(render_context.renderer);
+		//m_aabb.set_position(B); m_aabb.render(render_context.renderer);
+		//m_aabb.set_position(C); m_aabb.render(render_context.renderer);
+		//m_aabb.set_position(D); m_aabb.render(render_context.renderer);
 
 		m_shader->GetUniform("quad_a")->SetValue((IvVector3)A - m_viewer_position, 0);
 		m_shader->GetUniform("quad_b")->SetValue((IvVector3)B - m_viewer_position, 0);
 		m_shader->GetUniform("quad_c")->SetValue((IvVector3)C - m_viewer_position, 0);
 		m_shader->GetUniform("quad_d")->SetValue((IvVector3)D - m_viewer_position, 0);
 
-		Math::position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
+		position = Math::cube_to_sphere({ quad.center.x, m_planet_radius, quad.center.y }, m_planet_radius, m_planet_center, normal);
 		m_grid.set_position(position);
-		m_grid.set_direction(normal, {1.0, 0.0, 0.0});
+		m_grid.set_direction({ 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f });
+		m_grid.rotate(Constants::c_world_up, normal);
 		m_shader->GetUniform("rotation_matrix")->SetValue(m_grid.get_rotation(), 0);
 		float scale = (float)quad.width() / (m_grid.width() - m_grid.stride() * m_overlapping_edge_cells);
 

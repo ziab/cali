@@ -73,5 +73,6 @@ namespace Cali
 
 		void pitch(float angle);
 		void yaw(float angle);
+		void rotate(const IvVector3& origin, const IvVector3& deviation);
 	};
 }
