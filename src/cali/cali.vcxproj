@@ -540,6 +540,8 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="Bruneton.h" />
+    <ClInclude Include="CaliMath.h" />
+    <ClInclude Include="CaliSphereMath.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonFileSystem.h" />
     <ClInclude Include="CommonTexture.h" />

@@ -48,6 +48,8 @@
     <ClInclude Include="CommonTexture.h" />
     <ClInclude Include="TerrainQuad.h" />
     <ClInclude Include="Frustum.h" />
+    <ClInclude Include="CaliMath.h" />
+    <ClInclude Include="CaliSphereMath.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">

@@ -26,11 +26,6 @@ namespace Cali
 		}
 	}
 
-	inline IvVector3 operator*(const IvVector3& v1, const IvVector3& v2)
-	{
-		return IvVector3{ v1.x * v2.x, v1.y * v2.y, v1.z * v2.z };
-	}
-
 	inline void invert_normals(std::vector<IvNPVertex>& vertices)
 	{
 		for (auto it = vertices.begin(); it != vertices.end(); ++it)

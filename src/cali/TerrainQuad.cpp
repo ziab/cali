@@ -9,6 +9,8 @@
 #include "Constants.h"
 #include "CommonFileSystem.h"
 #include "CommonTexture.h"
+#include "CaliMath.h"
+#include "CaliSphereMath.h"
 
 #include "DebugInfo.h"
 
@@ -17,7 +19,7 @@
 namespace Cali
 {
 	TerrainQuad::TerrainQuad() :
-		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius * kPI / 4.0, World::c_earth_radius * kPI / 4.0 } }),
+		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius, World::c_earth_radius } }),
 		m_grid(c_gird_dimention, c_gird_dimention, 1.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_dimention / 16),
@@ -97,125 +99,6 @@ namespace Cali
 		assert("TerrainQuad::render() is not supported");
 	}
 
-	static float lerp(float a, float b, float f)
-	{
-		return a + f * (b - a);
-	}
-
-	inline double sum(const IvDoubleVector3& vec)
-	{
-		return vec.x + vec.y + vec.z;
-	}
-
-	//////////////////////////////////////////////////////
-	// TODO: make it using double prescision
-	//////////////////////////////////////////////////////
-	inline bool intersect(const IvDoubleVector3& raydir, const IvDoubleVector3& rayorig, const IvDoubleVector3& spherepos,
-		double rad, IvDoubleVector3& hitpoint, double& distance, IvDoubleVector3& normal)
-	{
-		double a = sum(raydir*raydir);
-		double b = sum(raydir * (2.0 * (rayorig - spherepos)));
-		double c = sum(spherepos*spherepos) + sum(rayorig*rayorig) - 2.0*sum(rayorig*spherepos) - rad*rad;
-		double D = b*b + (-4.0)*a*c;
-
-		// If ray can not intersect then stop
-		if (D < 0)
-			return false;
-		D = sqrt(D);
-
-		// Ray can intersect the sphere, solve the closer hitpoint
-		double t = (-0.5)*(b + D) / a;
-		if (t > 0.0)
-		{
-			distance = sqrt(a) * t;
-			hitpoint = rayorig + t * raydir;
-			normal = (hitpoint - spherepos) / rad;
-		}
-		else
-		{
-			return false;
-		}
-		
-		return true;
-	}
-
-	// Intersects ray r = p + td, |d| = 1, with sphere s and, if intersecting, 
-	// returns t value of intersection and intersection point q 
-	int intersect_ray_sphere(const IvDoubleVector3 p, const IvDoubleVector3& d, const IvDoubleVector3& C, 
-		double R, IvDoubleVector3& hit, double &t, IvDoubleVector3& normal)
-	{
-		IvDoubleVector3 m = p - C;
-		double b = Dot(m, d);
-		double c = Dot(m, m) - R * R;
-
-		// Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0) 
-		if (c > 0.0f && b > 0.0f) return 0;
-		double discr = b*b - c;
-
-		// A negative discriminant corresponds to ray missing sphere 
-		if (discr < 0.0f) return 0;
-
-		// Ray now found to intersect sphere, compute smallest t value of intersection
-		t = -b - sqrt(discr);
-
-		// If t is negative, ray started inside sphere
-		if (t < 0.0f)
-		{
-			double a = Dot(d, d);
-			t /= (2 * a);
-		}
-
-		hit = p + t * d;
-
-		normal = hit - C / R;
-
-		return 1;
-	}
-
-	inline void get_lon_lat_from_point_on_sphere(const IvVector3& sphere_center, double sphere_radius, 
-		const IvVector3& point, double& lon, double& lat)
-	{
-		IvVector3 point_coord_related_to_sphere = point - sphere_center;
-		// note that the origin is shifted by (kPI / 2.0)
-		lat = acos(- point_coord_related_to_sphere.z / sphere_radius) - (kPI / 2.0);
-		lon = atan(-point_coord_related_to_sphere.y / point_coord_related_to_sphere.x) - (kPI / 2.0);
-
-		if (point_coord_related_to_sphere.x >= 0.0)
-			lon += kPI;
-	}
-
-	void position_on_sphere(double lon, double lat, double R, const IvDoubleVector3& C, 
-		IvDoubleVector3& position, IvDoubleVector3& normal, IvDoubleVector3& tangent)
-	{
-		double cos_lat = cos(lat);
-
-		IvDoubleVector3 ps;
-		ps.x = R * cos_lat * sin(lon);
-		ps.y = R * cos_lat * cos(lon);
-		ps.z = R * sin(lat);
-
-		position = ps + C;
-		normal = ps;
-		normal.Normalize();
-
-		double sin_lon = cos(lat);
-
-		tangent = normal.Cross(IvDoubleVector3::zAxis);
-		tangent.Normalize();
-	}
-
-	/// R is sphere radius
-	/// C is sphere center position
-	/// x,y - are coordinates on surface
-	void position_on_sphere_from_surface(double x, double y, double R, const IvDoubleVector3& C, 
-		IvDoubleVector3& position, IvDoubleVector3& normal, IvDoubleVector3& tangent)
-	{
-		double lon = x / R;
-		double lat = 2 * atan(exp(y / R)) - kPI / 2.0;
-
-		return position_on_sphere(lon, lat, R, C, position, normal, tangent);
-	}
-
 	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, double sphere_radius, const IvVector3& viewer,
 		double& lon, double& lat, IvDoubleVector3& hit_point)
 	{
@@ -223,10 +106,11 @@ namespace Cali
 		ray_direction.Normalize();
 
 		double distance; IvDoubleVector3 normal;
-		intersect_ray_sphere(viewer, ray_direction, sphere_center, sphere_radius, hit_point, distance, normal);
+		Math::intersect_ray_sphere(viewer, ray_direction, sphere_center, sphere_radius, hit_point, distance, normal);
 
-		get_lon_lat_from_point_on_sphere(sphere_center, sphere_radius, hit_point, lon, lat);
+		Math::get_lon_lat_from_point_on_sphere(sphere_center, sphere_radius, hit_point, lon, lat);
 
+		/// Ok this is 
 		auto& info = DebugInfo::get_debug_info();
 		info.set_debug_string(L"lon", (float)lon);
 		info.set_debug_string(L"lat", (float)lat);
@@ -302,45 +186,44 @@ namespace Cali
 
 	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level, void* quad_data_texture)
 	{
-		/*     -  
-		Z  /       \
-		|	 A - B
-		| |  |   |  |
-		|	 C - D
-		|	       /
-		|	   -
-		.------------X
-		*/
+		//
+		//  0 <----u----> 1
+		//  a ----------- b    0
+		//  |             |   /|\
+		//  |             |    |
+		//  |             |    v
+		//  |  *(u,v)     |    |
+		//  |             |   \|/
+		//  d------------ c    1
+		//
 
-		double step = quad.half_size.x * 2.0 / c_gird_dimention;
-		IvDoubleVector3 A, B, C;
-		IvDoubleVector3 position, normal, tangent;
-		position_on_sphere_from_surface(-quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, A, normal, tangent);
-		position_on_sphere_from_surface(quad.half_size.x, quad.half_size.y, m_planet_radius, m_planet_center, B, normal, tangent);
-		position_on_sphere_from_surface(-quad.half_size.x, -quad.half_size.y, m_planet_radius, m_planet_center, C, normal, tangent);
+		IvDoubleVector3 A, B, C, D;
+		A = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center);
+		B = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, quad.half_size.y }, m_planet_radius, m_planet_center);
+		C = Math::cube_to_sphere({ quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center);
+		D = Math::cube_to_sphere({ -quad.half_size.x, m_planet_radius, -quad.half_size.y }, m_planet_radius, m_planet_center);
 
-		IvDoubleVector3 x_step_vector = (B - A) / c_gird_dimention;
-		IvDoubleVector3	y_step_vector = (A - C) / c_gird_dimention;
-
-		IvDoubleVector3 current_vertex_3d;
 		double surface_grid_step = quad.half_size.x * 2.0 / c_gird_dimention;
-		double surface_x = 0.0, surface_y = -((double)c_gird_dimention / 2.0) * surface_grid_step;
+		double surface_x = 0.0, surface_y = ((double)c_gird_dimention / 2.0) * surface_grid_step;
 		for (int32_t y = 0; y < c_gird_dimention; ++y)
 		{
 			surface_x = -((double)c_gird_dimention / 2.0) * surface_grid_step;
-			current_vertex_3d = C + y * y_step_vector;
 			for (int32_t x = 0; x < c_gird_dimention; ++x)
 			{
-				position_on_sphere_from_surface(surface_x, surface_y, m_planet_radius, m_planet_center, position, normal, tangent);
+				double u = (double)x / (c_gird_dimention - 1); double v = (double)y / (c_gird_dimention - 1);
+
+				IvDoubleVector3 current_vertex_3d = Math::quad_lerp(A, B, C, D, u, v);
+
+				IvDoubleVector3 normal; 
+				IvDoubleVector3 position = Math::cube_to_sphere({surface_x, m_planet_radius, surface_y }, m_planet_radius, m_planet_center);
 				IvVector3 displacement = position - current_vertex_3d;
 
 				set_quad_data_texture(quad_data_texture, c_gird_dimention, c_gird_dimention, x, y, displacement, normal);
 
 				surface_x += surface_grid_step;
-				current_vertex_3d += x_step_vector;
 			}
 
-			surface_y += surface_grid_step;
+			surface_y -= surface_grid_step;
 		}
 	}
 
@@ -381,17 +264,22 @@ namespace Cali
 
 		IvDoubleVector3 position, normal, tangent;
 		IvDoubleVector3 A, B, C, D;
-		position_on_sphere_from_surface(quad.center.x - quad.half_size.x, quad.center.y + quad.half_size.y, m_planet_radius, m_planet_center, A, normal, tangent);
-		position_on_sphere_from_surface(quad.center.x + quad.half_size.x, quad.center.y + quad.half_size.y, m_planet_radius, m_planet_center, B, normal, tangent);
-		position_on_sphere_from_surface(quad.center.x - quad.half_size.x, quad.center.y - quad.half_size.y, m_planet_radius, m_planet_center, C, normal, tangent);
-		position_on_sphere_from_surface(quad.center.x + quad.half_size.x, quad.center.y - quad.half_size.y, m_planet_radius, m_planet_center, D, normal, tangent);
+		A = Math::cube_to_sphere({ quad.center.x - quad.half_size.x, m_planet_radius, quad.center.y + quad.half_size.y }, m_planet_radius, m_planet_center);
+		B = Math::cube_to_sphere({ quad.center.x + quad.half_size.x, m_planet_radius, quad.center.y + quad.half_size.y }, m_planet_radius, m_planet_center);
+		C = Math::cube_to_sphere({ quad.center.x + quad.half_size.x, m_planet_radius, quad.center.y - quad.half_size.y }, m_planet_radius, m_planet_center);
+		D = Math::cube_to_sphere({ quad.center.x - quad.half_size.x, m_planet_radius, quad.center.y - quad.half_size.y }, m_planet_radius, m_planet_center);
+
+		m_aabb.set_position(A); m_aabb.render(render_context.renderer);
+		m_aabb.set_position(B); m_aabb.render(render_context.renderer);
+		m_aabb.set_position(C); m_aabb.render(render_context.renderer);
+		m_aabb.set_position(D); m_aabb.render(render_context.renderer);
 
 		m_shader->GetUniform("quad_a")->SetValue((IvVector3)A - m_viewer_position, 0);
 		m_shader->GetUniform("quad_b")->SetValue((IvVector3)B - m_viewer_position, 0);
 		m_shader->GetUniform("quad_c")->SetValue((IvVector3)C - m_viewer_position, 0);
 		m_shader->GetUniform("quad_d")->SetValue((IvVector3)D - m_viewer_position, 0);
 
-		position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
+		Math::position_on_sphere_from_surface(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, position, normal, tangent);
 		m_grid.set_position(position);
 		m_grid.set_direction(normal, {1.0, 0.0, 0.0});
 		m_shader->GetUniform("rotation_matrix")->SetValue(m_grid.get_rotation(), 0);
