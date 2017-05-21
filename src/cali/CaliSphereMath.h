@@ -117,9 +117,10 @@ namespace Cali
 			return position_on_sphere(lon, lat, R, C, position, normal, tangent);
 		}
 
-		inline IvDoubleVector3 cube_to_sphere(IvDoubleVector3 cube, double sphere_radius, 
+		inline IvDoubleVector3 cube_to_sphere(double x, double y, double sphere_radius, 
 			const IvDoubleVector3& sphere_center, IvDoubleVector3& normal)
 		{
+			IvDoubleVector3 cube{x, sphere_radius, y};
 			cube /= sphere_radius;
 			IvDoubleVector3 sphere;
 			sphere.x = cube.x * sqrt(1.0 - cube.y * cube.y * 0.5 - cube.z * cube.z * 0.5 + cube.y * cube.y * cube.z * cube.z / 3.0);
@@ -127,8 +128,28 @@ namespace Cali
 			sphere.z = cube.z * sqrt(1.0 - cube.x * cube.x * 0.5 - cube.y * cube.y * 0.5 + cube.x * cube.x * cube.y * cube.y / 3.0);
 			
 			normal = sphere;
-
 			return sphere * sphere_radius + sphere_center;
+		}
+
+		inline IvDoubleVector3 adjusted_cube_to_sphere(double x, double y, double sphere_radius,
+			const IvDoubleVector3& sphere_center, IvDoubleVector3& normal)
+		{
+			x /= sphere_radius;
+			y /= sphere_radius;
+
+			double phi = x * kPI / 4.0;
+			double theta = atan(tan(kPI * y / 4.0) * cos(phi));
+
+			IvDoubleVector3 position, tangent;
+			position_on_sphere(phi, theta, sphere_radius, sphere_center, position, normal, tangent);
+
+			return position;
+		}
+
+		inline void adjusted_sphere_to_cube(double phi, double theta, double sphere_radius, double& x, double& y)
+		{
+			x = (phi * 4 / kPI) * sphere_radius;
+			y = atan( tan(theta) / cos(phi) ) * 4.0 / kPI * sphere_radius;
 		}
 	}
 }

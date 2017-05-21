@@ -45,7 +45,7 @@ namespace Cali
 
 		size_t m_nodes_rendered_per_frame;
 
-		static const uint32_t c_gird_dimention = 129;
+		static const uint32_t c_gird_cells = 129;
 		static const uint32_t c_detail_levels = 22;
 
 		std::vector<IvRenderTexture*> m_quad_data_textures;

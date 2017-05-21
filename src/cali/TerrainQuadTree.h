@@ -30,6 +30,8 @@ namespace Cali
 		{
 			x = rhv.x;
 			y = rhv.y;
+
+			return *this;
 		}
 	};
 

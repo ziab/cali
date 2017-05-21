@@ -108,20 +108,13 @@ float4x4 rotation_matrix;
 Texture2D height_map;
 SamplerState height_mapSampler;
 
-float grid_stride;
-float grid_cols;
-float grid_rows;
-float3 grid_uv_quad_size;
-float3 grid_center;
+float gird_cells;
 
 float3 planet_center;
 float planet_radius;
 float planet_lon;
 float planet_lat;
 float curvature;
-
-Texture3D<float4> quad_data;
-SamplerState quad_dataSampler;
 
 /*     -  
 Z  /       \
@@ -133,10 +126,18 @@ Z  /       \
 .------------X
 */
 
+// 3d sphere surface
 float3 quad_a;
 float3 quad_b;
 float3 quad_c;
 float3 quad_d;
+
+// 2d map surface
+float3 quad_center;
+float3 quad_size;
+
+Texture3D<float4> quad_data;
+SamplerState quad_dataSampler;
 
 /////////////////////////////////////////////////////////////
 // Main
@@ -199,13 +200,10 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     ///////////////////////////////////////////////
     // calculate grid parameters
 
-    float2 texture_size = get_texture_size(height_map);
-    float2 grid_quad_size = float2(grid_uv_quad_size.x, grid_uv_quad_size.y);
-    float2 grid_size = float2(grid_cols, grid_rows);
+    float2 quad_center_uv = float2(quad_center.x, -quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
+    float quad_size_relative = quad_size.x / (planet_radius * 2.0);
 
-    float2 grid_center_uv = float2(grid_center.x, grid_center.z) / (grid_size * grid_stride);
-
-    float2 translated_uv = (grid_center_uv + uv) * grid_quad_size;
+    float2 translated_uv = quad_center_uv + uv * quad_size_relative;
 
     // loop the texture
     translated_uv = frac(abs(translated_uv));
@@ -229,12 +227,12 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     ///////////////////////////////////////////////
     // calculate height
     
-    //world_position += world_normal * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 255.0 * 0.1;
+    world_position += world_normal * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1;
 
     output.screen_position = mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
     output.normal = (float3) (mul(IvNormalMatrix, float4(
-        get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, grid_uv_quad_size.x / grid_cols, grid_stride), 0)
+        get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0)
     ));
     return output;
 }
