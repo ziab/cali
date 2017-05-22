@@ -206,9 +206,6 @@ namespace Cali
 		double lon, lat; IvDoubleVector3 hit_point;
 		get_map_lon_lat_form_viewer_position(m_planet_center, m_planet_radius, m_viewer_position, lon, lat, hit_point);
 
-		m_shader->GetUniform("planet_lon")->SetValue((float)lon, 0);
-		m_shader->GetUniform("planet_lat")->SetValue((float)lat, 0);
-
 		double map_x, map_y;
 		Math::adjusted_sphere_to_cube(lon, lat, m_planet_radius, map_x, map_y);
 
@@ -244,8 +241,6 @@ namespace Cali
 
 		auto& quad = node.get_centred_quad();
 
-		//if (detail_level != 12) return;
-
 		//if (!render_context.frustum.contains_aligned_bounding_box(
 		//	(float)quad.center.x, 0.0f, (float)quad.center.y,
 		//	(float)quad.width(), 1.0f, (float)quad.width()))
@@ -280,10 +275,20 @@ namespace Cali
 		m_shader->GetUniform("rotation_matrix")->SetValue(m_grid.get_rotation(), 0);
 
 		m_shader->GetUniform("gird_cells")->SetValue((float)m_grid.cols(), 0);
-		m_shader->GetUniform("quad_size")->SetValue(IvVector3{ (float)quad.width(), (float)quad.width(), 0.0f }, 0);
+		m_shader->GetUniform("quad_size")->SetValue(IvVector3{ (float)(quad.width() + overlapping_area), (float)(quad.width() + overlapping_area), 0.0f }, 0);
 
 		auto detail_level = node.get_depth() - 1;
-		m_shader->GetUniform("quad_data")->SetValue(m_quad_data_textures[detail_level]);
+		if (detail_level > 6)
+		{
+			m_shader->GetUniform("curvature")->SetValue((float)0.0f, 0);
+		}
+		else
+		{
+			m_shader->GetUniform("curvature")->SetValue((float)1.0f, 0);
+		}
+
+
+		//m_shader->GetUniform("quad_data")->SetValue(m_quad_data_textures[detail_level]);
 
 		m_grid.render(render_context.renderer, m_shader);
 

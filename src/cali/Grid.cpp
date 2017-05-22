@@ -58,12 +58,12 @@ namespace Cali
 				*/
 
 				indices[i++] = r * rows + c;             // 1
-				indices[i++] = (r + 1) * rows + c;       // 3
 				indices[i++] = r * rows + (c + 1);       // 2
+				indices[i++] = (r + 1) * rows + c;       // 3
 
 				indices[i++] = (r + 1) * rows + c;       // 3
-				indices[i++] = (r + 1) * rows + (c + 1); // 4
 				indices[i++] = r * rows + (c + 1);       // 2
+				indices[i++] = (r + 1) * rows + (c + 1); // 4
 			}
 		}
 	}

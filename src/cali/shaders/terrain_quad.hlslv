@@ -112,8 +112,6 @@ float gird_cells;
 
 float3 planet_center;
 float planet_radius;
-float planet_lon;
-float planet_lat;
 float curvature;
 
 /*     -  
@@ -142,22 +140,6 @@ SamplerState quad_dataSampler;
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
-
-float4 grid_to_sphere_position(float4 p, float R, float3 C)
-{
-    float longitude = p.x / R + planet_lon;
-    float latitude = 2 * atan(exp(p.z / R)) - PI / 2.0 + planet_lat;
-
-    float cos_latitude = cos(latitude);
-
-    float4 ps;
-    ps.x = R * cos_latitude * sin(longitude);
-    ps.y = R * cos_latitude * cos(longitude);
-    ps.z = R * sin(latitude);
-    ps.w = p.w;
-
-    return ps + float4(C, 0.0);
-}
 
 float3 quad_lerp(
 		in float3 a,
@@ -192,6 +174,27 @@ float3 quad_lerp(
     return lerp(abu, dcu, uv.y);
 }
 
+float3 sureface_to_sphere(float phi, float theta, float R, float3 C, out float3 normal)
+{
+    float cos_theta = cos(theta);
+
+    float3 ps;
+    ps.x = cos_theta * sin(phi);
+    ps.y = cos_theta * cos(phi);
+    ps.z = sin(theta);
+
+    normal = ps;
+
+    return R * ps + C;
+}
+
+float3 adjusted_cube_to_sphere(in float2 v, float sphere_radius, float3 sphere_center, out float3 normal)
+{
+    float phi = v.x * PI / 4.0;
+    float theta = atan(tan(PI * v.y / 4.0) * cos(phi));
+
+    return sureface_to_sphere(phi, theta, sphere_radius, sphere_center, normal);
+}
 
 VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : POSITION)
 {
@@ -200,34 +203,45 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     ///////////////////////////////////////////////
     // calculate grid parameters
 
-    float2 quad_center_uv = float2(quad_center.x, -quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
+    float2 quad_center_uv = float2(quad_center.x, quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
     float quad_size_relative = quad_size.x / (planet_radius * 2.0);
 
     float2 translated_uv = quad_center_uv + uv * quad_size_relative;
 
     // loop the texture
-    translated_uv = frac(abs(translated_uv));
+    //translated_uv = frac(abs(translated_uv));
 
     ///////////////////////////////////////////////
     //
 
-    float3 world_position_inter = quad_lerp(quad_a, quad_b, quad_c, quad_d, uv + float2(0.5, 0.5));
+    float3 world_normal, world_position_inter;
 
-    float4 displacement = quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 0.0), 0);
+    if (curvature != 0.0)
+    {
+        float2 surface_point = (float2(quad_center.x, quad_center.y) + uv * quad_size.x) / (planet_radius);
+        world_position_inter = adjusted_cube_to_sphere(surface_point, planet_radius, planet_center, world_normal);
+    }
+    else
+    {
+        world_position_inter = quad_lerp(quad_a, quad_b, quad_c, quad_d, float2(uv.x + 0.5, 1.0 - (uv.y + 0.5)));
+    }
 
-    float4 displacement_world = mul(rotation_matrix, displacement);
-    float4 world_position = float4(world_position_inter, 1.0) + displacement_world;
+    //float4 displacement = quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 0.0), 0);
+
+    //float4 displacement_world = mul(rotation_matrix, displacement);
+    //float4 world_position = float4(world_position_inter, 1.0) + displacement_world;
 
     ///////////////////////////////////////////////
     // matrix multiplication 
 
     //float4 world_position = mul(IvModelMatrix, position);
-    float4 world_normal = mul(IvNormalMatrix, quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 1.0), 0));
+    //float4 world_normal = mul(IvNormalMatrix, quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 1.0), 0));
 
     ///////////////////////////////////////////////
     // calculate height
     
-    world_position += world_normal * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1;
+    float4 world_position = 
+        float4(world_position_inter + world_normal * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1, 1.0);
 
     output.screen_position = mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
