@@ -1,32 +1,36 @@
 #include "AABB.h"
-
-#include "CommonFileSystem.h"
+#include "CaliMath.h"
 
 namespace Cali
 {
-	AABB::AABB()
+	void AABB::reset()
 	{
-		std::string vertex_shader = construct_shader_path("simple.hlslv");
-		std::string pixel_shader = construct_shader_path("simple.hlslf");
-
-		m_shader = IvRenderer::mRenderer->GetResourceManager()->CreateShaderProgram(
-			IvRenderer::mRenderer->GetResourceManager()->CreateVertexShaderFromFile(
-				vertex_shader.c_str(), "main"),
-			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
-				pixel_shader.c_str(), "main"));
-
-		if (!m_shader) throw std::exception("Terrain: failed to load shader program");
-
-		create_box(m_box, { 1.0, 1.0, 1.0 }, true, false);
+		m_minima = { DBL_MAX, DBL_MAX, DBL_MAX };
+		m_maxima = { DBL_MIN, DBL_MIN, DBL_MIN };
 	}
 
-	void AABB::update(float dt)
+	void AABB::add_point(const IvDoubleVector3 & point)
 	{
+		if (point.x < m_minima.x)
+			m_minima.x = point.x;
+		else if (point.x > m_maxima.x)
+			m_maxima.x = point.x;
+		if (point.y < m_minima.y)
+			m_minima.y = point.y;
+		else if (point.y > m_maxima.y)
+			m_maxima.y = point.y;
+		if (point.z < m_minima.z)
+			m_minima.z = point.z;
+		else if (point.z > m_maxima.z)
+			m_maxima.z = point.z;
 	}
 
-	void AABB::render(IvRenderer & renderer)
+	IvDoubleVector3 AABB::get_center()
 	{
-		Physical::set_transformation_matrix(renderer);
-		m_box.render(renderer, m_shader);
+		return Math::lerp(m_minima, m_maxima, 0.5);
+	}
+	IvDoubleVector3 AABB::get_extents()
+	{
+		return m_maxima - m_minima;
 	}
 }

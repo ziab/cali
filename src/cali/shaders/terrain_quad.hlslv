@@ -134,45 +134,9 @@ float3 quad_d;
 float3 quad_center;
 float3 quad_size;
 
-Texture3D<float4> quad_data;
-SamplerState quad_dataSampler;
-
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
-
-float3 quad_lerp(
-		in float3 a,
-		in float3 b,
-		in float3 c,
-		in float3 d,
-		in float2 uv)
-{
-	// Given a (u,v) coordinate that defines a 2D local position inside a planar quadrilateral, find the
-	// absolute 3D (x,y,z) coordinate at that location.
-	//
-	//  0 <----u----> 1
-	//  a ----------- b    0
-	//  |             |   /|\
-	//  |             |    |
-	//  |             |    v
-	//  |  *(u,v)     |    |
-	//  |             |   \|/
-	//  d------------ c    1
-	//
-	// a, b, c, and d are the vertices of the quadrilateral. They are assumed to exist in the
-	// same plane in 3D space, but this function will allow for some non-planar error.
-	//
-	// Variables u and v are the two-dimensional local coordinates inside the quadrilateral.
-	// To find a point that is inside the quadrilateral, both u and v must be between 0 and 1 inclusive.  
-	// For example, if you send this function u=0, v=0, then it will return coordinate "a".  
-	// Similarly, coordinate u=1, v=1 will return vector "c". Any values between 0 and 1
-	// will return a coordinate that is bi-linearly interpolated between the four vertices.
-
-    float3 abu = lerp(a, b, uv.x);
-    float3 dcu = lerp(d, c, uv.x);
-    return lerp(abu, dcu, uv.y);
-}
 
 float3 sureface_to_sphere(float phi, float theta, float R, float3 C, out float3 normal)
 {
@@ -206,10 +170,10 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     float2 quad_center_uv = float2(quad_center.x, quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
     float quad_size_relative = quad_size.x / (planet_radius * 2.0);
 
-    float2 translated_uv = quad_center_uv + uv * quad_size_relative;
+    float2 translated_uv = (quad_center_uv + uv * quad_size_relative) * 2.0;
 
     // loop the texture
-    //translated_uv = frac(abs(translated_uv));
+    translated_uv = frac(abs(translated_uv));
 
     ///////////////////////////////////////////////
     //
@@ -225,20 +189,6 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     {
         world_position_inter = quad_lerp(quad_a, quad_b, quad_c, quad_d, float2(uv.x + 0.5, 1.0 - (uv.y + 0.5)));
     }
-
-    //float4 displacement = quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 0.0), 0);
-
-    //float4 displacement_world = mul(rotation_matrix, displacement);
-    //float4 world_position = float4(world_position_inter, 1.0) + displacement_world;
-
-    ///////////////////////////////////////////////
-    // matrix multiplication 
-
-    //float4 world_position = mul(IvModelMatrix, position);
-    //float4 world_normal = mul(IvNormalMatrix, quad_data.SampleLevel(quad_dataSampler, float3(uv + float2(0.5, 0.5), 1.0), 0));
-
-    ///////////////////////////////////////////////
-    // calculate height
     
     float4 world_position = 
         float4(world_position_inter + world_normal * sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1, 1.0);

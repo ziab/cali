@@ -11,6 +11,7 @@
 #include "CommonTexture.h"
 #include "CaliMath.h"
 #include "CaliSphereMath.h"
+#include "AABB.h"
 
 #include "DebugInfo.h"
 
@@ -88,6 +89,11 @@ namespace Cali
 	void TerrainQuad::calculate_displacement_data_for_detail_levels()
 	{
 		auto resman = IvRenderer::mRenderer->GetResourceManager();
+		for (auto* texture : m_quad_data_textures)
+		{
+			resman->Destroy(texture);
+		}
+
 		m_quad_data_textures.resize(c_detail_levels);
 		Quad current_quad{ { 0.0, 0.0 },{ m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
 		for (int i = 0; i < c_detail_levels; ++i)
@@ -126,8 +132,15 @@ namespace Cali
 		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
+	}
 
-		calculate_displacement_data_for_detail_levels();
+	void TerrainQuad::update(float dt)
+	{
+	}
+
+	void TerrainQuad::render(IvRenderer & renderer)
+	{
+		assert("TerrainQuad::render() is not supported");
 	}
 
 	TerrainQuad::~TerrainQuad()
@@ -139,21 +152,6 @@ namespace Cali
 		int level;
 		double area_size;
 	};
-
-	LevelDesc get_level_from_distance(double distance, const double area_size, const int max_level)
-	{
-		distance = abs(distance);
-		LevelDesc level_desc = {};
-		level_desc.level = 0;
-		level_desc.area_size = area_size;
-		while (level_desc.area_size > distance && level_desc.level < max_level)
-		{
-			level_desc.area_size /= 2.0;
-			level_desc.level += 1;
-		}
-
-		return level_desc;
-	}
 
 	void get_map_lon_lat_form_viewer_position(const IvVector3& sphere_center, double sphere_radius, const IvVector3& viewer,
 		double& lon, double& lat, IvDoubleVector3& hit_point)
@@ -172,13 +170,19 @@ namespace Cali
 		info.set_debug_string(L"lat", (float)lat);
 	}
 
-	void TerrainQuad::update(float dt)
+	LevelDesc get_level_from_distance(double distance, const double area_size, const int max_level)
 	{
-	}
+		distance = abs(distance);
+		LevelDesc level_desc = {};
+		level_desc.level = 0;
+		level_desc.area_size = area_size;
+		while (level_desc.area_size > distance && level_desc.level < max_level)
+		{
+			level_desc.area_size /= 2.0;
+			level_desc.level += 1;
+		}
 
-	void TerrainQuad::render(IvRenderer & renderer)
-	{
-		assert("TerrainQuad::render() is not supported");
+		return level_desc;
 	}
 
 	void TerrainQuad::render(IvRenderer & renderer, const Frustum& frustum)
@@ -187,12 +191,6 @@ namespace Cali
 
 		auto planet_center_relative_to_viewer = m_planet_center - m_viewer_position;
 		auto height = abs(planet_center_relative_to_viewer.Length() - m_planet_radius);
-
-		/*if (height > 1000.0f)
-		{
-			curvature = lerp(0.0f, 1.0f, float(height) / (m_planet_radius / 1000.0f));
-			if (curvature > 1.0f) curvature = 1.0f;
-		}*/
 
 		m_qtree.collapse();
 
@@ -216,14 +214,14 @@ namespace Cali
 		m_qtree.divide(circle * 8, level_desc.level - 3);
 		m_qtree.divide(circle * 32, level_desc.level - 4);
 
-		m_aabb.set_position(hit_point);
-		m_aabb.set_scale(1.0f);
-		m_aabb.render(renderer);
+		m_box.set_position(hit_point);
+		m_box.set_scale(1.0f);
+		m_box.render(renderer);
 
 		info.set_debug_string(L"map_x", (float)map_x);
 		info.set_debug_string(L"map_y", (float)map_y);
 
-		circle = Circle{ { map_x, map_y }, height * 32 < 1000.0f ? 1000.0f : height * 32 };
+		circle = Circle{ { map_x, map_y }, height * 32 < 1000.0f ? 1000.0f : height * 32 }; // TODO: make this more clear and commented
 		
 		m_nodes_rendered_per_frame = 0;
 
@@ -234,6 +232,38 @@ namespace Cali
 		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
 	}
 
+	inline void TerrainQuad::calculate_sphere_surface_quad(
+		const Quad& quad, 
+		IvDoubleVector3& A, 
+		IvDoubleVector3& B, 
+		IvDoubleVector3& C, 
+		IvDoubleVector3& D,
+		IvDoubleVector3& quad_center_lerped,
+		IvDoubleVector3& quad_center_on_sphere,
+		double& overlapping_area)
+	{
+		IvDoubleVector3 normal;
+		overlapping_area = (quad.width() / c_gird_cells) * (m_overlapping_edge_cells / 2.0f);
+		A = Math::adjusted_cube_to_sphere(
+			quad.center.x - quad.half_size.x - overlapping_area, 
+			quad.center.y + quad.half_size.y + overlapping_area, 
+			m_planet_radius, m_planet_center, normal);
+		B = Math::adjusted_cube_to_sphere(
+			quad.center.x + quad.half_size.x + overlapping_area, 
+			quad.center.y + quad.half_size.y + overlapping_area, 
+			m_planet_radius, m_planet_center, normal);
+		C = Math::adjusted_cube_to_sphere(
+			quad.center.x + quad.half_size.x + overlapping_area, 
+			quad.center.y - quad.half_size.y - overlapping_area, 
+			m_planet_radius, m_planet_center, normal);
+		D = Math::adjusted_cube_to_sphere(
+			quad.center.x - quad.half_size.x - overlapping_area, 
+			quad.center.y - quad.half_size.y - overlapping_area, 
+			m_planet_radius, m_planet_center, normal);
+		quad_center_lerped = Math::quad_lerp(A, B, C, D, 0.5, 0.5);
+		quad_center_on_sphere = Math::adjusted_cube_to_sphere(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, normal);
+	}
+
 	void TerrainQuad::render_node(const TerrainQuadTree::Node& node, void* render_context_ptr)
 	{
 		assert(render_context_ptr != nullptr);
@@ -241,37 +271,34 @@ namespace Cali
 
 		auto& quad = node.get_centred_quad();
 
-		//if (!render_context.frustum.contains_aligned_bounding_box(
-		//	(float)quad.center.x, 0.0f, (float)quad.center.y,
-		//	(float)quad.width(), 1.0f, (float)quad.width()))
-		//{
-		//	return;
-		//}
+		double overlapping_area;
+		IvDoubleVector3 A, B, C, D, quad_center_lerped, quad_center_on_sphere;
+		calculate_sphere_surface_quad(quad, A, B, C, D, quad_center_lerped, quad_center_on_sphere, overlapping_area);
 
-		IvDoubleVector3 position, normal, tangent;
-		IvDoubleVector3 A, B, C, D;
-		double overlapping_area = (quad.width() / c_gird_cells) * (m_overlapping_edge_cells / 2.0f);
-		A = Math::adjusted_cube_to_sphere(quad.center.x - quad.half_size.x - overlapping_area, quad.center.y + quad.half_size.y + overlapping_area, m_planet_radius, m_planet_center, normal);
-		B = Math::adjusted_cube_to_sphere(quad.center.x + quad.half_size.x + overlapping_area, quad.center.y + quad.half_size.y + overlapping_area, m_planet_radius, m_planet_center, normal);
-		C = Math::adjusted_cube_to_sphere(quad.center.x + quad.half_size.x + overlapping_area, quad.center.y - quad.half_size.y - overlapping_area, m_planet_radius, m_planet_center, normal);
-		D = Math::adjusted_cube_to_sphere(quad.center.x - quad.half_size.x - overlapping_area, quad.center.y - quad.half_size.y - overlapping_area, m_planet_radius, m_planet_center, normal);
+		AABB aabb;
+		aabb.set_points(&A, &B, &C, &D, &quad_center_lerped, &quad_center_on_sphere);
+		auto aabb_center = aabb.get_center();
+		auto aabb_extents = aabb.get_extents();
 
-		//m_aabb.set_position(A); m_aabb.render(render_context.renderer);
-		//m_aabb.set_position(B); m_aabb.render(render_context.renderer);
-		//m_aabb.set_position(C); m_aabb.render(render_context.renderer);
-		//m_aabb.set_position(D); m_aabb.render(render_context.renderer);
+		/*m_box.set_position(aabb.get_center());
+		m_box.set_scale(aabb.get_extents());
+		m_box.render(render_context.renderer);*/
+
+		if (!render_context.frustum.contains_aligned_bounding_box(
+			(float)aabb_center.x, (float)aabb_center.y, (float)aabb_center.z,
+			(float)aabb_extents.x, (float)aabb_extents.y, (float)aabb_extents.z))
+		{
+			return;
+		}
 
 		m_shader->GetUniform("quad_a")->SetValue((IvVector3)A - m_viewer_position, 0);
 		m_shader->GetUniform("quad_b")->SetValue((IvVector3)B - m_viewer_position, 0);
 		m_shader->GetUniform("quad_c")->SetValue((IvVector3)C - m_viewer_position, 0);
 		m_shader->GetUniform("quad_d")->SetValue((IvVector3)D - m_viewer_position, 0);
-
-		position = Math::adjusted_cube_to_sphere(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, normal);
 		m_shader->GetUniform("quad_center")->SetValue(IvVector3{ (float)quad.center.x, (float)quad.center.y, 0.0f}, 0);
 
-		m_grid.set_position(position);
+		m_grid.set_position(quad_center_on_sphere);
 		m_grid.set_direction({ 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f });
-		m_grid.rotate(Constants::c_world_up, normal);
 		m_shader->GetUniform("rotation_matrix")->SetValue(m_grid.get_rotation(), 0);
 
 		m_shader->GetUniform("gird_cells")->SetValue((float)m_grid.cols(), 0);
@@ -286,9 +313,6 @@ namespace Cali
 		{
 			m_shader->GetUniform("curvature")->SetValue((float)1.0f, 0);
 		}
-
-
-		//m_shader->GetUniform("quad_data")->SetValue(m_quad_data_textures[detail_level]);
 
 		m_grid.render(render_context.renderer, m_shader);
 
