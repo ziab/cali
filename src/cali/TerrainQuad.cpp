@@ -221,7 +221,7 @@ namespace Cali
 		info.set_debug_string(L"map_x", (float)map_x);
 		info.set_debug_string(L"map_y", (float)map_y);
 
-		circle = Circle{ { map_x, map_y }, height * 32 < 1000.0f ? 1000.0f : height * 32 }; // TODO: make this more clear and commented
+		circle = Circle{ { map_x, map_y }, height < 1000.0f ? m_planet_radius / 4 : height * 32 }; // TODO: make this more clear and commented
 		
 		m_nodes_rendered_per_frame = 0;
 
@@ -303,6 +303,7 @@ namespace Cali
 
 		m_shader->GetUniform("gird_cells")->SetValue((float)m_grid.cols(), 0);
 		m_shader->GetUniform("quad_size")->SetValue(IvVector3{ (float)(quad.width() + overlapping_area), (float)(quad.width() + overlapping_area), 0.0f }, 0);
+		m_shader->GetUniform("quad_scale_factor")->SetValue(20.0f, 0);
 
 		auto detail_level = node.get_depth() - 1;
 		if (detail_level > 6)

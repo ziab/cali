@@ -39,7 +39,8 @@ float4 ps_sky(VS_OUTPUT input) : SV_TARGET
     // Hack to fade out light shafts when the Sun is very close to the horizon.
     float lightshaft_fadein_hack = smoothstep(0.02, 0.04, dot(normalize(camera_position - earth_center), sun_direction));
 
-    float3 camera_position_km_uints = camera_position;
+    // Hack: camer_position to kilometers adjustment
+    float3 camera_position_km_uints = camera_position / (kLengthUnitInMeters / 100.0);
 
     // Compute the distance between the view ray line and the Earth center,
     // and the distance between the camera and the intersection of the view

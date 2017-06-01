@@ -133,6 +133,7 @@ float3 quad_d;
 // 2d map surface
 float3 quad_center;
 float3 quad_size;
+float quad_scale_factor;
 
 /////////////////////////////////////////////////////////////
 // Main
@@ -170,7 +171,7 @@ VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : P
     float2 quad_center_uv = float2(quad_center.x, quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
     float quad_size_relative = quad_size.x / (planet_radius * 2.0);
 
-    float2 translated_uv = (quad_center_uv + uv * quad_size_relative) * 2.0;
+    float2 translated_uv = (quad_center_uv + uv * quad_size_relative) * quad_scale_factor;
 
     // loop the texture
     translated_uv = frac(abs(translated_uv));

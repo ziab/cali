@@ -11,7 +11,7 @@ namespace Cali
 	namespace World
 	{
 		static const float c_camera_far = std::numeric_limits<float>::max() / 100000000000.f;
-		static const float c_earth_radius = 6360.0f;
+		static const float c_earth_radius = 63600.0f;
 		static const IvVector3 c_earth_center = { 0.0, -c_earth_radius, 0.0 };
 
 		static float c_horizon_distance = 100000000000000.f;

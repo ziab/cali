@@ -35,6 +35,12 @@ cbuffer SunLight : register(b1)
     float3 sun_attenuation;
     float4 sun_color;
 }
+// TODO: place all planet-related stuff into this cbuffer
+cbuffer CurrentPlanet : register(b2)
+{
+    float cp_planet_radius;
+    float3 cp_planet_cetner;
+}
 
 float3 quad_lerp(
 		in float3 a,
