@@ -30,6 +30,8 @@ namespace Cali
 		{
 			x = rhv.x;
 			y = rhv.y;
+
+			return *this;
 		}
 	};
 
@@ -328,6 +330,11 @@ namespace Cali
 			double get_scale_factor()
 			{
 				return 1.0 / m_depth;
+			}
+
+			int get_depth() const
+			{
+				return m_depth;
 			}
 
 			void divide(Point _where, int depth)

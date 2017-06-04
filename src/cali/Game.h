@@ -19,6 +19,7 @@
 #include "ConstantBuffer.h"
 #include "ConstantBufferWrapper.h"
 #include "PostEffect.h"
+#include "Bruneton.h"
 
 #include <IvRenderTexture.h>
 
@@ -44,6 +45,7 @@ class Game : public IvGame
 #else
 	std::unique_ptr<Cali::Terrain> m_terrain;
 #endif // !WORK_ON_ICOSAHEDRON
+	std::unique_ptr<Cali::Bruneton> m_bruneton;
 	std::unique_ptr<Cali::Sky> m_sky;
 	std::unique_ptr<Cali::Sun> m_sun;
 	std::unique_ptr<IvRenderTexture> m_main_screen_buffer;
@@ -55,11 +57,15 @@ class Game : public IvGame
 
 	bool m_render_wireframe;
 	bool m_render_debug_info;
+	bool m_stop_time;
 
 private:
 	void toggle_wireframe(float dt);
 	void toggle_debug_info(float dt);
 	void setup_controls();
+
+	void reset_scene(float dt);
+	void stop_time(float dt);
 
 	friend void on_window_resize(unsigned int width, unsigned int height);
 	virtual void on_window_resize(size_t width, size_t height);

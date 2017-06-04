@@ -12,11 +12,11 @@ out vec3 worldPos;
 
 uniform mat4 IvModelViewProjectionMatrix;
 uniform mat4 IvNormalMatrix;
-uniform mat4 modelMatrix;
+uniform mat4 IvModelMatrix;
 
 void main()
 {
     gl_Position = IvModelViewProjectionMatrix * position;
-    worldPos = vec3(modelMatrix * position);
+    worldPos = vec3(IvModelMatrix * position);
     normal = vec3(IvNormalMatrix * vec4(inNormal, 0));
 }

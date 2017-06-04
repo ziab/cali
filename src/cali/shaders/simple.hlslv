@@ -2,14 +2,14 @@
 
 float4x4 IvModelViewProjectionMatrix;
 float4x4 IvNormalMatrix;
-float4x4 modelMatrix;
+float4x4 IvModelMatrix;
 
 VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : POSITION)
 {
     VS_OUTPUT output = (VS_OUTPUT) 0;
 
     output.screen_position = mul(IvModelViewProjectionMatrix, position);
-    output.world_position = (float3) (mul(modelMatrix, position));
+    output.world_position = (float3) (mul(IvModelMatrix, position));
     output.normal = (float3) (mul(IvNormalMatrix, float4(normal, 0)));
     return output;
 }

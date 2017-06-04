@@ -48,9 +48,6 @@ namespace Cali
 	void Sun::render(IvRenderer & renderer)
 	{
 		set_transformation_matrix(renderer);
-
-		m_shader->GetUniform("modelMatrix")->SetValue(get_transformation_matrix(), 0);
-
 		renderer.SetBlendFunc(kOneBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 		m_sun_rect.render(renderer, m_shader);
 	}
@@ -65,7 +62,7 @@ namespace Cali
 	{
 		global_state->sun_position = get_position();
 		// O_o
-		global_state->sun_intensity = IvVector3(50000000000000000000.0f, 50000000000000000000.0f, 50000000000000000000.0f);
+		global_state->sun_intensity = IvVector3(1000000000000000000000.0f, 1000000000000000000000.0f, 1000000000000000000000.0f);
 		global_state->sun_attenuation = IvVector3(0.0f, 0.0f, 0.0000125f);
 		global_state->sun_color = World::sun_zenith_color;
 

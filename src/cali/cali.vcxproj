@@ -518,6 +518,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="Bruneton.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommonFileSystem.cpp" />
@@ -539,7 +540,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Bruneton.h" />
+    <ClInclude Include="CaliMath.h" />
+    <ClInclude Include="CaliSphereMath.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CommonFileSystem.h" />
     <ClInclude Include="CommonTexture.h" />

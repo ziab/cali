@@ -69,6 +69,8 @@ namespace Cali
 			if (state.P) invoke_callback(m_wireframe, dt);
 			if (state.LeftShift) invoke_callback(m_shift, dt);
 			if (state.F10) invoke_callback(m_debug_info, dt);
+			if (state.F8) invoke_callback(m_reset, dt);
+			if (state.F7) invoke_callback(m_stop, dt);
 
 			if (state.R) invoke_callback(m_mouse_y, -5.0f, dt);
 			if (state.F) invoke_callback(m_mouse_y, 5.0f, dt);

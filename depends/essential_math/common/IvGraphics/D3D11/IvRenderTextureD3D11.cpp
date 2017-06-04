@@ -27,6 +27,20 @@ bool IvRenderTextureD3D11::Resize(size_t width, size_t height, IvTextureFormat f
 	IvTexture::mWidth = (unsigned int) width;
 	IvTexture::mHeight = (unsigned int) height;
 	IvTexture::mFormat = format;
+	mUsage = kDefaultUsage;
+
+	unsigned int texelSize = sInternalTextureFormatSize[mFormat];
+
+	mLevelCount = 1;
+
+	// allocate level for BeginLoadData/EndLoadData
+
+	mLevels = new Level[mLevelCount];
+
+	mLevels[0].mData = nullptr;
+	mLevels[0].mWidth = mWidth;
+	mLevels[0].mHeight = mHeight;
+	mLevels[0].mSize = mWidth*mHeight*texelSize;
 
 	auto& resmand3d11 = static_cast<IvResourceManagerD3D11&>(resman);
 	auto device = resmand3d11.GetDevice();
@@ -96,6 +110,20 @@ bool IvRenderTextureD3D11::Resize(size_t width, size_t height, size_t depth, IvT
 	IvTexture::mHeight = (unsigned int)height;
 	IvTexture::mDepth = (unsigned int)depth;
 	IvTexture::mFormat = format;
+	mUsage = kDefaultUsage;
+
+	unsigned int texelSize = sInternalTextureFormatSize[mFormat];
+
+	mLevelCount = 1;
+
+	// allocate level for BeginLoadData/EndLoadData
+
+	mLevels = new Level[mLevelCount];
+
+	mLevels[0].mData = nullptr;
+	mLevels[0].mWidth = mWidth;
+	mLevels[0].mHeight = mHeight;
+	mLevels[0].mSize = mWidth * mHeight * mDepth * texelSize;
 
 	auto& resmand3d11 = static_cast<IvResourceManagerD3D11&>(resman);
 	auto device = resmand3d11.GetDevice();

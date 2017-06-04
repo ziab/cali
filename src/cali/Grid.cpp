@@ -21,8 +21,8 @@ namespace Cali
 
 		// TODO: make the ordering cache-friendly
 
-		float u_stride = 1.f / (float)cols;
-		float v_stride = 1.f / (float)rows;
+		float u_stride = 1.f / (float)(cols - 1);
+		float v_stride = 1.f / (float)(rows - 1);
 		float u = -0.5f, v = -0.5f;
 		for (int32_t y = -rows / 2; y < rows / 2 + rows % 2; ++y)
 		{
@@ -31,11 +31,11 @@ namespace Cali
 			{
 				auto& curr = vertices[i++];
 
-				curr.normal = { 0.0f, 1.0f, 0.0f };
+				curr.normal = { 0.0f, 0.0f, 1.0f };
 				//curr.color = { 0, 255, 0, 255 };
 				curr.position.x = (float)x * stride;
-				curr.position.y = 0.f;
-				curr.position.z = (float)y * stride;
+				curr.position.y = (float)y * stride;
+				curr.position.z = 0.0f;
 				curr.texturecoord = { u, v };
 				u += u_stride;
 			}

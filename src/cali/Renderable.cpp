@@ -47,13 +47,17 @@ namespace Cali
 		m_model_matrix(2, 1) = up.z;
 		m_model_matrix(2, 2) = m_direction.z;
 
-		m_model_matrix(0, 0) *= m_scale.x;
-		m_model_matrix(1, 1) *= m_scale.y;
-		m_model_matrix(2, 2) *= m_scale.z;
-
 		m_model_matrix(0, 3) = m_position.x;
 		m_model_matrix(1, 3) = m_position.y;
 		m_model_matrix(2, 3) = m_position.z;
+
+		IvMatrix44 scale_matrix;
+
+		scale_matrix(0, 0) = m_scale.x;
+		scale_matrix(1, 1) = m_scale.y;
+		scale_matrix(2, 2) = m_scale.z;
+
+		m_model_matrix = m_model_matrix * scale_matrix;
 	}
 
 	void Physical::normalize()
@@ -109,6 +113,26 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
+	IvMatrix44 Physical::get_rotation()
+	{
+		auto up = m_direction.Cross(m_right);
+
+		IvMatrix44 matrix;
+		matrix(0, 0) = m_right.x;
+		matrix(0, 1) = up.x;
+		matrix(0, 2) = m_direction.x;
+
+		matrix(1, 0) = m_right.y;
+		matrix(1, 1) = up.y;
+		matrix(1, 2) = m_direction.y;
+
+		matrix(2, 0) = m_right.z;
+		matrix(2, 1) = up.z;
+		matrix(2, 2) = m_direction.z;
+
+		return matrix;
+	}
+
 	void Physical::look_at(const IvVector3 & point, const IvVector3 & up)
 	{
 		auto direction = point - m_position;
@@ -143,5 +167,26 @@ namespace Cali
 		m_right = m_right * rotation_matrix;
 
 		calculate_model_matrix();
+	}
+
+	void Physical::rotate(const IvVector3 & from, const IvVector3 & to)
+	{
+		if (from == to)
+		{
+			return;
+		}
+
+		auto axis = to.Cross(from);
+		float angle = asin(axis.Length());
+		axis.Normalize();
+
+		IvMatrix33 rotation_matrix;
+		rotation_matrix.Rotation(axis, angle);
+
+		m_direction = m_direction * rotation_matrix;
+		m_right = m_right * rotation_matrix;
+
+		calculate_model_matrix();
+
 	}
 }

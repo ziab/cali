@@ -31,9 +31,16 @@ static const DXGI_FORMAT D3DTextureFormatMapping[] =
 {
 	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // kRGBA32TexFmt
 	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // kRGB24TexFmt,
-	DXGI_FORMAT_R16G16B16A16_FLOAT,  //kRGBAFloat16TexFmt,
-	DXGI_FORMAT_R16G16B16A16_FLOAT,  //kRGBFloat16TexFmt,
+	DXGI_FORMAT_R16G16B16A16_FLOAT,  // kRGBAFloat16TexFmt,
+	DXGI_FORMAT_R32_FLOAT,           // kFloat32Fmt
+	DXGI_FORMAT_R32G32B32A32_FLOAT,
 };
+
+// 24-bit formats aren't supported in D3D11
+// will need to convert before creating
+static unsigned int sInternalTextureFormatSize[kTexFmtCount] = { 4, 4, 8, 4, 16 };
+static unsigned int sExternalTextureFormatSize[kTexFmtCount] = { 4, 3, 8, 4, 16 };
+static DXGI_FORMAT  sD3DTextureFormat[kTexFmtCount] = { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB };
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------

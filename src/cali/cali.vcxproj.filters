@@ -16,10 +16,11 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Icosahedron.cpp" />
     <ClCompile Include="TerrainIcosahedron.cpp" />
-    <ClCompile Include="AABB.cpp" />
     <ClCompile Include="CommonTexture.cpp" />
     <ClCompile Include="TerrainQuad.cpp" />
     <ClCompile Include="Frustum.cpp" />
+    <ClCompile Include="Box.cpp" />
+    <ClCompile Include="AABB.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -44,10 +45,13 @@
     <ClInclude Include="World.h" />
     <ClInclude Include="Icosahedron.h" />
     <ClInclude Include="TerrainIcosahedron.h" />
-    <ClInclude Include="AABB.h" />
     <ClInclude Include="CommonTexture.h" />
     <ClInclude Include="TerrainQuad.h" />
     <ClInclude Include="Frustum.h" />
+    <ClInclude Include="CaliMath.h" />
+    <ClInclude Include="CaliSphereMath.h" />
+    <ClInclude Include="Box.h" />
+    <ClInclude Include="AABB.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">

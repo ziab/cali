@@ -1,5 +1,5 @@
 //===============================================================================
-// @ IvVector3.h
+// @ IvDoubleVector3.h
 // 
 // 3D vector class
 // ------------------------------------------------------------------------------
@@ -10,8 +10,8 @@
 // found in the LICENSE file.
 //===============================================================================
 
-#ifndef __IvVector3__h__
-#define __IvVector3__h__
+#ifndef __IvDoubleVector3__h__
+#define __IvDoubleVector3__h__
 
 //-------------------------------------------------------------------------------
 //-- Dependencies ---------------------------------------------------------------
@@ -29,7 +29,7 @@
 
 class IvMatrix33;
 
-class IvVector3
+class IvDoubleVector3
 {
     friend class IvLine3;
     friend class IvLineSegment3;
@@ -38,41 +38,46 @@ class IvVector3
     friend class IvPlane;
     friend class IvQuat;
     friend class IvRay3;
+	friend class IvVector3;
     
 public:
     // constructor/destructor
-    inline IvVector3() {}
-    inline IvVector3( float _x, float _y, float _z ) :
+    inline IvDoubleVector3() {}
+    inline IvDoubleVector3( double _x, double _y, double _z ) :
         x(_x), y(_y), z(_z)
     {
     }
-    inline ~IvVector3() {}
+    inline ~IvDoubleVector3() {}
 
     // copy operations
-    IvVector3(const IvVector3& other);
-    IvVector3& operator=(const IvVector3& other);
+    IvDoubleVector3(const IvDoubleVector3& other);
+    IvDoubleVector3& operator=(const IvDoubleVector3& other);
+	IvDoubleVector3(const IvVector3& other);
+	IvDoubleVector3& operator=(const IvVector3& other);
+
+	operator IvVector3() const;
 
     // text output (for debugging)
-    friend IvWriter& operator<<(IvWriter& out, const IvVector3& source);
+    friend IvWriter& operator<<(IvWriter& out, const IvDoubleVector3& source);
 
     // accessors
-    inline float& operator[]( unsigned int i )          { return (&x)[i]; }
-    inline float operator[]( unsigned int i ) const { return (&x)[i]; }
+    inline double& operator[]( unsigned int i )          { return (&x)[i]; }
+    inline double operator[]( unsigned int i ) const { return (&x)[i]; }
 
-    float Length() const;
-    float LengthSquared() const;
+    double Length() const;
+    double LengthSquared() const;
 
-    friend float Distance( const IvVector3& p0, const IvVector3& p1 );
-    friend float DistanceSquared( const IvVector3& p0, const IvVector3& p1 );
+    friend double Distance( const IvDoubleVector3& p0, const IvDoubleVector3& p1 );
+    friend double DistanceSquared( const IvDoubleVector3& p0, const IvDoubleVector3& p1 );
 
     // comparison
-    bool operator==( const IvVector3& other ) const;
-    bool operator!=( const IvVector3& other ) const;
+    bool operator==( const IvDoubleVector3& other ) const;
+    bool operator!=( const IvDoubleVector3& other ) const;
     bool IsZero() const;
     bool IsUnit() const;
 
     // manipulators
-    inline void Set( float _x, float _y, float _z );
+    inline void Set( double _x, double _y, double _z );
     void Clean();       // sets near-zero elements to 0
     inline void Zero(); // sets all elements to 0
     void Normalize();   // sets to unit vector
@@ -80,72 +85,67 @@ public:
     // operators
 
     // addition/subtraction
-    IvVector3 operator+( const IvVector3& other ) const;
-    friend IvVector3& operator+=( IvVector3& vector, const IvVector3& other );
-    IvVector3 operator-( const IvVector3& other ) const;
-    friend IvVector3& operator-=( IvVector3& vector, const IvVector3& other );
+    IvDoubleVector3 operator+( const IvDoubleVector3& other ) const;
+    friend IvDoubleVector3& operator+=( IvDoubleVector3& vector, const IvDoubleVector3& other );
+    IvDoubleVector3 operator-( const IvDoubleVector3& other ) const;
+    friend IvDoubleVector3& operator-=( IvDoubleVector3& vector, const IvDoubleVector3& other );
 
-    IvVector3 operator-() const;
+    IvDoubleVector3 operator-() const;
 
     // scalar multiplication
-    IvVector3   operator*( float scalar ) const;
-    friend IvVector3    operator*( float scalar, const IvVector3& vector );
-    IvVector3&          operator*=( float scalar );
-    IvVector3   operator/( float scalar ) const;
-    IvVector3&          operator/=( float scalar );
+    IvDoubleVector3   operator*( double scalar ) const;
+    friend IvDoubleVector3    operator*( double scalar, const IvDoubleVector3& vector );
+    IvDoubleVector3&          operator*=( double scalar );
+    IvDoubleVector3   operator/( double scalar ) const;
+    IvDoubleVector3&          operator/=( double scalar );
 
     // dot product/cross product
-    float               Dot( const IvVector3& vector ) const;
-    friend float        Dot( const IvVector3& vector1, const IvVector3& vector2 );
-    IvVector3           Cross( const IvVector3& vector ) const;
-    friend IvVector3    Cross( const IvVector3& vector1, const IvVector3& vector2 );
+    double               Dot( const IvDoubleVector3& vector ) const;
+    friend double        Dot( const IvDoubleVector3& vector1, const IvDoubleVector3& vector2 );
+    IvDoubleVector3           Cross( const IvDoubleVector3& vector ) const;
+    friend IvDoubleVector3    Cross( const IvDoubleVector3& vector1, const IvDoubleVector3& vector2 );
 
     // matrix products
-    friend IvVector3 operator*( const IvVector3& vector, const IvMatrix33& mat );
+    friend IvDoubleVector3 operator*( const IvDoubleVector3& vector, const IvMatrix33& mat );
  
     // useful defaults
-    static IvVector3    xAxis;
-    static IvVector3    yAxis;
-    static IvVector3    zAxis;
-    static IvVector3    origin;
+    static IvDoubleVector3    xAxis;
+    static IvDoubleVector3    yAxis;
+    static IvDoubleVector3    zAxis;
+    static IvDoubleVector3    origin;
     
     // member variables
-    float x, y, z;
+    double x, y, z;
 };
 
-float Distance( const IvVector3& p0, const IvVector3& p1 );
-float DistanceSquared( const IvVector3& p0, const IvVector3& p1 );
+double Distance( const IvDoubleVector3& p0, const IvDoubleVector3& p1 );
+double DistanceSquared( const IvDoubleVector3& p0, const IvDoubleVector3& p1 );
 
 //-------------------------------------------------------------------------------
 //-- Inlines --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------
-// @ IvVector3::Set()
+// @ IvDoubleVector3::Set()
 //-------------------------------------------------------------------------------
 // Set vector elements
 //-------------------------------------------------------------------------------
 inline void 
-IvVector3::Set( float _x, float _y, float _z )
+IvDoubleVector3::Set( double _x, double _y, double _z )
 {
     x = _x; y = _y; z = _z;
-}   // End of IvVector3::Set()
+}   // End of IvDoubleVector3::Set()
 
 //-------------------------------------------------------------------------------
-// @ IvVector3::Zero()
+// @ IvDoubleVector3::Zero()
 //-------------------------------------------------------------------------------
 // Zero all elements
 //-------------------------------------------------------------------------------
 inline void 
-IvVector3::Zero()
+IvDoubleVector3::Zero()
 {
     x = y = z = 0.0f;
-}   // End of IvVector3::Zero()
-
-inline IvVector3 operator*(const IvVector3& v1, const IvVector3& v2)
-{
-	return IvVector3{ v1.x * v2.x, v1.y * v2.y, v1.z * v2.z };
-}
+}   // End of IvDoubleVector3::Zero()
 
 //-------------------------------------------------------------------------------
 //-- Externs --------------------------------------------------------------------
