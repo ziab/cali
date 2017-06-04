@@ -19,6 +19,7 @@
 #include "ConstantBuffer.h"
 #include "ConstantBufferWrapper.h"
 #include "PostEffect.h"
+#include "Bruneton.h"
 
 #include <IvRenderTexture.h>
 
@@ -44,6 +45,7 @@ class Game : public IvGame
 #else
 	std::unique_ptr<Cali::Terrain> m_terrain;
 #endif // !WORK_ON_ICOSAHEDRON
+	std::unique_ptr<Cali::Bruneton> m_bruneton;
 	std::unique_ptr<Cali::Sky> m_sky;
 	std::unique_ptr<Cali::Sun> m_sun;
 	std::unique_ptr<IvRenderTexture> m_main_screen_buffer;

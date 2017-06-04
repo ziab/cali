@@ -109,9 +109,10 @@ namespace Cali
 		}
 	}
 
-	TerrainQuad::TerrainQuad() :
+	TerrainQuad::TerrainQuad(Bruneton& bruneton) :
 		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius, World::c_earth_radius } }),
 		m_grid(c_gird_cells, c_gird_cells, 1.0f),
+		m_bruneton(bruneton),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_cells / 16),
 		m_planet_center(Cali::World::c_earth_center),
@@ -132,6 +133,10 @@ namespace Cali
 		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
+
+		Texture::set_texture_safely(m_shader, "transmittance_texture", m_bruneton.get_transmittance_texture());
+		Texture::set_texture_safely(m_shader, "scattering_texture", m_bruneton.get_scattering_texture());
+		Texture::set_texture_safely(m_shader, "irradiance_texture", m_bruneton.get_irradiance_texture());
 	}
 
 	void TerrainQuad::update(float dt)

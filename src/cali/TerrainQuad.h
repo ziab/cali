@@ -23,6 +23,7 @@
 #include "TerrainQuadTree.h"
 #include "Box.h"
 #include "Frustum.h"
+#include "Bruneton.h"
 
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
@@ -35,6 +36,7 @@ namespace Cali
 		TerrainQuadTree m_qtree;
 		Box m_box;
 		Grid m_grid;
+		Bruneton& m_bruneton;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
 		const IvDoubleVector3 m_planet_center;
@@ -80,7 +82,7 @@ namespace Cali
 		virtual void render(IvRenderer & renderer, const Frustum& frustum) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		TerrainQuad();
+		TerrainQuad(Bruneton& bruneton);
 		~TerrainQuad();
 	};
 }

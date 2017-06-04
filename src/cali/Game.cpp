@@ -99,23 +99,29 @@ Game::PostRendererInitialize()
     IvGame::PostRendererInitialize();
 	setup_controls();
 
+	auto& renderer = *IvRenderer::mRenderer;
+
+	m_bruneton = std::make_unique<Cali::Bruneton>();
+	if (!m_bruneton) return false;
+
+	m_bruneton->precompute(renderer);
+
 #if defined WORK_ON_ICOSAHEDRON
 	m_terrain = std::unique_ptr<Cali::TerrainIcosahedron>(new Cali::TerrainIcosahedron);
 #elif defined WORK_ON_QUAD_TREE
-	m_terrain = std::unique_ptr<Cali::TerrainQuad>(new Cali::TerrainQuad);
+	m_terrain = std::unique_ptr<Cali::TerrainQuad>(new Cali::TerrainQuad(*m_bruneton));
 #else
 	m_terrain = std::unique_ptr<Cali::Terrain>(new Cali::Terrain);
 #endif // !WORK_ON_ICOSAHEDRON
     
 	if (!m_terrain)	return false;
 
-	m_sky = std::unique_ptr<Cali::Sky>(new Cali::Sky);
+	m_sky = std::unique_ptr<Cali::Sky>(new Cali::Sky(*m_bruneton));
 	if (!m_sky)	return false;
 
 	m_sun = std::unique_ptr<Cali::Sun>(new Cali::Sun);
 	if (!m_sun)	return false;
 
-	auto& renderer = *IvRenderer::mRenderer;
 	renderer.RegisterOnResizeCbk(&(::on_window_resize));
 
 	renderer.SetRenderInViewSpace(true);
