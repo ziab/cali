@@ -57,11 +57,15 @@ class Game : public IvGame
 
 	bool m_render_wireframe;
 	bool m_render_debug_info;
+	bool m_stop_time;
 
 private:
 	void toggle_wireframe(float dt);
 	void toggle_debug_info(float dt);
 	void setup_controls();
+
+	void reset_scene(float dt);
+	void stop_time(float dt);
 
 	friend void on_window_resize(unsigned int width, unsigned int height);
 	virtual void on_window_resize(size_t width, size_t height);

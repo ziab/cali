@@ -13,6 +13,14 @@ struct VS_OUTPUT
     float3 normal : NORMAL;
 };
 
+struct TERRAIN_VS_OUTPUT
+{
+    float4 screen_position : SV_POSITION;
+    float3 world_position : TEXCOORD0;
+    float3 normal : NORMAL;
+    float height : DEPTH0;
+};
+
 /*
 struct VS_TERRAIN_OUTPUT
 {

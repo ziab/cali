@@ -27,6 +27,8 @@ namespace Cali
 		std::function<t_SimpleInput> m_strafe_right;
 		std::function<t_SimpleInput> m_wireframe;
 		std::function<t_SimpleInput> m_shift;
+		std::function<t_SimpleInput> m_reset;
+		std::function<t_SimpleInput> m_stop;
 		std::function<t_SimpleInput> m_debug_info;
 
 		std::function<t_MouseInput> m_mouse_x;
@@ -51,6 +53,8 @@ namespace Cali
 		void strafe_right(std::function<t_SimpleInput> callback) { m_strafe_right = callback; }
 		void wireframe(std::function<t_SimpleInput> callback) { m_wireframe = callback; }
 		void shift(std::function<t_SimpleInput> callback) { m_shift = callback; }
+		void reset(std::function<t_SimpleInput> callback) { m_reset = callback; }
+		void stop(std::function<t_SimpleInput> callback) { m_stop = callback; }
 		void debug_info(std::function<t_SimpleInput> callback) { m_debug_info = callback; }
 		void mouse_x(std::function<t_MouseInput> callback) { m_mouse_x = callback; }
 		void mouse_y(std::function<t_MouseInput> callback) { m_mouse_y = callback; }

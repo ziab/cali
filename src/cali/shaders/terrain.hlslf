@@ -1,4 +1,5 @@
 #include "cali_common.fx"
+#include "bruneton_main.fx"
 
 /////////////////////////////////////////////////////////////
 // Type Definitions
@@ -6,24 +7,89 @@
 
 struct lightSampleValues
 {
-	float3 dir;
-	float3 L;
+    float3 dir;
+    float3 L;
 };
+
+static const float kBottomRadius = 6360000.0;
+static const float kLengthUnitInMeters = 1000.0;
+
+static const float kPi = 3.1415926;
+static const float kSunAngularRadius = 0.00935 / 2.0;
+static const float kSunSolidAngle = kPi * kSunAngularRadius * kSunAngularRadius;
+static const float3 kGroundAlbedo = float3(0.0, 0.0, 0.04);
+
+static const float kSolarIrradiance[3] =
+{
+    1.11776, 1.14259, 1.01249
+};
+
+static const float3 sun_radiance = float3(
+    kSolarIrradiance[0] / kSunSolidAngle,
+    kSolarIrradiance[1] / kSunSolidAngle,
+    kSolarIrradiance[2] / kSunSolidAngle);
+
+static const float3 earth_center = float3(0.0, -kBottomRadius / kLengthUnitInMeters, 0.0);
+
+float3 get_irradiance(TERRAIN_VS_OUTPUT input) : SV_TARGET
+{
+    ////////////////////////////////////////////////////////////////////////////
+    const float3 white_point = float3(1.0, 1.0, 1.0);
+    const float exposure = 10.0;
+    const float shadow_length = 0.0;
+    ////////////////////////////////////////////////////////////////////////////
+
+    float3 view_ray = input.world_position;
+    float3 view_direction = normalize(view_ray);
+    float3 sun_direction = normalize(sun_position - camera_position);
+
+    // HACK: to fade out light shafts when the Sun is very close to the horizon.
+    //float lightshaft_fadein_hack = smoothstep(0.02, 0.04, dot(normalize(camera_position - earth_center), sun_direction));
+
+    // HACK: camera_position to kilometers adjustment
+    float3 camera_position_km_uints = camera_position / (kLengthUnitInMeters / 100.0);
+
+    float3 _point = camera_position_km_uints + input.world_position.xyz / (kLengthUnitInMeters / 100.0);
+    float3 normal = input.normal;
+
+    // Compute the radiance reflected by the ground.
+    float3 sky_irradiance;
+    float3 sun_irradiance = GetSunAndSkyIrradiance(_point - earth_center, normal, sun_direction, sky_irradiance);
+    float3 ground_radiance = kGroundAlbedo * (1.0 / PI) *
+        (sun_irradiance * /*GetSunVisibility*/1.0 + sky_irradiance * /*GetSkyVisibility*/1.0);
+
+    //float shadow_length = max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) * lightshaft_fadein_hack;
+    float3 transmittance;
+    float3 in_scatter = GetSkyRadianceToPoint(
+        camera_position_km_uints - earth_center,
+        _point - earth_center,
+        shadow_length,
+        sun_direction,
+        transmittance);
+
+    ground_radiance = ground_radiance * transmittance + in_scatter;
+
+    float3 color = pow(
+        abs(float3(1.0, 1.0, 1.0) - exp(-ground_radiance / white_point * exposure)),
+        float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
+
+    return color;
+}
 
 lightSampleValues computePointLightValues(float3 surfacePosition)
 {
     lightSampleValues values;
 
     float3 lightVec = sun_position - surfacePosition;
-	float dist = length(lightVec);
+    float dist = length(lightVec);
 
     values.dir = normalize(lightVec);
 
 	// Dot computes the 3-term attenuation in one operation
 	// k_c * 1.0 + k_l * dist + k_q * dist * dist
 
-	float distAtten = dot(sun_attenuation,
-		float3(1.0, dist, dist*dist));
+    float distAtten = dot(sun_attenuation,
+		float3(1.0, dist, dist * dist));
 
     values.L = sun_intensity / distAtten;
 
@@ -35,24 +101,43 @@ lightSampleValues computePointLightValues(float3 surfacePosition)
 /////////////////////////////////////////////////////////////
 
 static const float resolution = 0.005;
-static const float far_plane = 1000000.0;
+static const float far_plane = 100000.0;
 
 /////////////////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////////////////
 
-float4 main(VS_OUTPUT input) : SV_TARGET
+float pixel_brightness(float3 color)
+{
+    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+}
+
+static const float3 desert_color = float3(254.0 / 255.0, 187.0 / 255.0, 142.0 / 255.0);
+static const float3 horizon_color = float3(113.f / 255.f, 149.f / 255.f, 206.f / 255.f);
+static const float3 snow_color = float3(0.8, 1.0, 1.0);
+static const float3 water_color = float3(0.0, 0.1, 1.0);
+
+float4 main(TERRAIN_VS_OUTPUT input) : SV_TARGET
 {
     lightSampleValues lightValues = computePointLightValues(input.world_position);
 
+    float3 base_color = desert_color;
+    if (input.height > 30.0)
+    {
+        base_color = snow_color;
+    }
+    else if (input.height < 2.0)
+    {
+        base_color = water_color;
+    }
+
     float3 lighting = clamp(dot(normalize(input.normal), lightValues.dir), 0.0, 1.0) * lightValues.L;
-    float4 frag_color = float4(lighting.r, lighting.g, lighting.b, 1.0);
-
+    float3 direct_light_color = lighting * base_color;
     float depth_value = log(resolution * input.screen_position.w + 1) / log(resolution * far_plane + 1);
+    direct_light_color = lerp(direct_light_color, horizon_color, depth_value);
 
-    frag_color.r = lerp(frag_color.r, 113.f / 255.f, depth_value);
-    frag_color.g = lerp(frag_color.g, 149.f / 255.f, depth_value);
-    frag_color.b = lerp(frag_color.b, 206.f / 255.f, depth_value);
+    float3 irradience = get_irradiance(input);
+    float3 frag_color = direct_light_color * irradience;
     
-    return frag_color;
+    return float4(frag_color, 1.0);
 }
