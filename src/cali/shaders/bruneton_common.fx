@@ -379,25 +379,24 @@ float4 GetScatteringTextureUvwzFromRMuMuSNu(in AtmosphereParameters atmosphere,
         r_mu * r_mu - r * r + atmosphere.bottom_radius * atmosphere.bottom_radius;
     Number u_mu;
     if (ray_r_mu_intersects_ground) {
-    Length d = -r_mu - SafeSqrt(discriminant);
-    Length d_min = r - atmosphere.bottom_radius;
-    Length d_max = rho;
-    u_mu = 0.5 - 0.5 * GetTextureCoordFromUnitRange(d_max == d_min ? 0.0 :
-        (d - d_min) / (d_max - d_min), SCATTERING_TEXTURE_MU_SIZE / 2);
+        Length d = -r_mu - SafeSqrt(discriminant);
+        Length d_min = r - atmosphere.bottom_radius;
+        Length d_max = rho;
+        u_mu = 0.5 - 0.5 * GetTextureCoordFromUnitRange(d_max == d_min ? 0.0 :
+            (d - d_min) / (d_max - d_min), SCATTERING_TEXTURE_MU_SIZE / 2);
     } else {
-    Length d = -r_mu + SafeSqrt(discriminant + H * H);
-    Length d_min = atmosphere.top_radius - r;
-    Length d_max = rho + H;
-    u_mu = 0.5 + 0.5 * GetTextureCoordFromUnitRange(
-        (d - d_min) / (d_max - d_min), SCATTERING_TEXTURE_MU_SIZE / 2);
+        Length d = -r_mu + SafeSqrt(discriminant + H * H);
+        Length d_min = atmosphere.top_radius - r;
+        Length d_max = rho + H;
+        u_mu = 0.5 + 0.5 * GetTextureCoordFromUnitRange(
+            (d - d_min) / (d_max - d_min), SCATTERING_TEXTURE_MU_SIZE / 2);
     }
     Length d = DistanceToTopAtmosphereBoundary(
         atmosphere, atmosphere.bottom_radius, mu_s);
     Length d_min = atmosphere.top_radius - atmosphere.bottom_radius;
     Length d_max = H;
     Number a = (d - d_min) / (d_max - d_min);
-    Number A =
-        -2.0 * atmosphere.mu_s_min * atmosphere.bottom_radius / (d_max - d_min);
+    Number A = -2.0 * atmosphere.mu_s_min * atmosphere.bottom_radius / (d_max - d_min);
     Number u_mu_s = GetTextureCoordFromUnitRange(
         max(1.0 - a / A, 0.0) / (1.0 + a), SCATTERING_TEXTURE_MU_S_SIZE);
     Number u_nu = (nu + 1.0) / 2.0;
@@ -418,9 +417,9 @@ AbstractSpectrum GetScattering(
     Number tex_x = floor(tex_coord_x);
     Number lerp = tex_coord_x - tex_x;
     float3 uvw0 = float3((tex_x + uvwz.y) / Number(SCATTERING_TEXTURE_NU_SIZE),
-      uvwz.z, uvwz.w);
+        uvwz.z, uvwz.w);
     float3 uvw1 = float3((tex_x + 1.0 + uvwz.y) / Number(SCATTERING_TEXTURE_NU_SIZE),
-      uvwz.z, uvwz.w);
+        uvwz.z, uvwz.w);
 
     float3 scattering = float4(scattering_texture.Sample(scattering_textureSampler, uvw0) * (1.0 - lerp) +
       scattering_texture.Sample(scattering_textureSampler, uvw1) * lerp).rgb;
