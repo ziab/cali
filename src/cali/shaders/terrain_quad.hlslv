@@ -161,6 +161,53 @@ float3 adjusted_cube_to_sphere(in float2 v, float sphere_radius, float3 sphere_c
     return sureface_to_sphere(phi, theta, sphere_radius, sphere_center, normal);
 }
 
+float4x4 calc_rotation_matrix(in float3 axis, float angle)
+{
+    float c, s;
+    sincos(angle, s, c);
+    float t = 1.0f - c;
+
+    float3 nAxis = normalize(axis);
+
+    // intermediate values
+    float tx = t * nAxis.x;
+    float ty = t * nAxis.y;
+    float tz = t * nAxis.z;
+    float sx = s * nAxis.x;
+    float sy = s * nAxis.y;
+    float sz = s * nAxis.z;
+    float txy = tx * nAxis.y;
+    float tyz = ty * nAxis.z;
+    float txz = tx * nAxis.z;
+
+    // set matrix
+    float4x4 mv;
+
+    // set matrix
+    mv._11 = tx * nAxis.x + c;
+    mv._21 = txy - sz;
+    mv._31 = txz + sy;
+    mv._41 = 0.0f;
+
+    mv._12 = txy + sz;
+    mv._22 = ty * nAxis.y + c;
+    mv._32 = tyz - sx;
+    mv._42 = 0.0f;
+
+    mv._13 = txz - sy;
+    mv._23 = tyz + sx;
+    mv._33 = tz * nAxis.z + c;
+    mv._43 = 0.0f;
+
+    mv._14 = 0.0f;
+    mv._24 = 0.0f;
+    mv._34 = 0.0f;
+    mv._44 = 1.0f;
+
+    return mv;
+
+} // End of IvMatrix33::Rotation()
+
 TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 position : POSITION)
 {
     TERRAIN_VS_OUTPUT output;
@@ -183,24 +230,28 @@ TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 posi
 
     if (curvature != 0.0)
     {
-        float2 surface_point = (float2(quad_center.x, quad_center.y) + uv * quad_size.x) / (planet_radius);
+        float2 surface_point = (float2(quad_center.x, quad_center.y) + uv * quad_size.x) / planet_radius;
         world_position_inter = adjusted_cube_to_sphere(surface_point, planet_radius, planet_center, world_normal);
     }
     else
     {
         world_position_inter = quad_lerp(quad_a, quad_b, quad_c, quad_d, float2(uv.x + 0.5, 1.0 - (uv.y + 0.5)));
+        world_normal = normalize(world_position_inter - planet_center);
     }
+
+    float angle = acos(dot(world_normal, float3(0.0, 1.0, 0.0)));
+    float3 tangent = cross(world_normal, float3(0.0, 1.0, 0.0));
+    float4x4 normal_rot_mat = calc_rotation_matrix(tangent, angle);
 
     float height = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1;
     
-    float4 world_position = 
-        float4(world_position_inter + world_normal * height, 1.0);
+    float4 world_position = float4(world_position_inter + world_normal * height, 1.0);
 
     output.screen_position = mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
-    output.normal = (float3) (mul(IvNormalMatrix, float4(
-        get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0)
-    ));
+    output.normal = (float3) mul(normal_rot_mat,
+        float4(get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0.0)
+    );
     output.height = height;
 
     return output;
