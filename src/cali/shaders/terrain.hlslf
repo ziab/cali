@@ -136,8 +136,9 @@ float4 main(TERRAIN_VS_OUTPUT input) : SV_TARGET
     float depth_value = log(resolution * input.screen_position.w + 1) / log(resolution * far_plane + 1);
     direct_light_color = lerp(direct_light_color, horizon_color, depth_value);
 
-    float3 sun_ray = sun_position - 2 * camera_position;
-    float angle = clamp(acos(dot(normalize(sun_ray), normalize(input.world_position))), 0.0, 1.0);
+    // 2 * camera_position because at first sun is translated to camera-centric coordinate system
+    float3 sun_to_fragment_ray = normalize(sun_position - 2 * camera_position);
+    float angle = clamp(acos(dot(sun_to_fragment_ray, normalize(input.world_position))), 0.0, 1.0);
     float mix = lerp(0.7, 1.0, sqrt(angle));
 
     float3 irradience = get_irradiance(input);
