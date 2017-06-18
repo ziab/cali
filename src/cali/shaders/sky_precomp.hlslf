@@ -52,7 +52,7 @@ float4 ps_sky(VS_OUTPUT input) : SV_TARGET
 
     float vs_dot = dot(view_direction, sun_direction);
 
-    if (vs_dot > 0.99993)
+    if (vs_dot > 0.999975)
     {
         radiance = radiance + transmittance * sun_radiance;
     }
