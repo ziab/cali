@@ -1,10 +1,10 @@
 #include "Frustum.h"
 
 
-namespace Cali
+namespace cali
 {
 	/*
-	void Frustum::construct_frustum(float screenDepth, IvMatrix44 projectionMatrix, IvMatrix44 viewMatrix)
+	void frustum::construct_frustum(float screenDepth, IvMatrix44 projectionMatrix, IvMatrix44 viewMatrix)
 	{
 		// Create the frustum matrix from the view matrix and updated projection matrix.
 		IvMatrix44 viewProjection= projectionMatrix * viewMatrix;
@@ -55,7 +55,7 @@ namespace Cali
 	}
 	*/
 
-	void Frustum::construct_frustum(const IvMatrix44& iv_projection_matrix, const IvMatrix44& iv_view_matrix)
+	void frustum::construct_frustum(const IvMatrix44& iv_projection_matrix, const IvMatrix44& iv_view_matrix)
 	{
 		using namespace DirectX;
 
@@ -75,7 +75,7 @@ namespace Cali
 		m_frustum.Near = 1.0f;
 	}
 
-	bool Frustum::visible(const IvOBB & box) const
+	bool frustum::visible(const IvOBB & box) const
 	{
 		/*for (auto&& plane : m_planes)
 		{
@@ -85,7 +85,7 @@ namespace Cali
 		*/
 		return true;
 	}
-	bool Frustum::contains_aligned_bounding_box(float x, float y, float z, float extent_x, float extent_y, float extent_z) const
+	bool frustum::contains_aligned_bounding_box(float x, float y, float z, float extent_x, float extent_y, float extent_z) const
 	{
 		using namespace DirectX;
 		BoundingBox box(XMFLOAT3{ x, y, z }, XMFLOAT3{ extent_x, extent_y, extent_z });

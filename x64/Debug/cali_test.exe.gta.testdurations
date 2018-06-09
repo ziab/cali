@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GtaTestDurations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Executable>E:\code\gitlab\cali\x64\Debug\cali_test.exe</Executable>
+  <TestDurations>
+    <TestDuration Test="TerrainQuadTree.quad" Duration="1" />
+    <TestDuration Test="TerrainQuadTree.test_building_tree" Duration="1" />
+    <TestDuration Test="terrain_quad_tree.test_high_prescision" Duration="1" />
+  </TestDurations>
+</GtaTestDurations>

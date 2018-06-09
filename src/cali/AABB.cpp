@@ -1,7 +1,7 @@
 #include "AABB.h"
 #include "CaliMath.h"
 
-namespace Cali
+namespace cali
 {
 	void AABB::reset()
 	{

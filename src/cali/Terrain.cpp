@@ -11,7 +11,7 @@
 #include "World.h"
 #include "DebugInfo.h"
 
-namespace Cali
+namespace cali
 {
 	float lerp(float a, float b, float f)
 	{
@@ -31,7 +31,7 @@ namespace Cali
 		return scale;
 	}
 
-	Terrain::RenderLevelParamerters Terrain::calculate_render_level_parameters(
+	terrain::RenderLevelParamerters terrain::calculate_render_level_parameters(
 		IvRenderer& renderer, const IvVector3 & position, const IvVector3 & planet_center, double radius)
 	{
 		////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ namespace Cali
 
 		params.initial_scale = (float)get_scale_from_distance(distance_from_surface, m_hd_grid.width());
 
-		auto& info = Cali::DebugInfo::get_debug_info();
+		auto& info = cali::debug_info::get_debug_info();
 		info.set_debug_string(L"initial_scale", params.initial_scale);
 
 		params.max_level = size_t(abs(floor(lerp(6.0f, 1.0f, (float)distance_from_surface / (m_planet_radius / 10.0f)))));
@@ -62,22 +62,22 @@ namespace Cali
 		return params;
 	}
 
-	void Terrain::update(float dt)
+	void terrain::update(float dt)
 	{
 	}
 
-	void Terrain::set_viewer(const IvVector3 & position)
+	void terrain::set_viewer(const IvVector3 & position)
 	{
 		m_viewer_position = position;
 	}
 
-	Terrain::Terrain() :
+	terrain::terrain() :
 		m_hd_grid(c_hd_gird_dimention, c_hd_gird_dimention, 1.0f),
 		m_ld_grid(c_hd_gird_dimention / 2, c_hd_gird_dimention / 2, 2.0f),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_hd_gird_dimention / 32),
-		m_planet_center(Cali::World::c_earth_center),
-		m_planet_radius(Cali::World::c_earth_radius)
+		m_planet_center(cali::world::c_earth_center),
+		m_planet_radius(cali::world::c_earth_radius)
 	{
 		std::string vertex_shader = construct_shader_path("terrain.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -88,15 +88,15 @@ namespace Cali
 			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
 				pixel_shader.c_str(), "main"));
 
-		if (!m_shader) throw std::exception("Terrain: failed to load shader program");
+		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
-		m_height_map_texture = Texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
-		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
+		m_height_map_texture = texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
+		if (!m_height_map_texture) throw("terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
 	}
 
-	Terrain::~Terrain()
+	terrain::~terrain()
 	{
 		IvRenderer::mRenderer->GetResourceManager()->Destroy(m_shader);
 	}
@@ -108,8 +108,8 @@ namespace Cali
 		uint8_t blue;
 	};
 
-	void Terrain::render_level(IvRenderer & renderer,
-		Grid & level_grid,
+	void terrain::render_level(IvRenderer & renderer,
+		grid & level_grid,
 		const IvVector3& offset,
 		float scale,
 		float grid_scale_factor)
@@ -130,9 +130,9 @@ namespace Cali
 		level_grid.render(renderer, m_shader);
 	}
 
-	void Terrain::render_levels(
+	void terrain::render_levels(
 		IvRenderer& renderer,
-		Grid& level_grid,
+		grid& level_grid,
 		size_t level,
 		size_t max_level,
 		float offset_from_viewer,
@@ -176,7 +176,7 @@ namespace Cali
 		}
 	}
 
-	void Terrain::render(IvRenderer& renderer)
+	void terrain::render(IvRenderer& renderer)
 	{
 		renderer.SetBlendFunc(kSrcAlphaBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 

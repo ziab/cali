@@ -17,7 +17,7 @@
 
 #include "IvDoubleVector3.h"
 
-namespace Cali
+namespace cali
 {
 	void set_quad_data_texture(void* quad_data_texture, size_t width, size_t height, size_t x, size_t y,
 		const IvVector3& displacement, const IvVector3& normal)
@@ -43,7 +43,7 @@ namespace Cali
 		normal_w = 1.0f;
 	}
 
-	void TerrainQuad::calculate_displacement_data(const Cali::Quad& quad, int level, void* quad_data_texture)
+	void terrain_quad::calculate_displacement_data(const cali::quad& quad, int level, void* quad_data_texture)
 	{
 		//
 		//  0 <----u----> 1
@@ -86,7 +86,7 @@ namespace Cali
 		}
 	}
 
-	void TerrainQuad::calculate_displacement_data_for_detail_levels()
+	void terrain_quad::calculate_displacement_data_for_detail_levels()
 	{
 		auto resman = IvRenderer::mRenderer->GetResourceManager();
 		for (auto* texture : m_quad_data_textures)
@@ -95,7 +95,7 @@ namespace Cali
 		}
 
 		m_quad_data_textures.resize(c_detail_levels);
-		Quad current_quad{ { 0.0, 0.0 },{ m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
+		quad current_quad{ { 0.0, 0.0 },{ m_qtree.width() / 2.0, m_qtree.height() / 2.0 } };
 		for (int i = 0; i < c_detail_levels; ++i)
 		{
 			auto texture = resman->CreateRenderTexture(c_gird_cells, c_gird_cells, 2, kFloat128Fmt);
@@ -109,14 +109,14 @@ namespace Cali
 		}
 	}
 
-	TerrainQuad::TerrainQuad(Bruneton& bruneton) :
-		m_qtree({ { 0.0, 0.0 }, { World::c_earth_radius, World::c_earth_radius } }),
+	terrain_quad::terrain_quad(Bruneton& bruneton) :
+		m_qtree({ { 0.0, 0.0 }, { world::c_earth_radius, world::c_earth_radius } }),
 		m_grid(c_gird_cells, c_gird_cells, 1.0f),
 		m_bruneton(bruneton),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
 		m_overlapping_edge_cells(c_gird_cells / 16),
-		m_planet_center(Cali::World::c_earth_center),
-		m_planet_radius(Cali::World::c_earth_radius)
+		m_planet_center(cali::world::c_earth_center),
+		m_planet_radius(cali::world::c_earth_radius)
 	{
 		std::string vertex_shader = construct_shader_path("terrain_quad.hlslv");
 		std::string pixel_shader = construct_shader_path("terrain.hlslf");
@@ -127,28 +127,28 @@ namespace Cali
 			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
 				pixel_shader.c_str(), "main"));
 
-		if (!m_shader) throw std::exception("Terrain: failed to load shader program");
+		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
-		m_height_map_texture = Texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
-		if (!m_height_map_texture) throw("Terrain: failed to load height map texture");
+		m_height_map_texture = texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
+		if (!m_height_map_texture) throw("terrain: failed to load height map texture");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
 
-		Texture::set_texture_safely(m_shader, "transmittance_texture", m_bruneton.get_transmittance_texture());
-		Texture::set_texture_safely(m_shader, "scattering_texture", m_bruneton.get_scattering_texture());
-		Texture::set_texture_safely(m_shader, "irradiance_texture", m_bruneton.get_irradiance_texture());
+		texture::set_texture_safely(m_shader, "transmittance_texture", m_bruneton.get_transmittance_texture());
+		texture::set_texture_safely(m_shader, "scattering_texture", m_bruneton.get_scattering_texture());
+		texture::set_texture_safely(m_shader, "irradiance_texture", m_bruneton.get_irradiance_texture());
 	}
 
-	void TerrainQuad::update(float dt)
+	void terrain_quad::update(float dt)
 	{
 	}
 
-	void TerrainQuad::render(IvRenderer & renderer)
+	void terrain_quad::render(IvRenderer & renderer)
 	{
-		assert("TerrainQuad::render() is not supported");
+		assert("terrain_quad::render() is not supported");
 	}
 
-	TerrainQuad::~TerrainQuad()
+	terrain_quad::~terrain_quad()
 	{
 	}
 
@@ -170,7 +170,7 @@ namespace Cali
 		Math::get_lon_lat_from_point_on_sphere(sphere_center, sphere_radius, hit_point, lon, lat);
 
 		/// Ok this is 
-		auto& info = DebugInfo::get_debug_info();
+		auto& info = debug_info::get_debug_info();
 		info.set_debug_string(L"lon", (float)lon);
 		info.set_debug_string(L"lat", (float)lat);
 	}
@@ -190,7 +190,7 @@ namespace Cali
 		return level_desc;
 	}
 
-	void TerrainQuad::render(IvRenderer & renderer, const Frustum& frustum)
+	void terrain_quad::render(IvRenderer & renderer, const frustum& frustum)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kZeroBlendFunc, kAddBlendOp);
 
@@ -200,7 +200,7 @@ namespace Cali
 		m_qtree.collapse();
 
 		auto level_desc = get_level_from_distance((double)height, m_qtree.width(), c_detail_levels);
-		auto& info = DebugInfo::get_debug_info();
+		auto& info = debug_info::get_debug_info();
 		info.set_debug_string(L"lod_level", (float)level_desc.level);
 
 		m_shader->GetUniform("planet_center")->SetValue(planet_center_relative_to_viewer, 0);
@@ -212,7 +212,7 @@ namespace Cali
 		double map_x, map_y;
 		Math::adjusted_sphere_to_cube(lon, lat, m_planet_radius, map_x, map_y);
 
-		Circle circle{ { map_x, map_y }, level_desc.area_size * 1.2 };
+		circle circle{ { map_x, map_y }, level_desc.area_size * 1.2 };
 		m_qtree.divide(circle, level_desc.level);
 		m_qtree.divide(circle * 2, level_desc.level - 1);
 		m_qtree.divide(circle * 4, level_desc.level - 2);
@@ -226,19 +226,19 @@ namespace Cali
 		info.set_debug_string(L"map_x", (float)map_x);
 		info.set_debug_string(L"map_y", (float)map_y);
 
-		circle = Circle{ { map_x, map_y }, height < 1000.0f ? m_planet_radius / 4 : height * 32 }; // TODO: make this more clear and commented
+		circle = cali::circle{ { map_x, map_y }, height < 1000.0f ? m_planet_radius / 4 : height * 32 }; // TODO: make this more clear and commented
 		
 		m_nodes_rendered_per_frame = 0;
 
 		RenderContext render_context{ renderer, frustum };
 
-		m_qtree.visit(circle, *this, &TerrainQuad::render_node, &render_context);
+		m_qtree.visit(circle, *this, &terrain_quad::render_node, &render_context);
 
 		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
 	}
 
-	inline void TerrainQuad::calculate_sphere_surface_quad(
-		const Quad& quad, 
+	inline void terrain_quad::calculate_sphere_surface_quad(
+		const quad& quad, 
 		IvDoubleVector3& A, 
 		IvDoubleVector3& B, 
 		IvDoubleVector3& C, 
@@ -269,7 +269,7 @@ namespace Cali
 		quad_center_on_sphere = Math::adjusted_cube_to_sphere(quad.center.x, quad.center.y, m_planet_radius, m_planet_center, normal);
 	}
 
-	void TerrainQuad::render_node(const TerrainQuadTree::Node& node, void* render_context_ptr)
+	void terrain_quad::render_node(const terrain_quad_tree::Node& node, void* render_context_ptr)
 	{
 		assert(render_context_ptr != nullptr);
 		const RenderContext& render_context = *reinterpret_cast<RenderContext*>(render_context_ptr);
@@ -325,7 +325,7 @@ namespace Cali
 		++m_nodes_rendered_per_frame;
 	}
 
-	void TerrainQuad::set_viewer(const IvVector3 & camera_position)
+	void terrain_quad::set_viewer(const IvVector3 & camera_position)
 	{
 		m_viewer_position = camera_position;
 	}

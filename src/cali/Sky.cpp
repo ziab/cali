@@ -16,14 +16,14 @@
 #include "CommonTexture.h"
 #include "World.h"
 
-namespace Cali
+namespace cali
 {
-	void Sky::create_sky_box(const IvVector3& size)
+	void sky::create_sky_box(const IvVector3& size)
 	{
 		create_box(m_sky_box, size, false, false);
 	}
 
-	Sky::Sky(Bruneton& bruneton) :
+	sky::sky(Bruneton& bruneton) :
 		m_bruneton(bruneton)
 	{
 		std::string vertex_shader_file = construct_shader_path("sky.hlslv");
@@ -32,7 +32,7 @@ namespace Cali
 		auto& renderer = *IvRenderer::mRenderer;
 		auto& resman = *renderer.GetResourceManager();
 
-		create_sky_box(Cali::World::c_sky_box_size);
+		create_sky_box(cali::world::c_sky_box_size);
 		m_sky_shader = resman.CreateShaderProgram(
 			resman.CreateVertexShaderFromFile(
 				vertex_shader_file.c_str(), "vs_sky"),
@@ -41,22 +41,22 @@ namespace Cali
 
 		m_sky_shader->GetUniform("transmittance_texture")->SetValue(m_bruneton.get_transmittance_texture());
 		m_sky_shader->GetUniform("scattering_texture")->SetValue(m_bruneton.get_scattering_texture());
-		Texture::set_texture_safely(m_sky_shader, "irradiance_texture", m_bruneton.get_irradiance_texture());
+		texture::set_texture_safely(m_sky_shader, "irradiance_texture", m_bruneton.get_irradiance_texture());
 	}
 
-	Sky::~Sky()
+	sky::~sky()
 	{
 		auto& renderer = *IvRenderer::mRenderer;
 		renderer.GetResourceManager()->Destroy(m_sky_shader);
 	}
 
-	void Sky::update(float dt)
+	void sky::update(float dt)
 	{
 	}
 
-	void Sky::render(IvRenderer & renderer)
+	void sky::render(IvRenderer & renderer)
 	{
-		Physical::set_transformation_matrix(renderer);
+		physical::set_transformation_matrix(renderer);
 		m_sky_box.render(renderer, m_sky_shader);
 	}
 }

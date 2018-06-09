@@ -1,26 +1,26 @@
 #pragma once
 #include <IvConstantBuffer.h>
-namespace Cali
+namespace cali
 {
 	template <typename T>
-	class ConstantBufferWrapper
+	class constant_buffer_wrapper
 	{
 	private:
 		IvConstantBuffer* m_cbuffer;
 
-		ConstantBufferWrapper& operator=(const ConstantBufferWrapper&) = delete;
+		constant_buffer_wrapper& operator=(const constant_buffer_wrapper&) = delete;
 	public:
-		ConstantBufferWrapper() : m_cbuffer(nullptr) {}
-		ConstantBufferWrapper(IvConstantBuffer* cbuffer) : m_cbuffer(cbuffer) {}
-		~ConstantBufferWrapper() { delete m_cbuffer; }
+		constant_buffer_wrapper() : m_cbuffer(nullptr) {}
+		constant_buffer_wrapper(IvConstantBuffer* cbuffer) : m_cbuffer(cbuffer) {}
+		~constant_buffer_wrapper() { delete m_cbuffer; }
 
-		ConstantBufferWrapper(ConstantBufferWrapper&& that)
+		constant_buffer_wrapper(constant_buffer_wrapper&& that)
 		{
 			m_cbuffer = that.m_cbuffer;
 			that.m_cbuffer = nullptr;
 		}
 
-		ConstantBufferWrapper& operator=(ConstantBufferWrapper&& rhv)
+		constant_buffer_wrapper& operator=(constant_buffer_wrapper&& rhv)
 		{
 			m_cbuffer = rhv.m_cbuffer;
 			rhv.m_cbuffer = nullptr;

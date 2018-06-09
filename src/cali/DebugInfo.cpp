@@ -3,22 +3,22 @@
 #include <D3D11\IvRendererD3D11.h>
 #include <string>
 
-namespace Cali
+namespace cali
 {
-	DebugInfo* DebugInfo::m_debug_info = nullptr;
-	const float DebugInfo::m_scaling = 0.5f;
+	debug_info* debug_info::m_debug_info = nullptr;
+	const float debug_info::m_scaling = 0.5f;
 
-	DebugInfo & DebugInfo::get_debug_info()
+	debug_info & debug_info::get_debug_info()
 	{
 		if (!m_debug_info)
 		{
-			m_debug_info = new DebugInfo;
+			m_debug_info = new debug_info;
 		}
 
 		return *m_debug_info;
 	}
 
-	void DebugInfo::initialize(IvRenderer & renderer)
+	void debug_info::initialize(IvRenderer & renderer)
 	{
 		auto& d3d_renderer = dynamic_cast<IvRendererD3D11&>(renderer);
 
@@ -27,17 +27,17 @@ namespace Cali
 	}
 
 
-	void DebugInfo::set_debug_string(const wchar_t* param, float value)
+	void debug_info::set_debug_string(const wchar_t* param, float value)
 	{
 		std::lock_guard<decltype(m_mutex)> lg(m_mutex);
 		m_strings[param] = value;
 	}
 
-	void DebugInfo::update(float dt)
+	void debug_info::update(float dt)
 	{
 	}
 
-	void DebugInfo::render(IvRenderer & renderer)
+	void debug_info::render(IvRenderer & renderer)
 	{
 		std::lock_guard<decltype(m_mutex)> lg(m_mutex);
 

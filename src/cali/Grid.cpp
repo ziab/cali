@@ -1,8 +1,8 @@
 #include "Grid.h"
 
-namespace Cali
+namespace cali
 {
-	void Grid::create_grid(int32_t cols, int32_t rows, float stride)
+	void grid::create_grid(int32_t cols, int32_t rows, float stride)
 	{
 		if (cols < 1 || rows < 1) return;
 
@@ -68,13 +68,13 @@ namespace Cali
 		}
 	}
 
-	void Grid::render(IvRenderer & renderer, IvShaderProgram * shader) const
+	void grid::render(IvRenderer & renderer, IvShaderProgram * shader) const
 	{
-		Physical::set_transformation_matrix(renderer);
+		physical::set_transformation_matrix(renderer);
 		m_model.render(renderer, shader);
 	}
 
-	void Grid::set_current_origin(const IvVector3 & origin, const IvVector3& scale)
+	void grid::set_current_origin(const IvVector3 & origin, const IvVector3& scale)
 	{
 		float total_scale_x = m_stride * scale.x;
 		float total_scale_z = m_stride * scale.z;

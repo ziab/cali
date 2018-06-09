@@ -4,7 +4,7 @@
 #include <Shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 
-namespace Cali
+namespace cali
 {
 	std::string get_executable_file_directory()
 	{

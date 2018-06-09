@@ -12,22 +12,22 @@
 
 #include "Model.h"
 
-namespace Cali
+namespace cali
 {
-	class Icosahedron : public Physical
+	class icosahedron : public physical
 	{
-		Model<kTNPFormat, IvTNPVertex> m_model;
+		model<kTNPFormat, IvTNPVertex> m_model;
 
 	private:
 		void create_icosahedron();
 	public:
 
-		Icosahedron() 
+		icosahedron() 
 		{ 
-			Physical::set_position({ 0.0f, 100.0f, 50.0f });
+			physical::set_position({ 0.0f, 100.0f, 50.0f });
 			create_icosahedron();
 		};
-		~Icosahedron() {};
+		~icosahedron() {};
 
 		void render(IvRenderer& renderer, IvShaderProgram* shader) const;
 	};

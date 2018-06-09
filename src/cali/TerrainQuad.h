@@ -29,13 +29,13 @@
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
-namespace Cali
+namespace cali
 {
-	class TerrainQuad : public Renderable, public CompoundRenderable
+	class terrain_quad : public renderable, public compound_renderable
 	{
-		TerrainQuadTree m_qtree;
+		terrain_quad_tree m_qtree;
 		Box m_box;
-		Grid m_grid;
+		grid m_grid;
 		Bruneton& m_bruneton;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
@@ -55,11 +55,11 @@ namespace Cali
 		struct RenderContext
 		{
 			IvRenderer& renderer;
-			const Frustum& frustum;
+			const frustum& frustum;
 		};
 
 		void calculate_sphere_surface_quad(
-			const Quad & quad,
+			const quad & quad,
 			IvDoubleVector3 & A,
 			IvDoubleVector3 & B,
 			IvDoubleVector3 & C,
@@ -68,21 +68,21 @@ namespace Cali
 			IvDoubleVector3 & quad_center_on_sphere,
 			double & overlapping_area);
 
-		void calculate_displacement_data(const Cali::Quad & quad, int level, void* quad_data_texture);
+		void calculate_displacement_data(const cali::quad & quad, int level, void* quad_data_texture);
 		void calculate_displacement_data_for_detail_levels();
 
-		void render_node(const struct TerrainQuadTree::Node& node, void* render_context);
+		void render_node(const struct terrain_quad_tree::Node& node, void* render_context);
 
 	public:
-		// Renderable
+		// renderable
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer & renderer) override;
 
-		// CompoundRenderable
-		virtual void render(IvRenderer & renderer, const Frustum& frustum) override;
+		// compound_renderable
+		virtual void render(IvRenderer & renderer, const frustum& frustum) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		TerrainQuad(Bruneton& bruneton);
-		~TerrainQuad();
+		terrain_quad(Bruneton& bruneton);
+		~terrain_quad();
 	};
 }

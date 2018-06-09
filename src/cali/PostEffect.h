@@ -7,19 +7,19 @@
 #include "Model.h"
 
 
-namespace Cali
+namespace cali
 {
-	class Effect
+	class effect
 	{
 	public:
 		virtual void apply(IvRenderer& renderer, IvRenderTexture& target) = 0;
-		virtual ~Effect() {};
+		virtual ~effect() {};
 	};
 
-	class PostEffect : Effect
+	class PostEffect : effect
 	{
 		IvShaderProgram* m_shader_program;
-		Cali::Model<kTNPFormat, IvTNPVertex> m_target_quad;
+		cali::model<kTNPFormat, IvTNPVertex> m_target_quad;
 
 	public:
 		PostEffect();

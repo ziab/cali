@@ -3,7 +3,7 @@
 
 TEST(TerrainQuadTree, quad)
 {
-	Cali::Quad quad{ { 0.5, 0.5 }, { 0.5, 0.5 } };
+	cali::quad quad{ { 0.5, 0.5 }, { 0.5, 0.5 } };
 
 	ASSERT_TRUE(quad.contains({ 0.5, 0.5 }));
 	ASSERT_TRUE(quad.contains({ 0.99, 0.99 }));
@@ -12,7 +12,7 @@ TEST(TerrainQuadTree, quad)
 
 TEST(TerrainQuadTree, test_building_tree)
 {
-	Cali::TerrainQuadTree tqtree({ { 0.5, 0.5 }, { 0.5, 0.5} });
+	cali::terrain_quad_tree tqtree({ { 0.5, 0.5 }, { 0.5, 0.5} });
 
 	ASSERT_TRUE(tqtree.divide({ 0.75, 0.75 }, 1));
 	ASSERT_TRUE(tqtree.divide({ 0.25, 0.25 }, 2));
@@ -20,7 +20,7 @@ TEST(TerrainQuadTree, test_building_tree)
 
 	tqtree.get_node_at({ 0.75, 0.75 });
 
-	std::vector<const Cali::TerrainQuadTree::Node*> nodes;
+	std::vector<const cali::terrain_quad_tree::Node*> nodes;
 	tqtree.get_nodes(nodes);
 	ASSERT_TRUE(nodes.size() == 7);
 
@@ -31,9 +31,9 @@ TEST(TerrainQuadTree, test_building_tree)
 	ASSERT_TRUE(nodes.size() == 13);
 }
 
-TEST(TerrainQuadTree, test_high_prescision)
+TEST(terrain_quad_tree, test_high_prescision)
 {
-	Cali::TerrainQuadTree tqtree({ { 0.0, 0.0 },{ 10e3, 10e3 } });
+	cali::terrain_quad_tree tqtree({ { 0.0, 0.0 },{ 10e3, 10e3 } });
 
 	ASSERT_TRUE(tqtree.divide({ -5001.8784179687500,-3296.0344238281250 }, 3));
 	ASSERT_TRUE(tqtree.get_node_at({ -5001.8784179687500,-3296.0344238281250 }) != nullptr);

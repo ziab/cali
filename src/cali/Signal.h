@@ -1,19 +1,19 @@
 #pragma once
 #include <map>
 
-namespace Cali
+namespace cali
 {
 	template <typename... Args>
-	class Signal
+	class signal
 	{
 	public:
 
-		Signal() : current_id_(0) {}
+		signal() : current_id_(0) {}
 
 		// copy creates new signal
-		Signal(Signal const& other) : current_id_(0) {}
+		signal(signal const& other) : current_id_(0) {}
 
-		// connects a member function to this Signal
+		// connects a member function to this signal
 		template <typename T>
 		int connect_member(T *inst, void (T::*func)(Args...)) {
 			return connect([=](Args... args) {
@@ -21,7 +21,7 @@ namespace Cali
 			});
 		}
 
-		// connects a const member function to this Signal
+		// connects a const member function to this signal
 		template <typename T>
 		int connect_member(T *inst, void (T::*func)(Args...) const) {
 			return connect([=](Args... args) {
@@ -53,8 +53,8 @@ namespace Cali
 			}
 		}
 
-		// assignment creates new Signal
-		Signal& operator=(Signal const& other) {
+		// assignment creates new signal
+		signal& operator=(signal const& other) {
 			disconnect_all();
 		}
 

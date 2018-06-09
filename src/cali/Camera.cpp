@@ -11,16 +11,16 @@
 #define UNREFERENCED_PARAMETER(x) (void)(x)
 #endif // !UNREFERENCED_PARAMETER
 
-namespace Cali
+namespace cali
 {
-	const float Camera::movement_inertia_decay = 1.2f;
-	const float Camera::movement_acceleration = 100.f; // m/s ?
-	const float Camera::movement_max_velocity = 30.f; // m/s
-	const float Camera::roatation_sensitivity = 0.15f;
-	const float Camera::rotation_inertia_decay = 0.2f;
-	const float Camera::addtional_acceleration = 100.0f;
+	const float camera::movement_inertia_decay = 1.2f;
+	const float camera::movement_acceleration = 100.f; // m/s ?
+	const float camera::movement_max_velocity = 30.f; // m/s
+	const float camera::roatation_sensitivity = 0.15f;
+	const float camera::rotation_inertia_decay = 0.2f;
+	const float camera::addtional_acceleration = 100.0f;
 
-	void Camera::next_position(float dt)
+	void camera::next_position(float dt)
 	{
 		// speed decay
 		if (!m_is_moving)
@@ -35,13 +35,13 @@ namespace Cali
 			m_velocity *= movement_max_velocity / velocity;
 		}
 
-		Physical::set_position(Physical::get_position() + m_velocity * dt * m_addtional_acceleration);
+		physical::set_position(physical::get_position() + m_velocity * dt * m_addtional_acceleration);
 		m_is_moving = false;
 
 		m_addtional_acceleration = 1.0f;
 	}
 
-	void Camera::next_angle(float dt)
+	void camera::next_angle(float dt)
 	{
 		if (!m_is_rotating)
 		{
@@ -51,22 +51,22 @@ namespace Cali
 
 		m_is_rotating = false;
 
-		Physical::yaw(m_yaw_inertia * roatation_sensitivity  * dt);
-		Physical::pitch(m_pitch_inertia * roatation_sensitivity * dt);
+		physical::yaw(m_yaw_inertia * roatation_sensitivity  * dt);
+		physical::pitch(m_pitch_inertia * roatation_sensitivity * dt);
 	}
 
-	void Camera::normalize()
+	void camera::normalize()
 	{
 	}
 
-	Camera::Camera(const IvVector3& postition, const IvVector3& direction)
+	camera::camera(const IvVector3& postition, const IvVector3& direction)
 	{
-		Physical::set_position(postition);
-		Physical::set_direction(direction, Cali::Constants::c_world_up);
+		physical::set_position(postition);
+		physical::set_direction(direction, cali::constants::c_world_up);
 
 		m_fov = 60.0f;
 		m_near = 0.1f;
-		m_far = Cali::World::c_camera_far;
+		m_far = cali::world::c_camera_far;
 
 		m_velocity = { 0.f, 0.f, 0.f };
 		m_yaw_inertia = 0.f;
@@ -77,12 +77,12 @@ namespace Cali
 		m_addtional_acceleration = 1.0;
 	}
 
-	void Camera::set_fov(float new_fov)
+	void camera::set_fov(float new_fov)
 	{
 		m_fov = new_fov;
 	}
 
-	void Camera::send_settings_to_renderer(IvRenderer& renderer)
+	void camera::send_settings_to_renderer(IvRenderer& renderer)
 	{
 		// set default projection matrix
 		float d = 1.0f / IvTan(m_fov / 180.0f * kPI * 0.5f);
@@ -102,11 +102,11 @@ namespace Cali
 		renderer.SetProjectionMatrix(perspective);
 	}
 
-	void Camera::update(float dt)
+	void camera::update(float dt)
 	{
 		////////////////////////////////////////////////////////////////////////
 		// print debug info
-		auto& debug_info = DebugInfo::get_debug_info();
+		auto& debug_info = debug_info::get_debug_info();
 		debug_info.set_debug_string(L"camera_velocity", m_velocity.Length() * m_addtional_acceleration);
 		debug_info.set_debug_string(L"camera_x", get_position().x);
 		debug_info.set_debug_string(L"camera_y", get_position().y);
@@ -117,23 +117,23 @@ namespace Cali
 		next_position(dt);
 	}
 
-	IvMatrix44 Camera::get_view_matrix()
+	IvMatrix44 camera::get_view_matrix()
 	{
 		// build 4x4 matrix
 		IvMatrix44 matrix;
 
-		const auto& right = Physical::get_right();
+		const auto& right = physical::get_right();
 
-		IvVector3 view_up = Physical::get_direction().Cross(right);
+		IvVector3 view_up = physical::get_direction().Cross(right);
 		view_up.Normalize();
 
 		// now set up matrices
 		// world->view rotation
 		IvMatrix33 rotate;
-		rotate.SetRows(right, view_up, Physical::get_direction());
+		rotate.SetRows(right, view_up, physical::get_direction());
 
 		// world->view translation
-		IvVector3 xlate = -(rotate * Physical::get_position());
+		IvVector3 xlate = -(rotate * physical::get_position());
 
 		matrix.Rotation(rotate);
 		matrix(0, 3) = xlate.x;
@@ -143,7 +143,7 @@ namespace Cali
 		return matrix;
 	}
 
-	void Camera::render(IvRenderer & renderer)
+	void camera::render(IvRenderer & renderer)
 	{
 		normalize();
 		auto view_matrix = get_view_matrix();
@@ -151,60 +151,60 @@ namespace Cali
 		IvRenderer::mRenderer->SetViewMatrixAndViewPosition(view_matrix, get_position());
 	}
 
-	void Camera::update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state)
+	void camera::update_global_state(constant_buffer_wrapper<constant_buffer::GlobalState>& global_state)
 	{
 		global_state->camera_position = get_position();
 	}
 
-	void Camera::enable_speed_mode(float dt)
+	void camera::enable_speed_mode(float dt)
 	{
 		m_addtional_acceleration = addtional_acceleration;
 	}
 
-	const Frustum & Camera::get_frustum()
+	const frustum & camera::get_frustum()
 	{
 		return m_frustum;
 	}
 
-	void Camera::move_forward(float dt)
+	void camera::move_forward(float dt)
 	{
 		normalize();
 		add_velocity(get_direction() * (movement_acceleration * dt));
 	}
 
-	void Camera::move_backward(float dt)
+	void camera::move_backward(float dt)
 	{
 		normalize();
 		add_velocity(-get_direction() * (movement_acceleration * dt));
 	}
 
-	void Camera::move_left(float dt)
+	void camera::move_left(float dt)
 	{
 		normalize();
 		add_velocity(-get_right() * (movement_acceleration * dt));
 	}
 
-	void Camera::move_right(float dt)
+	void camera::move_right(float dt)
 	{
 		normalize();
 		add_velocity(get_right() * (movement_acceleration * dt));
 	}
 
-	void Camera::pitch(float angle, float dt)
+	void camera::pitch(float angle, float dt)
 	{
-		Physical::pitch(angle * roatation_sensitivity * dt);
+		physical::pitch(angle * roatation_sensitivity * dt);
 		m_pitch_inertia = angle;
 		m_is_rotating = true;
 	}
 
-	void Camera::yaw(float angle, float dt)
+	void camera::yaw(float angle, float dt)
 	{
-		Physical::yaw(angle * roatation_sensitivity * dt);
+		physical::yaw(angle * roatation_sensitivity * dt);
 		m_yaw_inertia = angle;
 		m_is_rotating = true;
 	}
 
-	inline void Camera::add_velocity(const IvVector3 & velocity)
+	inline void camera::add_velocity(const IvVector3 & velocity)
 	{
 		m_velocity += velocity;
 		m_is_moving = true;

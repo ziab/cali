@@ -4,29 +4,29 @@
 #include <assert.h>
 #include <functional>
 
-namespace Cali
+namespace cali
 {
-	struct Point
+	struct point
 	{
 		double x, y;
-		Point(double _x, double _y) : x(_x), y(_y) {}
+		point(double _x, double _y) : x(_x), y(_y) {}
 
-		Point operator+(const Point& rhv) const
+		point operator+(const point& rhv) const
 		{
-			return Point{ x + rhv.x, y + rhv.y };
+			return point{ x + rhv.x, y + rhv.y };
 		}
 
-		Point operator-(const Point& rhv) const
+		point operator-(const point& rhv) const
 		{
-			return Point{ x - rhv.x, y - rhv.y };
+			return point{ x - rhv.x, y - rhv.y };
 		}
 
-		Point operator/(double rhv) const
+		point operator/(double rhv) const
 		{
-			return Point{ x / rhv, y / rhv };
+			return point{ x / rhv, y / rhv };
 		}
 
-		Point& operator=(const Point& rhv)
+		point& operator=(const point& rhv)
 		{
 			x = rhv.x;
 			y = rhv.y;
@@ -35,14 +35,14 @@ namespace Cali
 		}
 	};
 
-	struct Quad
+	struct quad
 	{
-		Point center;
-		Point half_size;
-		Quad(Point _center, Point _half_size) :
+		point center;
+		point half_size;
+		quad(point _center, point _half_size) :
 			center(_center), half_size(_half_size) {}
 
-		bool contains(Point a) const
+		bool contains(point a) const
 		{
 			if (a.x < center.x + half_size.x && a.x > center.x - half_size.x)
 			{
@@ -54,7 +54,7 @@ namespace Cali
 			return false;
 		}
 
-		Quad& operator=(const Quad& rhv)
+		quad& operator=(const quad& rhv)
 		{
 			center = rhv.center;
 			half_size = rhv.half_size;
@@ -64,14 +64,14 @@ namespace Cali
 		double height() const { return half_size.y * 2.0; }
 	};
 
-	struct Circle
+	struct circle
 	{
-		Point center;
+		point center;
 		double radius;
-		Circle(Point _center, double _radius) : center(_center), radius(_radius) {};
+		circle(point _center, double _radius) : center(_center), radius(_radius) {};
 
 		// NOTE: quad is supposed to be axis-aligned
-		inline bool intersects(const Quad& quad) const
+		inline bool intersects(const quad& quad) const
 		{
 			double x_dist = abs(center.x - quad.center.x);
 			double y_dist = abs(center.y - quad.center.y);
@@ -88,10 +88,10 @@ namespace Cali
 			return (corner_distance_sq <= (radius * radius));
 		}
 
-		Circle operator* (double x) const { return Circle{ center, radius * x }; }
+		circle operator* (double x) const { return circle{ center, radius * x }; }
 	};
 
-	class TerrainQuadTree
+	class terrain_quad_tree
 	{
 	public:
 		struct Node;
@@ -100,7 +100,7 @@ namespace Cali
 		struct Node
 		{
 		private:
-			Quad m_quad;
+			quad m_quad;
 			int m_depth;
 			Node* m_tl;
 			Node* m_tr;
@@ -138,7 +138,7 @@ namespace Cali
 			{
 			}
 
-			Node(Quad _quad, int _depth, Node* _parent) :
+			Node(quad _quad, int _depth, Node* _parent) :
 				m_quad(_quad),
 				m_depth(_depth),
 				m_tl(nullptr),
@@ -159,7 +159,7 @@ namespace Cali
 				if (!is_leaf()) return;
 
 				m_tl = new Node(
-					{ m_quad.center + Point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
+					{ m_quad.center + point{ -(m_quad.half_size.x / 2), m_quad.half_size.y / 2 }, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);
 
@@ -174,7 +174,7 @@ namespace Cali
 					this);
 
 				m_br = new Node(
-					{ m_quad.center + Point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
+					{ m_quad.center + point{ m_quad.half_size.x / 2, -(m_quad.half_size.y / 2) }, m_quad.half_size / 2 },
 					m_depth + 1,
 					this);				
 			}
@@ -187,7 +187,7 @@ namespace Cali
 				release_child_node(m_br);
 			}
 
-			Node* get_child_node_at(const Point& point)
+			Node* get_child_node_at(const point& point)
 			{
 				// left
 				if (point.x <= m_quad.center.x  &&
@@ -226,7 +226,7 @@ namespace Cali
 
 			typedef Node* QuadNodes[4];
 
-			void get_child_nodes_at(const Circle& circle, QuadNodes& nodes) const
+			void get_child_nodes_at(const circle& circle, QuadNodes& nodes) const
 			{
 				memset(&nodes, 0, sizeof(QuadNodes));
 
@@ -236,14 +236,14 @@ namespace Cali
 				if (circle.intersects(m_br->m_quad)) nodes[3] = m_br;
 			}
 
-			const Node* get_child_node_at(const Point& point) const
+			const Node* get_child_node_at(const point& point) const
 			{
 				return const_cast<Node*>(this)->get_child_node_at(point);
 			}
 
-			const Quad& get_centred_quad() const { return m_quad; }
+			const quad& get_centred_quad() const { return m_quad; }
 
-			const Node* get_node_at(const Point& point) const
+			const Node* get_node_at(const point& point) const
 			{
 				const Node* node_at_point = get_child_node_at(point);
 				
@@ -269,7 +269,7 @@ namespace Cali
 				m_br->get_nodes(vec);
 			}
 
-			void get_nodes_inside(const Circle& circle, std::vector<const Node*>& vec) const
+			void get_nodes_inside(const circle& circle, std::vector<const Node*>& vec) const
 			{
 				if (is_leaf())
 				{
@@ -286,7 +286,7 @@ namespace Cali
 				}
 			}
 
-			void visit(const Circle& circle, const std::function<VisitorCallback>& callback, void* private_data) const
+			void visit(const circle& circle, const std::function<VisitorCallback>& callback, void* private_data) const
 			{
 				// this is the leaf node therefore we call visitor
 				if (is_leaf())
@@ -306,7 +306,7 @@ namespace Cali
 
 			template<typename TObject>
 			void visit(
-				const Circle& circle,
+				const circle& circle,
 				TObject& object,
 				void (TObject::*callback)(const Node&, void* render_context),
 				void* private_data = nullptr) const
@@ -337,7 +337,7 @@ namespace Cali
 				return m_depth;
 			}
 
-			void divide(Point _where, int depth)
+			void divide(point _where, int depth)
 			{
 				if (depth <= 0) return;
 
@@ -349,7 +349,7 @@ namespace Cali
 				node_at_point->divide(_where, depth - 1);
 			}
 
-			void divide(const Circle& circle, int depth)
+			void divide(const circle& circle, int depth)
 			{
 				if (depth <= 0) 
 					return;
@@ -372,28 +372,28 @@ namespace Cali
 
 	public:
 
-		TerrainQuadTree(Quad quad) :
+		terrain_quad_tree(quad quad) :
 			m_root(quad, 1, nullptr)
 		{
 		};
 
-		~TerrainQuadTree() {};
+		~terrain_quad_tree() {};
 
-		bool divide(Point _where, int depth)
+		bool divide(point _where, int depth)
 		{
 			if (!m_root.get_centred_quad().contains(_where)) return false;
 			m_root.divide(_where, depth);
 			return true;
 		}
 
-		bool divide(Circle _where, int depth)
+		bool divide(circle _where, int depth)
 		{
 			if (!_where.intersects(m_root.get_centred_quad())) return false;
 			m_root.divide(_where, depth);
 			return true;
 		}
 
-		const Node* get_node_at(const Point& point) const
+		const Node* get_node_at(const point& point) const
 		{
 			const Node* node_at_point = m_root.get_node_at(point);
 			if (node_at_point)
@@ -410,7 +410,7 @@ namespace Cali
 			m_root.get_nodes(vec);
 		}
 
-		void get_nodes_inside(const Circle& circle, std::vector<const Node*>& vec) const
+		void get_nodes_inside(const circle& circle, std::vector<const Node*>& vec) const
 		{
 			vec.clear();
 			m_root.get_nodes_inside(circle, vec);
@@ -421,7 +421,7 @@ namespace Cali
 			m_root.collapse();
 		}
 
-		void visit(const Circle& circle, const std::function<VisitorCallback>& callback, void* private_data = nullptr)
+		void visit(const circle& circle, const std::function<VisitorCallback>& callback, void* private_data = nullptr)
 		{
 			m_root.visit(circle, callback, private_data);
 		}
@@ -429,7 +429,7 @@ namespace Cali
 		/// using std::function has some overhead so this method is supposed to work faster
 		template<typename TObject>
 		void visit(
-			const Circle& circle, 
+			const circle& circle, 
 			TObject& object, 
 			void (TObject::*callback)(const Node&, void* render_context),
 			void* private_data = nullptr) const

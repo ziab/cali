@@ -2,7 +2,7 @@
 #include <IvDoubleVector3.h>
 #include <IvVector3.h>
 
-namespace Cali
+namespace cali
 {
 	namespace Math
 	{

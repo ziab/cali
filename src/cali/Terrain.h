@@ -23,14 +23,14 @@
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
-namespace Cali
+namespace cali
 {
 	static const uint32_t c_hd_gird_dimention = 256;
 
-	class Terrain : public Renderable
+	class terrain : public renderable
 	{
-		Grid m_hd_grid;
-		Grid m_ld_grid;
+		grid m_hd_grid;
+		grid m_ld_grid;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
 		const IvVector3 m_planet_center;
@@ -42,14 +42,14 @@ namespace Cali
 	private:
 		void render_level(
 			IvRenderer & renderer, 
-			Grid & level_grid, 
+			grid & level_grid, 
 			const IvVector3& offset, 
 			float scale, 
 			float grid_scale_factor);
 
 		void render_levels(
 			IvRenderer& renderer, 
-			Grid& level_grid,
+			grid& level_grid,
 			size_t level, 
 			size_t max_level, 
 			float offset_from_viewer, 
@@ -58,7 +58,7 @@ namespace Cali
 
 		struct RenderLevelParamerters
 		{
-			Grid* initial_level_grid;
+			grid* initial_level_grid;
 			size_t max_level;
 			float initial_scale;
 			IvVector3 initial_position;
@@ -76,7 +76,7 @@ namespace Cali
 		virtual void render(IvRenderer& renderer) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		Terrain();
-		~Terrain();
+		terrain();
+		~terrain();
 	};
 }

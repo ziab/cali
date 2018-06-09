@@ -4,23 +4,23 @@
 #include "ConstantBufferWrapper.h"
 #include "ConstantBuffer.h"
 
-namespace Cali
+namespace cali
 {
-	class Sun : public Physical, public Renderable
+	class sun : public physical, public renderable
 	{
-		Model<kNPFormat, IvNPVertex> m_sun_rect;
+		model<kNPFormat, IvNPVertex> m_sun_rect;
 		IvShaderProgram* m_shader;
 
 	private:
 		void create_sun_rect(const IvVector3& size);
 
 	public:
-		Sun();
-		~Sun();
+		sun();
+		~sun();
 
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer& renderer) override;
 
-		void update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state);
+		void update_global_state(constant_buffer_wrapper<constant_buffer::GlobalState>& global_state);
 	};
 }

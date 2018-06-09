@@ -3,9 +3,9 @@
 
 class IvTexture;
 
-namespace Cali
+namespace cali
 {
-	namespace Texture
+	namespace texture
 	{
 		IvTexture* load_texture_from_bmp(const std::string & path);
 

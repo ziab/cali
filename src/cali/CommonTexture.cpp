@@ -8,9 +8,9 @@
 #include "..\..\depends\bitmap_image\bitmap_image.hpp"
 #pragma warning(default : 4996)
 
-namespace Cali
+namespace cali
 {
-	IvTexture * Texture::load_texture_from_bmp(const std::string & path)
+	IvTexture * texture::load_texture_from_bmp(const std::string & path)
 	{
 		auto& renderer = *IvRenderer::mRenderer;
 		auto& resman = *renderer.GetResourceManager();

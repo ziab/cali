@@ -2,7 +2,7 @@
 #include "IvUniform.h"
 #include "CommonFileSystem.h"
 
-namespace Cali
+namespace cali
 {
 	PostEffect::PostEffect() : m_shader_program(nullptr)
 	{

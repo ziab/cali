@@ -15,7 +15,7 @@
 
 #include "Renderable.h"
 
-namespace Cali
+namespace cali
 {
 	template<typename t_VertexFormat>
 	inline void reverse_winding(std::vector<UInt32>& indices, std::vector<t_VertexFormat>& vertices_unused)
@@ -64,7 +64,7 @@ namespace Cali
 	};
 
 	template<IvVertexFormat vertex_format_code, typename t_VertexFormat>
-	class Model
+	class model
 	{
 		IvRenderer& m_renderer;
 		IvPrimType m_primitive_type;
@@ -76,7 +76,7 @@ namespace Cali
 		IvVertexBuffer* m_vertices;
 
 	public:
-		Model() :
+		model() :
 			m_renderer(*IvRenderer::mRenderer),
 			m_primitive_type(kTriangleListPrim),
 			m_indices_count(0),
@@ -86,7 +86,7 @@ namespace Cali
 		{
 		}
 
-		~Model() { free(); }
+		~model() { free(); }
 
 		void set_primitive_type(IvPrimType type)
 		{
@@ -98,7 +98,7 @@ namespace Cali
 			return m_primitive_type;
 		}
 
-		bool Model::allocate(size_t indicies_count, size_t verticies_count)
+		bool model::allocate(size_t indicies_count, size_t verticies_count)
 		{
 			m_indices_count = indicies_count;
 			m_vertices_count = verticies_count;
@@ -112,7 +112,7 @@ namespace Cali
 			return true;
 		}
 
-		void Model::free()
+		void model::free()
 		{
 			if (m_indices) m_renderer.GetResourceManager()->Destroy(m_indices);
 			if (m_vertices) m_renderer.GetResourceManager()->Destroy(m_vertices);
@@ -128,7 +128,7 @@ namespace Cali
 			return BufferRAIIWrapper<IvIndexBuffer, UInt32>(m_indices, (UInt32*) m_indices->BeginLoadData());
 		}
 
-		void Model::render(IvRenderer & renderer, IvShaderProgram* shader) const
+		void model::render(IvRenderer & renderer, IvShaderProgram* shader) const
 		{
 			if (shader)	renderer.SetShaderProgram(shader);
 
@@ -137,7 +137,7 @@ namespace Cali
 	};
 
 	template<IvVertexFormat T1, typename T2>
-	inline void copy_to_gpu_mem(Model<T1, T2>& model, std::vector<T2> vertices_mem, std::vector<UInt32> indices_mem)
+	inline void copy_to_gpu_mem(model<T1, T2>& model, std::vector<T2> vertices_mem, std::vector<UInt32> indices_mem)
 	{
 		// allocate GPU memory
 		model.allocate(indices_mem.size(), vertices_mem.size());
@@ -153,10 +153,10 @@ namespace Cali
 			indices[i] = indices_mem[i];
 	}
 	
-	void create_box(Model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals);
+	void create_box(model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals);
 
 	template<IvVertexFormat vertex_format_code, typename t_VertexFormat>
-	void create_quad(Model<vertex_format_code, t_VertexFormat>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
+	void create_quad(model<vertex_format_code, t_VertexFormat>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
 	{
 		std::vector<t_VertexFormat> vertices_mem;
 		std::vector<UInt32> indices_mem;
@@ -192,7 +192,7 @@ namespace Cali
 	}
 
 	template<>
-	inline void create_quad(Model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
+	inline void create_quad(model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
 	{
 		std::vector<IvTNPVertex> vertices_mem;
 		std::vector<UInt32> indices_mem;

@@ -1,8 +1,8 @@
 #include "Model.h"
 
-namespace Cali
+namespace cali
 {
-	void create_box(Model<kTNPFormat, IvTNPVertex>& model, const IvVector3 & size, bool right_hand_order, bool invert_normals)
+	void create_box(model<kTNPFormat, IvTNPVertex>& model, const IvVector3 & size, bool right_hand_order, bool invert_normals)
 	{
 		// This method is essentially a copied from DirectXTK / GeometricPrimitive and modified
 

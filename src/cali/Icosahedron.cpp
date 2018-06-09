@@ -3,17 +3,17 @@
 #include <map>
 #include <array>
 
-namespace Cali
+namespace cali
 {
-	struct Triangle
+	struct triangle
 	{
 		uint32_t vertex[3];
 	};
 
-	using TriangleList = std::vector<Triangle>;
+	using TriangleList = std::vector<triangle>;
 	using VertexList = std::vector<IvVector3>;
 
-	namespace icosahedron
+	namespace utils
 	{
 		const float X = .525731112119133606f;
 		const float Z = .850650808352039932f;
@@ -84,8 +84,8 @@ namespace Cali
 
 		void make_icosphere(VertexList& vertices, TriangleList& triangles, size_t subdivisions)
 		{
-			vertices = icosahedron::vertices;
-			triangles = icosahedron::triangles;
+			vertices = utils::vertices;
+			triangles = utils::triangles;
 
 			for (size_t i = 0; i < subdivisions; ++i)
 			{
@@ -94,10 +94,10 @@ namespace Cali
 		}
 	}
 
-	void Icosahedron::create_icosahedron()
+	void icosahedron::create_icosahedron()
 	{
 		VertexList ico_vertices; TriangleList ico_triangles;
-		icosahedron::make_icosphere(ico_vertices, ico_triangles, 3);
+		utils::make_icosphere(ico_vertices, ico_triangles, 3);
 
 		const size_t indices_total = ico_triangles.size() * 3;
 		const size_t vertex_total = ico_vertices.size();
@@ -123,7 +123,7 @@ namespace Cali
 		}
 	}
 
-	void Icosahedron::render(IvRenderer & renderer, IvShaderProgram * shader) const
+	void icosahedron::render(IvRenderer & renderer, IvShaderProgram * shader) const
 	{
 		set_transformation_matrix(renderer);
 		m_model.render(renderer, shader);

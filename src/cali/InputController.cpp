@@ -36,15 +36,15 @@ static void CALLBACK additional_input_handler(HWND hWnd, UINT message, WPARAM wP
 	}
 }
 
-namespace Cali
+namespace cali
 {
-	InputController::InputController()
+	input_controller::input_controller()
 	{
 		// register the global addtitional wnd proc
 		SetAdditionalInputHandler(additional_input_handler);
 	}
 
-	InputController::~InputController()
+	input_controller::~input_controller()
 	{
 	}
 
@@ -54,7 +54,7 @@ namespace Cali
 		if (callback) callback(args...);
 	}
 
-	void InputController::read_input(float dt)
+	void input_controller::read_input(float dt)
 	{
 		using namespace DirectX;
 
@@ -108,7 +108,7 @@ namespace Cali
 		}
 	}
 
-	void InputController::clear()
+	void input_controller::clear()
 	{
 		m_forward = nullptr;
 		m_backward = nullptr;

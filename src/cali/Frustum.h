@@ -5,16 +5,16 @@
 
 #include <DirectXCollision.h>
 
-namespace Cali
+namespace cali
 {
-	class Frustum
+	class frustum
 	{
 		//IvPlane m_planes[6];
 		DirectX::BoundingFrustum m_frustum;
 
 	public:
-		Frustum() {}
-		~Frustum() {}
+		frustum() {}
+		~frustum() {}
 
 		void construct_frustum(const IvMatrix44& iv_projection_matrix, const IvMatrix44& iv_view_matrix);
 

@@ -15,27 +15,27 @@
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
-namespace Cali
+namespace cali
 {
-	class Renderable
+	class renderable
 	{
-		Renderable(Renderable&) = delete;
-		Renderable& operator= (const Renderable&) = delete;
+		renderable(renderable&) = delete;
+		renderable& operator= (const renderable&) = delete;
 
 	public:
-		Renderable() {};
-		virtual ~Renderable() {};
+		renderable() {};
+		virtual ~renderable() {};
 
 		virtual void update(float dt) = 0;
 		virtual void render(IvRenderer& renderer) = 0;
 	};
 
-	class CompoundRenderable
+	class compound_renderable
 	{
-		virtual void render(IvRenderer& renderer, const class Frustum& frustum) = 0;
+		virtual void render(IvRenderer& renderer, const class frustum& frustum) = 0;
 	};
 
-	class Physical
+	class physical
 	{
 		IvMatrix44 m_model_matrix;
 		IvVector3 m_position;
@@ -44,15 +44,15 @@ namespace Cali
 		IvVector3 m_scale;
 
 	private:
-		Physical(Physical&) = delete;
-		Physical& operator= (const Physical&) = delete;
+		physical(physical&) = delete;
+		physical& operator= (const physical&) = delete;
 
 		void calculate_model_matrix();
 		void normalize();
 
 	public:
-		Physical();
-		virtual ~Physical() {};
+		physical();
+		virtual ~physical() {};
 		
 		void set_scale(float scale);
 		void set_scale(const IvVector3& scale);

@@ -6,11 +6,11 @@
 
 #include "Renderable.h"
 
-namespace Cali
+namespace cali
 {
-	class DebugInfo : public Renderable
+	class debug_info : public renderable
 	{
-		static DebugInfo* m_debug_info;
+		static debug_info* m_debug_info;
 		
 		static const float m_scaling;
 
@@ -20,11 +20,11 @@ namespace Cali
 		std::unique_ptr<DirectX::SpriteBatch> m_sprite_batch;
 		std::unique_ptr<DirectX::SpriteFont> m_sprite_font;
 
-		DebugInfo() {}
-		~DebugInfo() {}
+		debug_info() {}
+		~debug_info() {}
 	public:
 
-		static DebugInfo& get_debug_info();
+		static debug_info& get_debug_info();
 
 		void initialize(IvRenderer & renderer);
 

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace Cali
+namespace cali
 {
 	static const std::string shader_folder = "shaders";
 

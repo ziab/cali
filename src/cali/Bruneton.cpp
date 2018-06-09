@@ -11,7 +11,7 @@
 
 #include "shaders\BrunetonCommonDefs.h"
 
-namespace Cali
+namespace cali
 {
 	constexpr int SCATTERING_TEXTURE_WIDTH =
 		SCATTERING_TEXTURE_NU_SIZE * SCATTERING_TEXTURE_MU_S_SIZE;

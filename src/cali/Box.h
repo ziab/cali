@@ -17,11 +17,11 @@
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
-namespace Cali
+namespace cali
 {
-	class Box : public Physical, public Renderable
+	class Box : public physical, public renderable
 	{
-		Model<kTNPFormat, IvTNPVertex> m_box;
+		model<kTNPFormat, IvTNPVertex> m_box;
 		IvShaderProgram* m_shader;
 
 	public:

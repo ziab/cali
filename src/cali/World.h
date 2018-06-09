@@ -6,9 +6,9 @@
 
 #undef max
 
-namespace Cali
+namespace cali
 {
-	namespace World
+	namespace world
 	{
 		static const float c_camera_far = std::numeric_limits<float>::max() / 100000000000.f;
 		static const float c_earth_radius = 63600.0f;

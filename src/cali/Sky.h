@@ -6,21 +6,21 @@
 
 #include <memory>
 
-namespace Cali
+namespace cali
 {
-	class Sky : public Physical
+	class sky : public physical
 	{
 		Bruneton& m_bruneton;
 
-		Model<kTNPFormat, IvTNPVertex> m_sky_box;
+		model<kTNPFormat, IvTNPVertex> m_sky_box;
 		IvShaderProgram* m_sky_shader;
 
 	private:
 		void create_sky_box(const IvVector3& size);
 
 	public:
-		Sky(Bruneton& bruneton);
-		~Sky();
+		sky(Bruneton& bruneton);
+		~sky();
 
 		virtual void update(float dt);
 		virtual void render(IvRenderer& renderer);

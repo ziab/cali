@@ -7,9 +7,9 @@
 #include <IvVector3.h>
 #include <IvVector4.h>
 
-namespace Cali
+namespace cali
 {
-	namespace ConstantBuffer
+	namespace constant_buffer
 	{
 		ALIGN16 struct GlobalState
 		{

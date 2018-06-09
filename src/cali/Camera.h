@@ -19,9 +19,9 @@
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
-namespace Cali
+namespace cali
 {
-	class Camera : public Physical, public Renderable
+	class camera : public physical, public renderable
 	{
 		float m_fov;
 		float m_near;
@@ -42,7 +42,7 @@ namespace Cali
 
 		float m_addtional_acceleration;
 
-		Frustum m_frustum;
+		frustum m_frustum;
 
 	private:
 		//////////////////////////////////////////////
@@ -56,8 +56,8 @@ namespace Cali
 
 	public:
 
-		Camera(const IvVector3& postition, const IvVector3& direction);
-		~Camera() {};
+		camera(const IvVector3& postition, const IvVector3& direction);
+		~camera() {};
 
 		// sends perspective settings to the renderer
 		void set_fov(float new_fov);
@@ -66,11 +66,11 @@ namespace Cali
 		virtual void update(float dt) override;
 		virtual void render(IvRenderer& renderer) override;
 
-		void update_global_state(ConstantBufferWrapper<ConstantBuffer::GlobalState>& global_state);
+		void update_global_state(constant_buffer_wrapper<constant_buffer::GlobalState>& global_state);
 
 		void enable_speed_mode(float dt);
 
-		const Frustum& get_frustum();
+		const frustum& get_frustum();
 
 		//////////////////////////////////////////////
 		// Movable ?

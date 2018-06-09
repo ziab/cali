@@ -2,7 +2,7 @@
 
 #include "CommonFileSystem.h"
 
-namespace Cali
+namespace cali
 {
 	Box::Box()
 	{
@@ -15,7 +15,7 @@ namespace Cali
 			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
 				pixel_shader.c_str(), "main"));
 
-		if (!m_shader) throw std::exception("Terrain: failed to load shader program");
+		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
 		create_box(m_box, { 1.0, 1.0, 1.0 }, true, false);
 	}
@@ -26,7 +26,7 @@ namespace Cali
 
 	void Box::render(IvRenderer & renderer)
 	{
-		Physical::set_transformation_matrix(renderer);
+		physical::set_transformation_matrix(renderer);
 		m_box.render(renderer, m_shader);
 	}
 }

@@ -4,11 +4,11 @@
 #include "Model.h"
 #include "IvRenderTexture.h"
 
-namespace Cali
+namespace cali
 {
 	class Bruneton
 	{
-		Cali::Model<kTNPFormat, IvTNPVertex> m_quad;
+		cali::model<kTNPFormat, IvTNPVertex> m_quad;
 
 		std::unique_ptr<IvRenderTexture> m_transmittance_texture;
 		std::unique_ptr<IvRenderTexture> m_delta_irradiance_texture;

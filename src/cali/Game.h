@@ -27,33 +27,33 @@
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
 
-namespace Cali
+namespace cali
 {
-	class Terrain;
-	class TerrainIcosahedron;
-	class TerrainQuad;
+	class terrain;
+	class terrain_icosahedron;
+	class terrain_quad;
 }
 
-using namespace Cali;
+using namespace cali;
 
 class Game : public IvGame
 {
 #if defined WORK_ON_ICOSAHEDRON
-	std::unique_ptr<Cali::TerrainIcosahedron> m_terrain;
+	std::unique_ptr<Cali::terrain_icosahedron> m_terrain;
 #elif defined WORK_ON_QUAD_TREE
-	std::unique_ptr<Cali::TerrainQuad> m_terrain;
+	std::unique_ptr<cali::terrain_quad> m_terrain;
 #else
-	std::unique_ptr<Cali::Terrain> m_terrain;
+	std::unique_ptr<Cali::terrain> m_terrain;
 #endif // !WORK_ON_ICOSAHEDRON
-	std::unique_ptr<Cali::Bruneton> m_bruneton;
-	std::unique_ptr<Cali::Sky> m_sky;
-	std::unique_ptr<Cali::Sun> m_sun;
+	std::unique_ptr<cali::Bruneton> m_bruneton;
+	std::unique_ptr<cali::sky> m_sky;
+	std::unique_ptr<cali::sun> m_sun;
 	std::unique_ptr<IvRenderTexture> m_main_screen_buffer;
-	std::unique_ptr<Cali::PostEffect> m_bloom;
-	Cali::InputController m_controller;
-	Cali::Camera m_camera;
-	Cali::DebugInfo& m_debug_info;
-	Cali::ConstantBufferWrapper<ConstantBuffer::GlobalState> m_global_state_cbuffer;
+	std::unique_ptr<cali::PostEffect> m_bloom;
+	cali::input_controller m_controller;
+	cali::camera m_camera;
+	cali::debug_info& m_debug_info;
+	cali::constant_buffer_wrapper<constant_buffer::GlobalState> m_global_state_cbuffer;
 
 	bool m_render_wireframe;
 	bool m_render_debug_info;

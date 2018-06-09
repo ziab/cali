@@ -4,7 +4,7 @@
 #include <IvMath.h>
 #include <IvMatrix44.h>
 
-namespace Cali
+namespace cali
 {
 	// A helper function which just works
 	inline void direction_vector_to_rotation_mat(const IvVector3 & dir, const IvVector3 & world_up, IvMatrix33 & mat)
@@ -28,7 +28,7 @@ namespace Cali
 		mat(2, 2) = up.z;
 	}
 
-	void Physical::calculate_model_matrix()
+	void physical::calculate_model_matrix()
 	{
 		normalize();
 
@@ -60,13 +60,13 @@ namespace Cali
 		m_model_matrix = m_model_matrix * scale_matrix;
 	}
 
-	void Physical::normalize()
+	void physical::normalize()
 	{
 		m_direction.Normalize();
 		m_right.Normalize();
 	}
 
-	Physical::Physical()
+	physical::physical()
 	{
 		m_model_matrix.Identity();
 		m_position = { 0.f, 0.f, 0.f };
@@ -76,25 +76,25 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
-	void Physical::set_scale(float scale)
+	void physical::set_scale(float scale)
 	{
 		m_scale = { scale, scale, scale };
 		calculate_model_matrix();
 	}
 
-	void Physical::set_scale(const IvVector3 & scale)
+	void physical::set_scale(const IvVector3 & scale)
 	{
 		m_scale = scale;
 		calculate_model_matrix();
 	}
 
-	void Physical::set_position(const IvVector3 & pos)
+	void physical::set_position(const IvVector3 & pos)
 	{
 		m_position = pos;
 		calculate_model_matrix();
 	}
 
-	void Physical::set_direction(const IvVector3& dir, const IvVector3& up)
+	void physical::set_direction(const IvVector3& dir, const IvVector3& up)
 	{
 		IvVector3 direction = dir;
 
@@ -113,7 +113,7 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
-	IvMatrix44 Physical::get_rotation()
+	IvMatrix44 physical::get_rotation()
 	{
 		auto up = m_direction.Cross(m_right);
 
@@ -133,18 +133,18 @@ namespace Cali
 		return matrix;
 	}
 
-	void Physical::look_at(const IvVector3 & point, const IvVector3 & up)
+	void physical::look_at(const IvVector3 & point, const IvVector3 & up)
 	{
 		auto direction = point - m_position;
 		set_direction(direction, up);
 	}
 
-	void Physical::set_transformation_matrix(IvRenderer & renderer) const
+	void physical::set_transformation_matrix(IvRenderer & renderer) const
 	{
 		renderer.SetWorldMatrix(m_model_matrix);
 	}
 
-	void Physical::pitch(float angle)
+	void physical::pitch(float angle)
 	{
 		if (angle == 0.f) return;
 
@@ -156,12 +156,12 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
-	void Physical::yaw(float angle)
+	void physical::yaw(float angle)
 	{
 		if (angle == 0.f) return;
 
 		IvMatrix33 rotation_matrix;
-		rotation_matrix.Rotation(Cali::Constants::c_world_up, -angle);
+		rotation_matrix.Rotation(cali::constants::c_world_up, -angle);
 
 		m_direction = m_direction * rotation_matrix;
 		m_right = m_right * rotation_matrix;
@@ -169,7 +169,7 @@ namespace Cali
 		calculate_model_matrix();
 	}
 
-	void Physical::rotate(const IvVector3 & from, const IvVector3 & to)
+	void physical::rotate(const IvVector3 & from, const IvVector3 & to)
 	{
 		if (from == to)
 		{

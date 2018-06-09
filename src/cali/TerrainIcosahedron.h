@@ -24,11 +24,11 @@
 //-------------------------------------------------------------------------------
 //-- Classes --------------------------------------------------------------------
 //-------------------------------------------------------------------------------
-namespace Cali
+namespace cali
 {
-	class TerrainIcosahedron : public Renderable
+	class terrain_icosahedron : public renderable
 	{
-		Icosahedron m_icosahedron;
+		icosahedron m_icosahedron;
 		IvVector3 m_viewer_position;
 		const IvVector3 m_planet_center;
 		const float m_planet_radius;
@@ -41,7 +41,7 @@ namespace Cali
 		virtual void render(IvRenderer& renderer) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		TerrainIcosahedron();
-		~TerrainIcosahedron();
+		terrain_icosahedron();
+		~terrain_icosahedron();
 	};
 }
