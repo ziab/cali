@@ -7,3 +7,4 @@ There are two major references:
 * Precomputed Atmospheric Scattering Papaer - a method for rendering atmospheric effects in real time (I had to port it form OpenGL to DirectX) https://github.com/ebruneton/precomputed_atmospheric_scattering
 
 ![Cali](img/cali.jpg?raw=true "Cali")
+![Cali](img/cali_2.jpg?raw=true "Cali2")
