@@ -18,10 +18,17 @@ namespace cali
 
 		static const IvVector3 c_sky_box_size = 
 		{
-			c_horizon_distance,
-			c_horizon_distance,
-			c_horizon_distance
+            c_earth_radius * 4,
+            c_earth_radius * 4,
+            c_earth_radius * 4
 		};
+
+        static const IvVector3 c_star_box_size =
+        {
+            c_camera_far,
+            c_camera_far,
+            c_camera_far
+        };
 
 		static const IvVector4 sun_zenith_color = { 1.f, 1.f, 1.f, 1.f };
 		static const IvVector4 sun_sunset_color = { 252.f / 255.f, 108.f / 255.f, 45.f / 255.f, 1.f };

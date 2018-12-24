@@ -33,6 +33,8 @@ namespace cali
 		auto& resman = *renderer.GetResourceManager();
 
 		create_sky_box(cali::world::c_sky_box_size);
+        set_position(cali::world::c_earth_center);
+
 		m_sky_shader = resman.CreateShaderProgram(
 			resman.CreateVertexShaderFromFile(
 				vertex_shader_file.c_str(), "vs_sky"),
