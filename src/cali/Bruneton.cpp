@@ -25,7 +25,7 @@ namespace cali
 		auto& resman = *renderer.GetResourceManager();
 
 		// quad is used as screen dimentions
-		create_quad(m_quad, { 1.f, 1.f, 1.f }, false, false);
+        m_quad = create_quad({ 1.f, 1.f, 1.f }, false, false);
 
 		std::string draw_quad_vs_file = construct_shader_path("draw_quad.hlslv");
 		std::string transmittance_ps_file = construct_shader_path("bruneton_transmittance.hlslf");

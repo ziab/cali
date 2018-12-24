@@ -14,7 +14,7 @@ namespace cali
 {
 	void sun::create_sun_rect(const IvVector3 & size)
 	{
-		create_quad(m_sun_rect, size, true, false);
+        create_quad(m_sun_rect, size, true, false);
 	}
 
 	sun::sun()

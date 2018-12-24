@@ -159,6 +159,7 @@ wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nC
 
 bool InitWindow(LPWSTR name, int& width, int& height, bool fullscreen)
 {
+    SetProcessDPIAware();
     gHInstance = GetModuleHandle(nullptr);
 
     // Register class

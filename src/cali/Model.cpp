@@ -2,7 +2,7 @@
 
 namespace cali
 {
-	void create_box(model<kTNPFormat, IvTNPVertex>& model, const IvVector3 & size, bool right_hand_order, bool invert_normals)
+    model<kTNPFormat, IvTNPVertex> create_box(const IvVector3 & size, bool right_hand_order, bool invert_normals)
 	{
 		// This method is essentially a copied from DirectXTK / GeometricPrimitive and modified
 
@@ -57,6 +57,8 @@ namespace cali
 		if (!right_hand_order) reverse_winding(indices_mem, vertices_mem);
 		//if (invert_normals) Cali::invert_normals(vertices_mem);
 
+        model<kTNPFormat, IvTNPVertex> model;
 		copy_to_gpu_mem<kTNPFormat, IvTNPVertex>(model, vertices_mem, indices_mem);
+        return model;
 	}
 }

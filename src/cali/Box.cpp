@@ -17,7 +17,7 @@ namespace cali
 
 		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
-		create_box(m_box, { 1.0, 1.0, 1.0 }, true, false);
+		m_box = create_box({ 1.0, 1.0, 1.0 }, true, false);
 	}
 
 	void Box::update(float dt)

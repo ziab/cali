@@ -20,7 +20,7 @@ namespace cali
 {
 	void sky::create_sky_box(const IvVector3& size)
 	{
-		create_box(m_sky_box, size, false, false);
+        m_sky_box = create_box(size, false, false);
 	}
 
 	sky::sky(Bruneton& bruneton) :

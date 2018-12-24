@@ -552,6 +552,7 @@
     <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Icosahedron.h" />
+    <ClInclude Include="Stars.h" />
     <ClInclude Include="TerrainQuad.h" />
     <ClInclude Include="TerrainIcosahedron.h" />
     <ClInclude Include="World.h" />

@@ -52,6 +52,7 @@
     <ClInclude Include="CaliSphereMath.h" />
     <ClInclude Include="Box.h" />
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="Stars.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\cali_common.fx">

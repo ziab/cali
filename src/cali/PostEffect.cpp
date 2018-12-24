@@ -16,7 +16,7 @@ namespace cali
 			IvRenderer::mRenderer->GetResourceManager()->CreateFragmentShaderFromFile(
 				pixel_shader_file.c_str(), "ps_bloom"));
 
-		create_quad(m_target_quad, { 1.f, 1.f, 1.f }, false, false);
+        m_target_quad = create_quad({ 1.f, 1.f, 1.f }, false, false);
 	}
 
 	void PostEffect::apply(IvRenderer & renderer, IvRenderTexture& target)

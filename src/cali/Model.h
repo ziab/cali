@@ -63,6 +63,14 @@ namespace cali
 		}
 	};
 
+    template <typename T>
+    T move_value_from(T& that)
+    {
+        auto temp = that;
+        that = {};
+        return temp;
+    }
+
 	template<IvVertexFormat vertex_format_code, typename t_VertexFormat>
 	class model
 	{
@@ -85,6 +93,27 @@ namespace cali
 			m_vertices(nullptr)
 		{
 		}
+
+        // non copyable for now
+        model(const model& that) = delete;
+        model& operator=(const model& that) = delete;
+
+        model& operator=(model&& that)
+        {
+            m_primitive_type = move_value_from(that.m_primitive_type);
+            m_indices_count = move_value_from(that.m_indices_count);
+            m_indices = move_value_from(that.m_indices);
+            m_vertices_count = move_value_from(that.m_vertices_count);
+            m_vertices = move_value_from(that.m_vertices);
+
+            return *this;
+        }
+
+        model(model&& that) :
+            m_renderer(that.m_renderer)
+        {
+            *this = std::move(that);
+        }
 
 		~model() { free(); }
 
@@ -153,10 +182,10 @@ namespace cali
 			indices[i] = indices_mem[i];
 	}
 	
-	void create_box(model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals);
+    model<kTNPFormat, IvTNPVertex> create_box(const IvVector3& size, bool right_hand_order, bool invert_normals);
 
 	template<IvVertexFormat vertex_format_code, typename t_VertexFormat>
-	void create_quad(model<vertex_format_code, t_VertexFormat>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
+    void create_quad(model<vertex_format_code, t_VertexFormat>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
 	{
 		std::vector<t_VertexFormat> vertices_mem;
 		std::vector<UInt32> indices_mem;
@@ -191,8 +220,7 @@ namespace cali
 		copy_to_gpu_mem(model, vertices_mem, indices_mem);
 	}
 
-	template<>
-	inline void create_quad(model<kTNPFormat, IvTNPVertex>& model, const IvVector3& size, bool right_hand_order, bool invert_normals)
+	inline model<kTNPFormat, IvTNPVertex> create_quad(const IvVector3& size, bool right_hand_order, bool invert_normals)
 	{
 		std::vector<IvTNPVertex> vertices_mem;
 		std::vector<UInt32> indices_mem;
@@ -224,6 +252,8 @@ namespace cali
 
 		if (!right_hand_order) reverse_winding(indices_mem, vertices_mem);
 
+        model<kTNPFormat, IvTNPVertex> model;
 		copy_to_gpu_mem(model, vertices_mem, indices_mem);
+        return model;
 	}
 }
