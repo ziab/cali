@@ -23,6 +23,14 @@ static const float3 sun_radiance = float3(
     kSolarIrradiance[1] / kSunSolidAngle,
     kSolarIrradiance[2] / kSunSolidAngle);
 
+float calculate_alpha(in float3 color)
+{
+    // it's a hack for calculating transparency of the atmosphere
+    float brightness = (0.2126 * color.r + .7152 * color.g + .0722 * color.b) + 0.6;
+    float alpha = lerp(0.0, 1.0, pow(brightness, 4));
+    return alpha;
+}
+
 float4 ps_sky(VS_OUTPUT input) : SV_TARGET
 {
     ////////////////////////////////////////////////////////////////////////////
@@ -62,7 +70,5 @@ float4 ps_sky(VS_OUTPUT input) : SV_TARGET
         abs(float3(1.0, 1.0, 1.0) - exp(-radiance / white_point * exposure)),
         float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
-    float brightness = 0.2126 * color.r + .7152 * color.g + .0722 * color.b;
-
-    return float4(color.rgb, brightness);
+    return float4(color.rgb, calculate_alpha(color));
 }
