@@ -103,7 +103,7 @@ Game::PostRendererInitialize()
 
 	auto& renderer = *IvRenderer::mRenderer;
 
-	m_bruneton = std::make_unique<cali::Bruneton>();
+	m_bruneton = std::make_unique<cali::bruneton>();
 	if (!m_bruneton) return false;
 
 	m_bruneton->precompute(renderer);
@@ -120,6 +120,9 @@ Game::PostRendererInitialize()
 
 	m_sky = std::unique_ptr<cali::sky>(new cali::sky(*m_bruneton));
 	if (!m_sky)	return false;
+
+    m_stars = std::unique_ptr<cali::stars>(new cali::stars);
+    if (!m_stars)	return false;
 
 	m_sun = std::unique_ptr<cali::sun>(new cali::sun);
 	if (!m_sun)	return false;
@@ -217,10 +220,13 @@ void Game::UpdateObjects(float dt)
 	
 	m_terrain->set_viewer(m_camera.get_position());
 	m_terrain->update(dt);
-	m_sun->update(dt);
 
+	m_sun->update(dt);
 	m_sun->look_at(m_camera.get_position(), cali::constants::c_world_up);
 	m_sun->update_global_state(m_global_state_cbuffer);
+
+    m_stars->update(dt);
+
 	m_camera.update_global_state(m_global_state_cbuffer);
 }   // End of Game::Update()
 
@@ -241,6 +247,7 @@ void Game::Render() // Here's Where We Do All The Drawing
 	renderer.UpdateConstantBuffer(m_global_state_cbuffer.ivcbuffer());
 
 	IvDrawAxes();
+    m_stars->render(renderer);
 	m_sky->render(renderer);
 	m_terrain->render(renderer, m_camera.get_frustum());
 	//m_sun->render(renderer);

@@ -532,6 +532,7 @@
     <ClCompile Include="PostEffect.cpp" />
     <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Sky.cpp" />
+    <ClCompile Include="Stars.cpp" />
     <ClCompile Include="Sun.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Grid.cpp" />

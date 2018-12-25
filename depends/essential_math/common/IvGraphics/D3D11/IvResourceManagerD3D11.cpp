@@ -283,6 +283,7 @@ IvResourceManagerD3D11::CreateShaderProgram( IvVertexShader* vs, IvFragmentShade
 void 
 IvResourceManagerD3D11::Destroy( IvShaderProgram* sp )
 {
+    if (!sp) return;
     IvShaderProgramD3D11* spD3D11 = static_cast<IvShaderProgramD3D11*>(sp);
     spD3D11->Destroy();
     delete spD3D11;

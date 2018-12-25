@@ -10,7 +10,7 @@ namespace cali
 {
 	class sky : public physical
 	{
-		Bruneton& m_bruneton;
+		bruneton& m_bruneton;
 
 		model<kTNPFormat, IvTNPVertex> m_sky_box;
 		IvShaderProgram* m_sky_shader;
@@ -19,7 +19,7 @@ namespace cali
 		void create_sky_box(const IvVector3& size);
 
 	public:
-		sky(Bruneton& bruneton);
+		sky(bruneton& bruneton);
 		~sky();
 
 		virtual void update(float dt);

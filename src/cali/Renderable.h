@@ -44,13 +44,17 @@ namespace cali
 		IvVector3 m_scale;
 
 	private:
-		physical(physical&) = delete;
-		physical& operator= (const physical&) = delete;
-
 		void calculate_model_matrix();
 		void normalize();
 
 	public:
+
+        physical(physical&) = default;
+        physical& operator= (const physical&) = default;
+
+        physical(physical&&) = default;
+        physical& operator= (physical&&) = default;
+
 		physical();
 		virtual ~physical() {};
 		

@@ -20,7 +20,7 @@ namespace cali
 
 	constexpr int NUM_SCATTERING_ORDERS = 4;
 
-	void Bruneton::initialize(IvRenderer& renderer)
+	void bruneton::initialize(IvRenderer& renderer)
 	{
 		auto& resman = *renderer.GetResourceManager();
 
@@ -111,7 +111,7 @@ namespace cali
 				SCATTERING_TEXTURE_DEPTH, IvTextureFormat::kRGBAFloat16TexFmt));
 	}
 
-	void Bruneton::compute_transmittance(IvRenderer & renderer)
+	void bruneton::compute_transmittance(IvRenderer & renderer)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kZeroBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_transmittance_texture->GetWidth(), m_transmittance_texture->GetHeight());
@@ -120,7 +120,7 @@ namespace cali
 		renderer.ReleaseRenderTarget();
 	}
 
-	void Bruneton::compute_direct_irradiance(IvRenderer & renderer)
+	void bruneton::compute_direct_irradiance(IvRenderer & renderer)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kZeroBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_delta_irradiance_texture->GetWidth(), m_delta_irradiance_texture->GetHeight());
@@ -131,7 +131,7 @@ namespace cali
 		m_compute_direct_irradiance_shader->GetUniform("transmittance_texture")->Unbind();
 	}
 
-	void Bruneton::compute_single_scattering(IvRenderer & renderer)
+	void bruneton::compute_single_scattering(IvRenderer & renderer)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kZeroBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_scattering_texture->GetWidth(), m_scattering_texture->GetHeight());
@@ -165,7 +165,7 @@ namespace cali
 
 	// Compute the scattering density, and store it in
 	// delta_scattering_density_texture.
-	void Bruneton::compute_scattering_density(IvRenderer & renderer, size_t scattering_order)
+	void bruneton::compute_scattering_density(IvRenderer & renderer, size_t scattering_order)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kZeroBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_delta_scattering_density_texture->GetWidth(), m_delta_scattering_density_texture->GetHeight());
@@ -202,7 +202,7 @@ namespace cali
 
 	// Compute the indirect irradiance, store it in delta_irradiance_texture and
 	// accumulate it in irradiance_texture.
-	void Bruneton::compute_indirect_irradiance(IvRenderer & renderer, size_t scattering_order)
+	void bruneton::compute_indirect_irradiance(IvRenderer & renderer, size_t scattering_order)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kOneBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_delta_irradiance_texture->GetWidth(), m_delta_irradiance_texture->GetHeight());
@@ -233,7 +233,7 @@ namespace cali
 		m_compute_indirect_irradiance_shader->GetUniform("multiple_scattering_texture")->Unbind();
 	}
 
-	void Bruneton::compute_multiple_scattering(IvRenderer & renderer, size_t scattering_order)
+	void bruneton::compute_multiple_scattering(IvRenderer & renderer, size_t scattering_order)
 	{
 		renderer.SetBlendFunc(kOneBlendFunc, kOneBlendFunc, kAddBlendOp);
 		renderer.SetViewPort(m_scattering_texture->GetWidth(), m_scattering_texture->GetHeight());
@@ -268,7 +268,7 @@ namespace cali
 		m_compute_multiple_scattering_shader->GetUniform("scattering_density_texture")->Unbind();
 	}
 
-	void Bruneton::compute_oders(IvRenderer & renderer)
+	void bruneton::compute_oders(IvRenderer & renderer)
 	{
 		for (size_t scattering_order = 2; scattering_order <= NUM_SCATTERING_ORDERS; ++scattering_order)
 		{
@@ -278,7 +278,7 @@ namespace cali
 		}
 	}
 
-	void Bruneton::precompute(IvRenderer& renderer)
+	void bruneton::precompute(IvRenderer& renderer)
 	{
 		initialize(renderer);
 

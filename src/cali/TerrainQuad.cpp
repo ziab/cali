@@ -109,7 +109,7 @@ namespace cali
 		}
 	}
 
-	terrain_quad::terrain_quad(Bruneton& bruneton) :
+	terrain_quad::terrain_quad(bruneton& bruneton) :
 		m_qtree({ { 0.0, 0.0 }, { world::c_earth_radius, world::c_earth_radius } }),
 		m_grid(c_gird_cells, c_gird_cells, 1.0f),
 		m_bruneton(bruneton),

@@ -21,6 +21,7 @@
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="AABB.cpp" />
+    <ClCompile Include="Stars.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />

@@ -36,7 +36,7 @@ namespace cali
 		terrain_quad_tree m_qtree;
 		Box m_box;
 		grid m_grid;
-		Bruneton& m_bruneton;
+		bruneton& m_bruneton;
 		IvVector3 m_viewer_position;
 		const float m_overlapping_edge_cells;
 		const IvDoubleVector3 m_planet_center;
@@ -82,7 +82,7 @@ namespace cali
 		virtual void render(IvRenderer & renderer, const frustum& frustum) override;
 		void set_viewer(const IvVector3 & camera_position);
 
-		terrain_quad(Bruneton& bruneton);
+		terrain_quad(bruneton& bruneton);
 		~terrain_quad();
 	};
 }

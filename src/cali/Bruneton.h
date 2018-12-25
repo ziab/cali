@@ -6,7 +6,7 @@
 
 namespace cali
 {
-	class Bruneton
+	class bruneton
 	{
 		cali::model<kTNPFormat, IvTNPVertex> m_quad;
 
@@ -36,11 +36,11 @@ namespace cali
 
 		void initialize(IvRenderer& renderer);
 
-		Bruneton(const Bruneton&) = delete;
-		Bruneton& operator=(const Bruneton&) = delete;
+		bruneton(const bruneton&) = delete;
+		bruneton& operator=(const bruneton&) = delete;
 
 	public:
-		Bruneton() :
+		bruneton() :
 			m_compute_transmittance_shader(nullptr),
 			m_compute_direct_irradiance_shader(nullptr),
 			m_compute_single_scattering_shader(nullptr),
@@ -51,7 +51,7 @@ namespace cali
 		{
 		}
 
-		~Bruneton()
+		~bruneton()
 		{
 		}
 

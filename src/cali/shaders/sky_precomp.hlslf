@@ -62,13 +62,7 @@ float4 ps_sky(VS_OUTPUT input) : SV_TARGET
         abs(float3(1.0, 1.0, 1.0) - exp(-radiance / white_point * exposure)),
         float3(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 
-    float alpha = 1.0;
-    // Uncommnet to mix atmosphere with whatever is rendered further
-    //if (distance_to_intersection_ground < 0.0)
-    //{
-    //    float brightness = 0.2126 * color.r + .7152 * color.g + .0722 * color.b;
-    //    alpha = lerp(0.0, 0.1, brightness);
-    //}
+    float brightness = 0.2126 * color.r + .7152 * color.g + .0722 * color.b;
 
-    return float4(color.rgb, alpha);
+    return float4(color.rgb, brightness);
 }

@@ -23,7 +23,7 @@ namespace cali
         m_sky_box = create_box(size, false, false);
 	}
 
-	sky::sky(Bruneton& bruneton) :
+	sky::sky(bruneton& bruneton) :
 		m_bruneton(bruneton)
 	{
 		std::string vertex_shader_file = construct_shader_path("sky.hlslv");
@@ -58,6 +58,7 @@ namespace cali
 
 	void sky::render(IvRenderer & renderer)
 	{
+        renderer.SetBlendFunc(kOneBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 		physical::set_transformation_matrix(renderer);
 		m_sky_box.render(renderer, m_sky_shader);
 	}

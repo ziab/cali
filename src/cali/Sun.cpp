@@ -41,7 +41,6 @@ namespace cali
 	{
 		IvMatrix33 mat;
 		mat.Rotation({ 1.f, 0.f, 0.f }, -0.05f * dt);
-
 		set_position(get_position() * mat);
 	}
 
@@ -50,12 +49,6 @@ namespace cali
 		set_transformation_matrix(renderer);
 		renderer.SetBlendFunc(kOneBlendFunc, kOneMinusSrcAlphaBlendFunc, kAddBlendOp);
 		m_sun_rect.render(renderer, m_shader);
-	}
-
-	template <typename T>
-	T lerp(T a, T b, T f)
-	{
-		return a + f * (b - a);
 	}
 
 	void sun::update_global_state(constant_buffer_wrapper<constant_buffer::GlobalState>& global_state)
