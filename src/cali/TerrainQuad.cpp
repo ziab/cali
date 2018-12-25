@@ -234,7 +234,7 @@ namespace cali
 
 		m_qtree.visit(circle, *this, &terrain_quad::render_node, &render_context);
 
-		info.set_debug_string(L"rendered_ndoes", (float)m_nodes_rendered_per_frame);
+		info.set_debug_string(L"rendered_nodes", (float)m_nodes_rendered_per_frame);
 	}
 
 	inline void terrain_quad::calculate_sphere_surface_quad(
