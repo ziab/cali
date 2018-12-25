@@ -13,12 +13,12 @@
 
 namespace cali
 {
-	const float camera::movement_inertia_decay = 1.2f;
-	const float camera::movement_acceleration = 100.f; // m/s ?
-	const float camera::movement_max_velocity = 30.f; // m/s
+	const float camera::movement_inertia_decay = 1.6f;
+	const float camera::movement_acceleration = 300.f; // m/s ?
+	const float camera::movement_max_velocity = 300.f; // m/s
 	const float camera::roatation_sensitivity = 0.15f;
 	const float camera::rotation_inertia_decay = 0.2f;
-	const float camera::addtional_acceleration = 1000.0f;
+	const float camera::addtional_acceleration = 25.0f;
 
 	void camera::next_position(float dt)
 	{

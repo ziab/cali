@@ -30,6 +30,10 @@ namespace cali
             c_camera_far
         };
 
+        static const float c_star_distance = world::c_earth_radius * 100.f;
+        static const float c_star_visible_size = 4000.f;
+
+
 		static const IvVector4 sun_zenith_color = { 1.f, 1.f, 1.f, 1.f };
 		static const IvVector4 sun_sunset_color = { 252.f / 255.f, 108.f / 255.f, 45.f / 255.f, 1.f };
 	}

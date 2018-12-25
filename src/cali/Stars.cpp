@@ -20,6 +20,21 @@ namespace cali
         {
             return low + static_cast <float>(rand())/(static_cast<float>(RAND_MAX/(high - low)));
         }
+
+        inline IvVector3 get_random_point_on_sphere(const IvVector3& sphere_center, const float sphere_radius)
+        {
+            IvVector3 point{
+                utils::random_float(-1.f, 1.f),
+                utils::random_float(-1.f, 1.f),
+                utils::random_float(-1.f, 1.f) };
+
+            point.Normalize();
+
+            point *= world::c_star_distance;
+            point += world::c_earth_center;
+
+            return point;
+        }
     }
 
     IvVector3 rotate_around_point(const IvVector3& what, const IvVector3& point, const IvVector3& axis, const float angle)
@@ -36,24 +51,14 @@ namespace cali
     void stars::generate_stars(size_t count)
     {
         srand(static_cast<unsigned int>(time(nullptr)));
-        IvVector3 initial_position = { 0.f, 0.f, world::c_earth_radius * 4 };
 
         for (size_t i = 0; i < count; ++i)
         {
-            IvVector3 axis{ 
-                utils::random_float(-1.f, 1.f), 
-                utils::random_float(-1.f, 1.f), 
-                utils::random_float(-1.f, 1.f) };
-
-            axis.Normalize();
-
             star new_star{ 
-                rotate_around_point(
-                    initial_position, 
-                    world::c_earth_center, 
-                    axis, 
-                    utils::random_float(-360.f, 360.f)), 
-                100.f };
+                utils::get_random_point_on_sphere(
+                    world::c_earth_center,
+                    world::c_earth_radius),
+                world::c_star_visible_size };
 
             new_star.look_at(world::c_earth_center, constants::c_world_up);
 

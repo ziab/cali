@@ -239,8 +239,8 @@ void Game::UpdateObjects(float dt)
 void Game::Render() // Here's Where We Do All The Drawing
 {
 	IvRenderer& renderer = *IvRenderer::mRenderer;
-	//renderer.ClearRenderTarget(m_main_screen_buffer.get(), kColorClear, { 0.0, 0.0, 0.0, 0.0 });
-	//renderer.SetRenderTarget(m_main_screen_buffer.get());
+	renderer.ClearRenderTarget(m_main_screen_buffer.get(), kColorClear, { 0.0, 0.0, 0.0, 0.0 });
+	renderer.SetRenderTarget(m_main_screen_buffer.get());
 
     m_camera.render(renderer);
 
@@ -252,19 +252,19 @@ void Game::Render() // Here's Where We Do All The Drawing
 	m_terrain->render(renderer, m_camera.get_frustum());
 	//m_sun->render(renderer);
 
-	//renderer.ReleaseRenderTarget();
+	renderer.ReleaseRenderTarget();
 
 	auto& d3drenderer = static_cast<IvRendererD3D11&>(renderer);
 	
 	// if wiferframe is enabled we disable any post effects
 	if (m_render_wireframe)
 	{
-		//d3drenderer.CopyToBackBuffer(m_main_screen_buffer.get());
+		d3drenderer.CopyToBackBuffer(m_main_screen_buffer.get());
 	}
 	else
 	{
 		// Post effects should be placed here
-		//m_bloom->apply(renderer, *m_main_screen_buffer);
+		m_bloom->apply(renderer, *m_main_screen_buffer);
 
 		// if no post-effects just copy back the buffer
 		//d3drenderer.CopyToBackBuffer(m_main_screen_buffer.get());
