@@ -31,7 +31,8 @@ namespace cali
         };
 
         static const float c_star_distance = world::c_earth_radius * 100.f;
-        static const float c_star_visible_size = 4000.f;
+        static const float c_star_visible_size_min = 4000.f;
+        static const float c_star_visible_size_max = 7000.f;
 
 
 		static const IvVector4 sun_zenith_color = { 1.f, 1.f, 1.f, 1.f };

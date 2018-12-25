@@ -85,7 +85,7 @@ float4 ps_bloom(PixelInputType input) : SV_TARGET
     float texel_size = 1.0f / screen_width;
 
     float2 tc = input.tex;
-    float3 color = blur(tc, 2.0);
+    float3 color = blur(tc, 4.0);
     //color += blur(tc, 3.0);
     //color += blur(tc, 5.0);
     //color += blur(tc, 7.0);

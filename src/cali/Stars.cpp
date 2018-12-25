@@ -58,7 +58,9 @@ namespace cali
                 utils::get_random_point_on_sphere(
                     world::c_earth_center,
                     world::c_earth_radius),
-                world::c_star_visible_size };
+                utils::random_float(
+                    world::c_star_visible_size_min, 
+                    world::c_star_visible_size_max) };
 
             new_star.look_at(world::c_earth_center, constants::c_world_up);
 
