@@ -1,0 +1,2 @@
+E:\code\github\cali\depends\essential_math\common\Libs\Win32Debug\IvMath.pdb
+E:\code\github\cali\depends\essential_math\common\IvMath\Win32Debug\IvMath.pdb

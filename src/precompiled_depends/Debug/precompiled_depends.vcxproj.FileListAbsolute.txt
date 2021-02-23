@@ -1,0 +1,2 @@
+E:\code\github\cali\Debug\precompiled_depends.pdb
+E:\code\github\cali\src\precompiled_depends\Debug\precompiled_depends.pdb
