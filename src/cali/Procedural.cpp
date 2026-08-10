@@ -64,7 +64,6 @@ static float fbm_internal(float x,float y,uint64_t seed,int octaves,float persis
 }
 float sample_fbm(float x,float y,uint64_t seed,int periodX,int periodY){ return fbm_internal(x,y,seed,6,0.5f,2.0f,periodX,periodY); }
 
-// Voronoi – tileable, cellSize in texels, returns distance in [0,1] and border, and cell value
 static float voronoi(float x,float y,float cellSize,uint64_t seed,int periodX,int periodY, float* outBorder=nullptr, float* outCellValue=nullptr){
     int cellsX = periodX>0 ? std::max(1, (int)(periodX / cellSize + 0.5f)) : 64;
     int cellsY = periodY>0 ? std::max(1, (int)(periodY / cellSize + 0.5f)) : 64;
@@ -104,63 +103,73 @@ IvTexture* generate_heightmap_texture(uint64_t seed,int width,int height){
     uint64_t seedDetail=splitmix64(seed+0x123456789ABCDEF0ULL);
     uint64_t seedVorL=splitmix64(seed+0xA5A5A5A5A5A5A5A5ULL);
     uint64_t seedVorS=splitmix64(seed+0x5A5A5A5A5A5A5A5AULL);
-    uint64_t seedMountVar=splitmix64(seed+0xC0FFEE123456789ULL);
     const float cellLarge = (float)width / 7.0f;
-    const float cellSmall = (float)width / 22.0f;
+    const float cellSmall = (float)width / 28.0f;
     for(int y=0;y<height;++y) for(int x=0;x<width;++x){
-        // normalized domain with integer periods for perfect tiling
-        // continent: 4 periods across texture
-        float u_cont = (float)x / width * 4.0f;
-        float v_cont = (float)y / height * 4.0f;
-        float continent = fbm_internal(u_cont, v_cont, seedBase, 4, 0.45f, 2.0f, 4, 4);
-        // voronoi large – soft cellular continents, tileable via cell count 7
+        // soft continents: low frequency, few octaves, low persistence
+        float u_cont = (float)x / width * 3.5f;
+        float v_cont = (float)y / height * 3.5f;
+        float continent = fbm_internal(u_cont, v_cont, seedBase, 3, 0.42f, 2.0f, 4, 4);
+        // large voronoi soft blend – subtle, not dominant
         float vorL = voronoi((float)x,(float)y,cellLarge,seedVorL,periodX,periodY);
         float vorCellVal;
         voronoi((float)x,(float)y,cellLarge,seedVorL,periodX,periodY,nullptr,&vorCellVal);
         float continentVor = 1.0f - vorL;
-        continentVor = powf(continentVor, 1.7f);
-        float base = lerp_f(continent, continentVor, 0.38f);
-        base = std::clamp((base - 0.33f) / 0.60f, 0.0f, 1.0f);
-        base = powf(base, 0.88f);
+        continentVor = powf(continentVor, 2.2f); // very soft
+        float base = lerp_f(continent, continentVor, 0.20f); // only 20% voronoi influence
+        // remap to 0-1 with soft contrast
+        base = std::clamp((base - 0.38f) / 0.50f, 0.0f, 1.0f);
+        base = lerp_f(base, smootherstep(base), 0.4f); // soften
 
-        // detail: 18 periods, softer
-        float u_det = (float)x / width * 18.0f;
-        float v_det = (float)y / height * 18.0f;
-        float detail = fbm_internal(u_det, v_det, seedDetail, 3, 0.40f, 2.2f, 18, 18);
-        detail = (detail - 0.5f) * 0.14f; // very soft variation
+        // fine detail – very low amplitude for soft hills
+        float u_det = (float)x / width * 22.0f;
+        float v_det = (float)y / height * 22.0f;
+        float detail = fbm_internal(u_det, v_det, seedDetail, 2, 0.40f, 2.2f, 22, 22);
+        detail = (detail - 0.5f) * 0.08f; // tiny variation
 
-        // small voronoi ridges
+        // mountain ridges – only where base is high (mountain mask)
+        float mountainMask = smootherstep(std::clamp((base - 0.45f)/0.35f, 0.0f, 1.0f)); // 0 in lowlands, 1 in highlands
+        mountainMask = powf(mountainMask, 0.9f);
+        float mountVar = 0.55f + vorCellVal * 1.1f; // 0.55-1.65, high vs mid
+
+        // small Voronoi ridges localized to mountains
         float vorS = voronoi((float)x,(float)y,cellSmall,seedVorS,periodX,periodY);
-        float ridge = 1.0f - fabsf(vorS*2.0f - 1.0f);
-        ridge = powf(std::max(0.0f, ridge), 1.9f) * 0.12f;
+        float ridgeS = 1.0f - fabsf(vorS*2.0f - 1.0f);
+        ridgeS = powf(std::max(0.0f, ridgeS), 2.2f) * 0.10f * mountainMask * mountVar;
 
-        // per-cell mountain variability: large cells have random height factor 0.6..1.6
-        float mountVar = 0.7f + vorCellVal * 0.9f; // 0.7-1.6, some high, some mid
-        // increase ridge/mountain 3x overall, with variability
-        ridge *= mountVar * 3.0f;
-        // add extra peak for high cells
-        float h = base + detail + ridge;
+        // large ridge at continent borders – subtle
+        float vorBorder; voronoi((float)x,(float)y,cellLarge,seedVorL,periodX,periodY,&vorBorder,nullptr);
+        float largeRidge = powf(std::max(0.0f, 1.0f - vorBorder*3.0f), 2.0f) * 0.06f * mountainMask * mountVar;
+
+        float h = base + detail + ridgeS + largeRidge;
         h = std::clamp(h, 0.0f, 1.0f);
-        h = smootherstep(h);
+        // final soften
+        h = lerp_f(h, smootherstep(h), 0.25f);
 
-        const float sea = 0.44f;
+        const float sea = 0.50f; // more ocean (50%)
         float tex;
         if(h < sea){
             float t = h / sea;
-            t = powf(t, 1.15f);
-            tex = t * 0.0038f; // ocean 0..0.0038 -> height 0..9.2 (water)
+            t = powf(t, 1.2f);
+            tex = t * 0.0032f; // ocean 0..0.0032 -> height 0..8.5
         }else{
             float t = (h - sea) / (1.0f - sea);
-            t = powf(t, 0.92f);
-            // land: 3x higher with per-cell variability (some high, some mid)
-            tex = 0.0045f + t * 0.45f * (0.85f + 0.3f*vorCellVal);
-            if(t > 0.60f){
-                float m = (t - 0.60f)/0.40f;
-                tex += m*m * 0.35f * mountVar;
+            t = powf(t, 0.88f);
+            // base land, 3x peaks with variability
+            // high cells get up to 3x, mid cells ~1.5x
+            float peakScale = 0.55f * (0.75f + 0.5f*vorCellVal); // 0.41-0.68
+            tex = 0.0042f + t * peakScale * mountVar * 0.55f;
+            // extra high peaks for very high t, variable
+            if(t > 0.62f){
+                float m = (t - 0.62f)/0.38f;
+                tex += powf(m, 1.6f) * 0.28f * mountVar;
             }
             if(tex > 1.0f) tex = 1.0f;
         }
         tex = std::clamp(tex, 0.0f, 1.0f);
+        // add tiny hash dither to avoid banding
+        float dither = (hash_to_float(hash_coords(x,y,seed ^ 0x9E3779B97F4A7C15ULL)) - 0.5f) * (0.5f/255.0f);
+        tex = std::clamp(tex + dither, 0.0f, 1.0f);
         uint8_t v = (uint8_t)std::clamp((int)roundf(tex*255.0f),0,255);
         size_t idx=((size_t)y*width+x)*3;
         data[idx+0]=v; data[idx+1]=v; data[idx+2]=v;
