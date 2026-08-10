@@ -121,15 +121,13 @@ float4 main(TERRAIN_VS_OUTPUT input) : SV_TARGET
 {
     lightSampleValues lightValues = computePointLightValues(input.world_position);
 
-    float3 base_color = desert_color;
-    if (input.height > 30.0)
-    {
-        base_color = snow_color;
-    }
-    else if (input.height < 2.0)
-    {
-        base_color = water_color;
-    }
+    // softer, voronoi-shaped blending for water/desert/snow – less noisy
+    float waterThresh = 8.0;
+    float snowThresh = 34.0;
+    float waterBlend = smoothstep(waterThresh - 2.0, waterThresh + 2.0, input.height);
+    float snowBlend  = smoothstep(snowThresh - 6.0, snowThresh + 6.0, input.height);
+    float3 base_color = lerp(water_color, desert_color, waterBlend);
+    base_color = lerp(base_color, snow_color, snowBlend);
 
     float3 lighting = clamp(dot(normalize(input.normal), lightValues.dir), 0.0, 1.0) * lightValues.L;
     float3 direct_light_color = lighting * base_color;

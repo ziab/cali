@@ -254,6 +254,7 @@ set(CALI_SOURCES
     src/cali/Camera.cpp
     src/cali/CommonFileSystem.cpp
     src/cali/CommonTexture.cpp
+    src/cali/Procedural.cpp
     src/cali/DebugInfo.cpp
     src/cali/Frustum.cpp
     src/cali/Game.cpp

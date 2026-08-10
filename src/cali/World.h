@@ -3,6 +3,7 @@
 #include <IvVector4.h>
 
 #include <limits>
+#include <string>
 
 #undef max
 
@@ -37,5 +38,9 @@ namespace cali
 
 		static const IvVector4 sun_zenith_color = { 1.f, 1.f, 1.f, 1.f };
 		static const IvVector4 sun_sunset_color = { 252.f / 255.f, 108.f / 255.f, 45.f / 255.f, 1.f };
+
+		// Procedural planet seed: same hash => same terrain (stable generation)
+		static const inline std::string c_planet_hash = "cali_planet_v1";
+		static const int c_heightmap_size = 1024;
 	}
 }

@@ -41,8 +41,8 @@ namespace cali
 
 		if (!m_shader) throw std::exception("terrain_icosahedron: failed to load shader program");
 
-		m_height_map_texture = texture::load_texture_from_bmp(get_executable_file_directory() + "\\bitmaps\\heightmap.bmp");
-		if (!m_height_map_texture) throw("terrain_icosahedron: failed to load height map texture");
+		m_height_map_texture = texture::generate_procedural_heightmap(world::c_planet_hash, world::c_heightmap_size, world::c_heightmap_size);
+		if (!m_height_map_texture) throw("terrain_icosahedron: failed to generate procedural height map");
 
 		//m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);
 

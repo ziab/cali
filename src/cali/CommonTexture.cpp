@@ -1,4 +1,5 @@
 #include "CommonTexture.h"
+#include "Procedural.h"
 #include <IvTexture.h>
 #include <IvUniform.h>
 #include <IvResourceManager.h>
@@ -28,5 +29,15 @@ namespace cali
 		texture->SetMinFiltering(kBilerpTexMinFilter);
 
 		return texture;
+	}
+
+	IvTexture* texture::generate_procedural_heightmap(uint64_t seed, int width, int height)
+	{
+		return proc::generate_heightmap_texture(seed, width, height);
+	}
+
+	IvTexture* texture::generate_procedural_heightmap(const std::string& hash_str, int width, int height)
+	{
+		return proc::generate_heightmap_texture(hash_str, width, height);
 	}
 }
