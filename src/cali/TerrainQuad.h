@@ -33,7 +33,8 @@ namespace cali
 {
 	class terrain_quad : public renderable, public compound_renderable
 	{
-		terrain_quad_tree m_qtree;
+		static const int c_face_count = 6;
+		terrain_quad_tree m_qtrees[c_face_count];
 		Box m_box;
 		grid m_grid;
 		bruneton& m_bruneton;
@@ -56,9 +57,11 @@ namespace cali
 		{
 			IvRenderer& renderer;
 			const frustum& frustum;
+			int face;
 		};
 
 		void calculate_sphere_surface_quad(
+			int face,
 			const quad & quad,
 			IvDoubleVector3 & A,
 			IvDoubleVector3 & B,

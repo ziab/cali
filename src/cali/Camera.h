@@ -43,6 +43,7 @@ namespace cali
 		float m_addtional_acceleration;
 
 		frustum m_frustum;
+		IvVector3 m_last_gravity;
 
 	private:
 		//////////////////////////////////////////////
@@ -51,6 +52,9 @@ namespace cali
 		void next_angle(float dt);
 		//////////////////////////////////////////////
 		void normalize();
+		void align_to_gravity();
+
+		IvVector3 get_gravity() const;
 
 		IvMatrix44 get_view_matrix();
 

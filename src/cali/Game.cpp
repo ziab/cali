@@ -214,7 +214,11 @@ void Game::UpdateObjects(float dt)
 	m_debug_info.set_debug_string(L"fps", 1 / dt);
 
 	m_global_state_cbuffer->world_origin = { 0.f, 0.f, 0.f };
-	m_global_state_cbuffer->world_up = cali::constants::c_world_up;
+	{
+		IvVector3 gravity = m_camera.get_position() - cali::world::c_earth_center;
+		gravity.Normalize();
+		m_global_state_cbuffer->world_up = gravity;
+	}
 	m_global_state_cbuffer->sky_color_zenith = { 113.f / 255.f, 149.f / 255.f, 255.f / 255.f, 1.f };
 	m_global_state_cbuffer->sky_color_horizon = { 254.f / 255.f, 251.f / 255.f, 181.f / 255.f, 1.f };
 	
@@ -222,7 +226,11 @@ void Game::UpdateObjects(float dt)
 	m_terrain->update(dt);
 
 	m_sun->update(dt);
-	m_sun->look_at(m_camera.get_position(), cali::constants::c_world_up);
+	{
+		IvVector3 gravity = m_camera.get_position() - cali::world::c_earth_center;
+		gravity.Normalize();
+		m_sun->look_at(m_camera.get_position(), gravity);
+	}
 	m_sun->update_global_state(m_global_state_cbuffer);
 
     m_stars->update(dt);

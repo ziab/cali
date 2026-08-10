@@ -20,6 +20,50 @@ namespace cali
 	const float camera::rotation_inertia_decay = 0.2f;
 	const float camera::addtional_acceleration = 25.0f;
 
+	IvVector3 camera::get_gravity() const
+	{
+		IvVector3 g = get_position() - world::c_earth_center;
+		g.Normalize();
+		return g;
+	}
+
+	void camera::align_to_gravity()
+	{
+		IvVector3 new_gravity = get_gravity();
+		IvVector3 old_gravity = m_last_gravity;
+		if (old_gravity.Length() < 0.5f) { m_last_gravity = new_gravity; return; }
+		// rotation from old_gravity to new_gravity
+		IvVector3 axis = old_gravity.Cross(new_gravity);
+		float axis_len = axis.Length();
+		if (axis_len < 1e-6f) { m_last_gravity = new_gravity; return; }
+		axis.Normalize();
+		float dot = Dot(old_gravity, new_gravity);
+		if (dot > 1.f) dot = 1.f;
+		if (dot < -1.f) dot = -1.f;
+		float angle = acosf(dot);
+		if (fabsf(angle) < 1e-6f) { m_last_gravity = new_gravity; return; }
+		IvMatrix33 rot;
+		rot.Rotation(axis, angle);
+		IvVector3 dir = get_direction() * rot;
+		IvVector3 right = get_right() * rot;
+		dir.Normalize();
+		right.Normalize();
+		// re-orthogonalize slightly: ensure right is orthogonal to new_gravity and dir
+		// keep dir, recompute right = new_gravity.Cross(dir)
+		IvVector3 new_right = new_gravity.Cross(dir);
+		if (new_right.Length() < 1e-6f) {
+			// looking straight up/down, keep previous right rotated
+			new_right = right;
+		}
+		new_right.Normalize();
+		// keep dir as is, but ensure orthonormal with new_right/new_gravity via set_direction which computes right as up.Cross(dir)
+		// To preserve pitch, we keep dir; right will be recomputed from gravity and dir via set_direction.
+		// Use set_direction with dir and new_gravity – this preserves dir's vertical component but recomputes right.
+		// However set_direction uses right = up.Cross(dir), which for pitched dir will still be correct (right horizontal)
+		physical::set_direction(dir, new_gravity);
+		m_last_gravity = new_gravity;
+	}
+
 	void camera::next_position(float dt)
 	{
 		// speed decay
@@ -39,6 +83,8 @@ namespace cali
 		m_is_moving = false;
 
 		m_addtional_acceleration = 1.0f;
+
+		align_to_gravity();
 	}
 
 	void camera::next_angle(float dt)
@@ -51,12 +97,31 @@ namespace cali
 
 		m_is_rotating = false;
 
-		physical::yaw(m_yaw_inertia * roatation_sensitivity  * dt);
-		physical::pitch(m_pitch_inertia * roatation_sensitivity * dt);
+		// yaw around gravity, pitch around local right
+		if (fabsf(m_yaw_inertia) > 1e-6f)
+		{
+			IvVector3 gravity = get_gravity();
+			IvMatrix33 rot;
+			rot.Rotation(gravity, -m_yaw_inertia * roatation_sensitivity * dt);
+			IvVector3 dir = get_direction() * rot;
+			IvVector3 right = get_right() * rot;
+			physical::set_direction(dir, gravity);
+			// set_direction recomputes right, but we want to keep rotated right; so directly set via set_direction's recomputed value is fine
+		}
+		if (fabsf(m_pitch_inertia) > 1e-6f)
+		{
+			IvVector3 right = get_right();
+			IvMatrix33 rot;
+			rot.Rotation(right, -m_pitch_inertia * roatation_sensitivity * dt);
+			IvVector3 dir = get_direction() * rot;
+			IvVector3 gravity = get_gravity();
+			physical::set_direction(dir, gravity);
+		}
 	}
 
 	void camera::normalize()
 	{
+		align_to_gravity();
 	}
 
 	camera::camera(const IvVector3& postition, const IvVector3& direction)
@@ -75,6 +140,7 @@ namespace cali
 		m_is_rotating = false;
 
 		m_addtional_acceleration = 1.0;
+		m_last_gravity = get_gravity();
 	}
 
 	void camera::set_fov(float new_fov)
@@ -168,38 +234,43 @@ namespace cali
 
 	void camera::move_forward(float dt)
 	{
-		normalize();
 		add_velocity(get_direction() * (movement_acceleration * dt));
 	}
 
 	void camera::move_backward(float dt)
 	{
-		normalize();
 		add_velocity(-get_direction() * (movement_acceleration * dt));
 	}
 
 	void camera::move_left(float dt)
 	{
-		normalize();
 		add_velocity(-get_right() * (movement_acceleration * dt));
 	}
 
 	void camera::move_right(float dt)
 	{
-		normalize();
 		add_velocity(get_right() * (movement_acceleration * dt));
 	}
 
 	void camera::pitch(float angle, float dt)
 	{
-		physical::pitch(angle * roatation_sensitivity * dt);
+		IvVector3 right = get_right();
+		IvMatrix33 rot;
+		rot.Rotation(right, -angle * roatation_sensitivity * dt);
+		IvVector3 dir = get_direction() * rot;
+		IvVector3 gravity = get_gravity();
+		physical::set_direction(dir, gravity);
 		m_pitch_inertia = angle;
 		m_is_rotating = true;
 	}
 
 	void camera::yaw(float angle, float dt)
 	{
-		physical::yaw(angle * roatation_sensitivity * dt);
+		IvVector3 gravity = get_gravity();
+		IvMatrix33 rot;
+		rot.Rotation(gravity, -angle * roatation_sensitivity * dt);
+		IvVector3 dir = get_direction() * rot;
+		physical::set_direction(dir, gravity);
 		m_yaw_inertia = angle;
 		m_is_rotating = true;
 	}

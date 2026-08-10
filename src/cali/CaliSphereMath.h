@@ -49,7 +49,7 @@ namespace cali
 			double b = Dot(m, d);
 			double c = Dot(m, m) - R * R;
 
-			// Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0) 
+			// Exit if rï¿½s origin outside s (c > 0) and r pointing away from s (b > 0) 
 			if (c > 0.0f && b > 0.0f) return 0;
 			double discr = b*b - c;
 
@@ -150,6 +150,81 @@ namespace cali
 		{
 			x = (phi * 4 / kPI) * sphere_radius;
 			y = atan( tan(theta) / cos(phi) ) * 4.0 / kPI * sphere_radius;
+		}
+
+		// -----------------------------------------------------------------
+		// Cube-face helpers for full planet (6 faces). Top face (+Y) is
+		// the original adjusted mapping; other faces are obtained by
+		// rotating the top-face sphere vector so that +Y maps to the
+		// face normal.
+		// -----------------------------------------------------------------
+		enum class CubeFace : int { PosY = 0, NegY = 1, PosX = 2, NegX = 3, PosZ = 4, NegZ = 5 };
+
+		inline IvDoubleVector3 rotate_top_to_face(const IvDoubleVector3& v, CubeFace face)
+		{
+			switch (face)
+			{
+			case CubeFace::PosY: return v; // identity
+			case CubeFace::NegY: return IvDoubleVector3{ v.x, -v.y, -v.z };
+			case CubeFace::PosX: return IvDoubleVector3{ v.y, -v.x, v.z };
+			case CubeFace::NegX: return IvDoubleVector3{ -v.y, v.x, v.z };
+			case CubeFace::PosZ: return IvDoubleVector3{ v.x, -v.z, v.y };
+			case CubeFace::NegZ: return IvDoubleVector3{ v.x, v.z, -v.y };
+			default: return v;
+			}
+		}
+
+		inline IvDoubleVector3 rotate_face_to_top(const IvDoubleVector3& v, CubeFace face)
+		{
+			// inverse of rotate_top_to_face
+			switch (face)
+			{
+			case CubeFace::PosY: return v;
+			case CubeFace::NegY: return IvDoubleVector3{ v.x, -v.y, -v.z };
+			case CubeFace::PosX: return IvDoubleVector3{ -v.y, v.x, v.z };
+			case CubeFace::NegX: return IvDoubleVector3{ v.y, -v.x, v.z };
+			case CubeFace::PosZ: return IvDoubleVector3{ v.x, v.z, -v.y };
+			case CubeFace::NegZ: return IvDoubleVector3{ v.x, -v.z, v.y };
+			default: return v;
+			}
+		}
+
+		inline IvDoubleVector3 adjusted_cube_to_sphere_face(CubeFace face, double x, double y, double sphere_radius,
+			const IvDoubleVector3& sphere_center, IvDoubleVector3& normal)
+		{
+			IvDoubleVector3 top = adjusted_cube_to_sphere(x, y, sphere_radius, IvDoubleVector3{0,0,0}, normal);
+			IvDoubleVector3 rotated = rotate_top_to_face(top, face);
+			normal = rotate_top_to_face(normal, face);
+			return rotated + sphere_center;
+		}
+
+		// Determine cube face from world direction and compute face-local x,y
+		inline bool world_to_cube_face(const IvDoubleVector3& world_pos, const IvDoubleVector3& sphere_center,
+			double sphere_radius, CubeFace& out_face, double& out_x, double& out_y)
+		{
+			IvDoubleVector3 d = world_pos - sphere_center;
+			double ax = fabs(d.x), ay = fabs(d.y), az = fabs(d.z);
+			if (ay >= ax && ay >= az)
+				out_face = d.y >= 0 ? CubeFace::PosY : CubeFace::NegY;
+			else if (ax >= ay && ax >= az)
+				out_face = d.x >= 0 ? CubeFace::PosX : CubeFace::NegX;
+			else
+				out_face = d.z >= 0 ? CubeFace::PosZ : CubeFace::NegZ;
+
+			// rotate to top space
+			IvDoubleVector3 d_local = rotate_face_to_top(d, out_face);
+			double len = d_local.Length();
+			if (len < 1e-9) { out_x = 0; out_y = 0; return false; }
+			double R = sphere_radius;
+			// spherical coords as in adjusted mapping (pole = +Y)
+			double cos_lat = sqrt(d_local.x * d_local.x + d_local.y * d_local.y) / len;
+			// guard
+			if (cos_lat < 1e-9) cos_lat = 1e-9;
+			double lon = atan2(d_local.x, d_local.y); // phi
+			double lat = asin(d_local.z / len); // theta
+			// map to cube face plane
+			adjusted_sphere_to_cube(lon, lat, R, out_x, out_y);
+			return true;
 		}
 	}
 }

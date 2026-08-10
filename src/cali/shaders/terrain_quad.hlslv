@@ -134,6 +134,7 @@ float3 quad_d;
 float3 quad_center;
 float3 quad_size;
 float quad_scale_factor;
+float cube_face;
 
 /////////////////////////////////////////////////////////////
 // Main
@@ -159,6 +160,29 @@ float3 adjusted_cube_to_sphere(in float2 v, float sphere_radius, float3 sphere_c
     float theta = atan(tan(PI * v.y / 4.0) * cos(phi));
 
     return sureface_to_sphere(phi, theta, sphere_radius, sphere_center, normal);
+}
+
+float3 rotate_top_to_face(float3 v, float face)
+{
+    // 0:PosY 1:NegY 2:PosX 3:NegX 4:PosZ 5:NegZ – matches CaliSphereMath.h CubeFace
+    int f = (int)face;
+    if (f == 0) return v;
+    if (f == 1) return float3(v.x, -v.y, -v.z);
+    if (f == 2) return float3(v.y, -v.x, v.z);
+    if (f == 3) return float3(-v.y, v.x, v.z);
+    if (f == 4) return float3(v.x, -v.z, v.y);
+    // f == 5
+    return float3(v.x, v.z, -v.y);
+}
+
+float3 adjusted_cube_to_sphere_face(in float2 v, float sphere_radius, float3 sphere_center, float face, out float3 normal)
+{
+    float3 local_normal;
+    float3 top = adjusted_cube_to_sphere(v, sphere_radius, float3(0,0,0), local_normal);
+    float3 rotated = rotate_top_to_face(top, face);
+    float3 rot_n = rotate_top_to_face(local_normal, face);
+    normal = rot_n;
+    return rotated + sphere_center;
 }
 
 float4x4 calc_rotation_matrix(in float3 axis, float angle)
@@ -231,7 +255,7 @@ TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 posi
     if (curvature != 0.0)
     {
         float2 surface_point = (float2(quad_center.x, quad_center.y) + uv * quad_size.x) / planet_radius;
-        world_position_inter = adjusted_cube_to_sphere(surface_point, planet_radius, planet_center, world_normal);
+        world_position_inter = adjusted_cube_to_sphere_face(surface_point, planet_radius, planet_center, cube_face, world_normal);
     }
     else
     {

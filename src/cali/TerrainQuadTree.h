@@ -372,6 +372,11 @@ namespace cali
 
 	public:
 
+		terrain_quad_tree() :
+			m_root(quad({0,0},{1,1}), 1, nullptr)
+		{
+		};
+
 		terrain_quad_tree(quad quad) :
 			m_root(quad, 1, nullptr)
 		{
