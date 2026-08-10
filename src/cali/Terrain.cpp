@@ -90,7 +90,7 @@ namespace cali
 
 		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
-		m_height_map_texture = texture::generate_planet_heightmap(world::c_planet_hash, 4096, 2048);
+		m_height_map_texture = texture::generate_procedural_heightmap(world::c_planet_hash, world::c_heightmap_size, world::c_heightmap_size);
 		if (!m_height_map_texture) throw("terrain: failed to generate procedural height map");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);

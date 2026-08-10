@@ -41,10 +41,6 @@ namespace cali
 
 		// Procedural planet seed: same hash => same terrain (stable generation)
 		static const inline std::string c_planet_hash = "cali_planet_v1";
-		static const int c_heightmap_size = 1024; // legacy tiling
-		static const int c_planet_heightmap_width = 8192;  // 8192x4096 RGB24 = 100MB, within 200MB budget
-		static const int c_planet_heightmap_height = 4096;
-		static const int c_planet_heightmap_bytes = c_planet_heightmap_width * c_planet_heightmap_height * 3; // ~100MB
-		static_assert(c_planet_heightmap_bytes <= 200 * 1024 * 1024, "heightmap exceeds 200MB budget");
+		static const int c_heightmap_size = 1024;
 	}
 }

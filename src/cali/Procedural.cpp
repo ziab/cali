@@ -94,41 +94,6 @@ static float voronoi(float x,float y,float cellSize,uint64_t seed,int periodX,in
     return std::clamp(minDist / 1.41421356f, 0.0f, 1.0f);
 }
 
-// 3D helpers for planet sphere (non-tiled, unique)
-static inline uint64_t hash_coords3(int x,int y,int z,uint64_t seed){
-    uint64_t h = seed;
-    h ^= (uint64_t)(uint32_t)x * 0x9e3779b97f4a7c15ULL;
-    h ^= (uint64_t)(uint32_t)y * 0xbf58476d1ce4e5b9ULL;
-    h ^= (uint64_t)(uint32_t)z * 0x94d049bb133111ebULL;
-    h ^= ((uint64_t)(uint32_t)x << 32) | (uint32_t)y;
-    h ^= ((uint64_t)(uint32_t)z << 16);
-    return splitmix64(h);
-}
-static float value_noise3(float x,float y,float z,uint64_t seed){
-    int xi=(int)floorf(x), yi=(int)floorf(y), zi=(int)floorf(z);
-    float xf=x-xi, yf=y-yi, zf=z-zi;
-    float u=smootherstep(xf), v=smootherstep(yf), w=smootherstep(zf);
-    float h000=hash_to_float(hash_coords3(xi, yi, zi, seed));
-    float h100=hash_to_float(hash_coords3(xi+1, yi, zi, seed));
-    float h010=hash_to_float(hash_coords3(xi, yi+1, zi, seed));
-    float h110=hash_to_float(hash_coords3(xi+1, yi+1, zi, seed));
-    float h001=hash_to_float(hash_coords3(xi, yi, zi+1, seed));
-    float h101=hash_to_float(hash_coords3(xi+1, yi, zi+1, seed));
-    float h011=hash_to_float(hash_coords3(xi, yi+1, zi+1, seed));
-    float h111=hash_to_float(hash_coords3(xi+1, yi+1, zi+1, seed));
-    float x00=lerp_f(h000,h100,u), x10=lerp_f(h010,h110,u), x01=lerp_f(h001,h101,u), x11=lerp_f(h011,h111,u);
-    float y0=lerp_f(x00,x10,v), y1=lerp_f(x01,x11,v);
-    return lerp_f(y0,y1,w);
-}
-static float fbm3_internal(float x,float y,float z,uint64_t seed,int octaves,float persistence,float lacunarity){
-    float tot=0, amp=1, freq=1, maxA=0;
-    for(int i=0;i<octaves;++i){
-        float n=value_noise3(x*freq,y*freq,z*freq,seed+(uint64_t)i*0x9e3779b97f4a7c15ULL);
-        tot+=n*amp; maxA+=amp; amp*=persistence; freq*=lacunarity;
-    }
-    return tot/maxA;
-}
-
 IvTexture* generate_heightmap_texture(uint64_t seed,int width,int height){
     auto& renderer=*IvRenderer::mRenderer;
     auto& resman=*renderer.GetResourceManager();
@@ -216,95 +181,6 @@ IvTexture* generate_heightmap_texture(uint64_t seed,int width,int height){
     tex->SetMagFiltering(kBilerpTexMagFilter);
     tex->SetMinFiltering(kBilerpTexMinFilter);
     return tex;
-}
-
-IvTexture* generate_planet_heightmap(uint64_t seed,int width,int height){
-    // 200MB budget: e.g. 8192x4096 RGB24 = 100MB, 8192x8192 = 200MB
-    // Default 8192x4096 stays well within 200MB and is 2:1 equirectangular.
-    auto& renderer=*IvRenderer::mRenderer;
-    auto& resman=*renderer.GetResourceManager();
-    std::vector<unsigned char> data((size_t)width*height*3);
-    uint64_t seedBase=seed;
-    uint64_t seedDetail=splitmix64(seed+0x123456789ABCDEF0ULL);
-    uint64_t seedRidge=splitmix64(seed+0xA5A5A5A5A5A5A5A5ULL);
-    // 3D large voronoi for per-region mountain variability (cell ~0.6 rad)
-    // we use 2D voronoi in lat/lon space for cheap variability, but evaluate via 3D hash for stability
-    const float PI=3.14159265359f;
-    for(int y=0;y<height;++y){
-        float v = (float)y / (height-1); // 0 south ..1 north
-        float lat = v * PI - PI*0.5f;
-        float cosLat = cosf(lat);
-        float sinLat = sinf(lat);
-        for(int x=0;x<width;++x){
-            float u = (float)x / width; // 0..1
-            float lon = u * 2.0f*PI - PI;
-            float cosLon = cosf(lon), sinLon = sinf(lon);
-            // Y-up sphere
-            float px = cosLat * sinLon;
-            float py = sinLat;
-            float pz = cosLat * cosLon;
-            // 3D fbm at sphere surface – continents (low freq)
-            float continent = fbm3_internal(px*2.2f, py*2.2f, pz*2.2f, seedBase, 4, 0.45f, 2.0f);
-            // 2D voronoi large for soft continent shape – evaluate in equirectangular with wrap in lon
-            // we cheat: use 2D voronoi in (u*7, v*3.5) space
-            float vorU = u * 7.0f, vorV = v * 3.5f;
-            // wrap voronoi in U only (lon wraps), not V
-            float vorL = voronoi(vorU* (width/7.0f), vorV* (height/3.5f), width/7.0f, seedBase, width, height/2);
-            float vorCellVal;
-            voronoi(vorU* (width/7.0f), vorV* (height/3.5f), width/7.0f, seedBase, width, height/2, nullptr, &vorCellVal);
-            float continentVor = 1.0f - vorL;
-            continentVor = powf(continentVor, 2.0f);
-            float base = lerp_f(continent, continentVor, 0.22f);
-            base = std::clamp((base - 0.36f)/0.52f, 0.0f, 1.0f);
-            base = lerp_f(base, smootherstep(base), 0.3f);
-
-            // small detail – high freq 3D
-            float detail = fbm3_internal(px*14.0f, py*14.0f, pz*14.0f, seedDetail, 2, 0.40f, 2.2f);
-            detail = (detail - 0.5f) * 0.09f;
-
-            float mountainMask = smootherstep(std::clamp((base - 0.48f)/0.30f, 0.0f, 1.0f));
-            float mountVar = 0.55f + vorCellVal * 1.1f; // 0.55-1.65
-
-            float ridge = fbm3_internal(px*9.0f, py*9.0f, pz*9.0f, seedRidge, 2, 0.5f, 2.0f);
-            ridge = 1.0f - fabsf(ridge*2.0f - 1.0f);
-            ridge = powf(std::max(0.0f, ridge), 2.2f) * 0.11f * mountainMask * mountVar * 1.2f;
-
-            float h = base + detail + ridge;
-            h = std::clamp(h, 0.0f, 1.0f);
-            h = lerp_f(h, smootherstep(h), 0.20f);
-
-            const float sea = 0.50f;
-            float texv;
-            if(h < sea){
-                float t = h / sea;
-                t = powf(t, 1.15f);
-                texv = t * 0.0034f;
-            }else{
-                float t = (h - sea)/(1.0f - sea);
-                t = powf(t, 0.90f);
-                float peakScale = 0.55f * (0.75f + 0.5f*vorCellVal);
-                texv = 0.0042f + t * 0.48f * peakScale * (0.9f + 0.2f*mountVar);
-                if(t > 0.62f){
-                    float m = (t - 0.62f)/0.38f;
-                    texv += powf(m, 1.5f) * 0.30f * mountVar;
-                }
-                if(texv > 1.0f) texv = 1.0f;
-            }
-            texv = std::clamp(texv, 0.0f, 1.0f);
-            float dither = (hash_to_float(hash_coords(x,y,seed ^ 0x9E3779B97F4A7C15ULL)) - 0.5f) * (0.5f/255.0f);
-            texv = std::clamp(texv + dither, 0.0f, 1.0f);
-            uint8_t vv = (uint8_t)std::clamp((int)roundf(texv*255.0f),0,255);
-            size_t idx=((size_t)y*width+x)*3;
-            data[idx+0]=vv; data[idx+1]=vv; data[idx+2]=vv;
-        }
-    }
-    IvTexture* tex2 = resman.CreateTexture(kRGB24TexFmt,width,height,data.data(),kDefaultUsage);
-    if(!tex2) return nullptr;
-    tex2->SetAddressingU(kWrapTexAddr); // lon wraps
-    tex2->SetAddressingV(kClampTexAddr); // lat clamp at poles
-    tex2->SetMagFiltering(kBilerpTexMagFilter);
-    tex2->SetMinFiltering(kBilerpTexMinFilter);
-    return tex2;
 }
 }
 }

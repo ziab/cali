@@ -119,9 +119,8 @@ namespace cali
 
 		if (!m_shader) throw std::exception("terrain: failed to load shader program");
 
-		// Entire-planet heightmap: no tiling, unique terrain everywhere, 100MB (8192x4096 RGB24) within 200MB budget
-		// Same hash => same planet (stable)
-		m_height_map_texture = texture::generate_planet_heightmap(world::c_planet_hash, world::c_planet_heightmap_width, world::c_planet_heightmap_height);
+		// Procedural planet surface: hash => stable terrain, no bitmap file needed
+		m_height_map_texture = texture::generate_procedural_heightmap(world::c_planet_hash, world::c_heightmap_size, world::c_heightmap_size);
 		if (!m_height_map_texture) throw("terrain: failed to generate procedural height map");
 
 		m_shader->GetUniform("height_map")->SetValue(m_height_map_texture);

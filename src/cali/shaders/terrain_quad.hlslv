@@ -185,21 +185,6 @@ float3 adjusted_cube_to_sphere_face(in float2 v, float sphere_radius, float3 sph
     return rotated + sphere_center;
 }
 
-// Entire-planet equirectangular UV from sphere point (Y-up, no tiling)
-float2 world_to_equirect_uv(float3 worldPos, float3 center, float radius)
-{
-    float3 p = (worldPos - center) / radius; // unit sphere, Y-up
-    p = normalize(p);
-    float lon = atan2(p.x, p.z); // -PI .. PI, around Y
-    float lat = asin(clamp(p.y, -1.0, 1.0)); // -PI/2 .. PI/2
-    float u = lon / (2.0 * PI) + 0.5; // wrap
-    float v = lat / PI + 0.5; // clamp
-    // ensure wrap for sampler (U wraps, V clamps)
-    u = frac(u);
-    v = clamp(v, 0.0, 1.0);
-    return float2(u, v);
-}
-
 float4x4 calc_rotation_matrix(in float3 axis, float angle)
 {
     float c, s;
@@ -252,7 +237,19 @@ TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 posi
     TERRAIN_VS_OUTPUT output;
 
     ///////////////////////////////////////////////
-    // sphere position (cube-sphere, 6 faces)
+    // calculate grid parameters
+
+    float2 quad_center_uv = float2(quad_center.x, quad_center.y) / (planet_radius * 2.0) + float2(0.5, 0.5);
+    float quad_size_relative = quad_size.x / (planet_radius * 2.0);
+
+    float2 translated_uv = (quad_center_uv + uv * quad_size_relative) * quad_scale_factor;
+
+    // loop the texture
+    translated_uv = frac(abs(translated_uv));
+
+    ///////////////////////////////////////////////
+    //
+
     float3 world_normal, world_position_inter;
 
     if (curvature != 0.0)
@@ -266,24 +263,18 @@ TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 posi
         world_normal = normalize(world_position_inter - planet_center);
     }
 
-    // entire-planet equirectangular heightmap (no tiling, 200MB budget, unique everywhere)
-    float2 global_uv = world_to_equirect_uv(world_position_inter, planet_center, planet_radius);
-    float2 texSize = get_texture_size(height_map);
-    float2 texel = 1.0 / texSize;
-
-    float height = sqrt(height_map.SampleLevel(height_mapSampler, global_uv, 0).r) * 1500.0 * 0.1;
-    // mountains are already 3x via procedural tex, keep scale as is
-
     float angle = acos(dot(world_normal, float3(0.0, 1.0, 0.0)));
     float3 tangent = cross(world_normal, float3(0.0, 1.0, 0.0));
     float4x4 normal_rot_mat = calc_rotation_matrix(tangent, angle);
 
+    float height = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1;
+    
     float4 world_position = float4(world_position_inter + world_normal * height, 1.0);
 
     output.screen_position = mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
     output.normal = (float3) mul(normal_rot_mat,
-        float4(get_normal_from_heightmap_tex(height_map, height_mapSampler, global_uv, texel.x, 1.0), 0.0)
+        float4(get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0.0)
     );
     output.height = height;
 
