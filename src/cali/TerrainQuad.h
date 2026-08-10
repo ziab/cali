@@ -47,7 +47,6 @@ namespace cali
 		IvTexture* m_height_map_texture;
 
 		size_t m_nodes_rendered_per_frame;
-		float m_time;
 
 		static const uint32_t c_gird_cells = 129;
 		static const uint32_t c_detail_levels = 22;
@@ -85,7 +84,6 @@ namespace cali
 		// compound_renderable
 		virtual void render(IvRenderer & renderer, const frustum& frustum) override;
 		void set_viewer(const IvVector3 & camera_position);
-		void set_time(float t) { m_time = t; }
 
 		terrain_quad(bruneton& bruneton);
 		~terrain_quad();

@@ -103,7 +103,6 @@ namespace cali
 		m_grid(c_gird_cells, c_gird_cells, 1.0f),
 		m_bruneton(bruneton),
 		m_viewer_position{ 0.0f, 0.0f, 0.0f },
-		m_time(0.0f),
 		m_overlapping_edge_cells(c_gird_cells / 16),
 		m_planet_center(cali::world::c_earth_center),
 		m_planet_radius(cali::world::c_earth_radius)
@@ -132,8 +131,6 @@ namespace cali
 
 	void terrain_quad::update(float dt)
 	{
-		m_time += dt;
-		if (auto u = m_shader->GetUniform("time")) u->SetValue(m_time, 0);
 	}
 
 	void terrain_quad::render(IvRenderer & renderer)
@@ -194,7 +191,6 @@ namespace cali
 
 		m_shader->GetUniform("planet_center")->SetValue(planet_center_relative_to_viewer, 0);
 		m_shader->GetUniform("planet_radius")->SetValue((float)m_planet_radius, 0);
-		if (auto tu = m_shader->GetUniform("time")) tu->SetValue(m_time, 0);
 
 		// global hit point for debug box
 		double lon, lat; IvDoubleVector3 hit_point;

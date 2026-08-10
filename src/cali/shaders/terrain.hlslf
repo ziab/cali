@@ -122,56 +122,17 @@ float4 main(TERRAIN_VS_OUTPUT input) : SV_TARGET
     lightSampleValues lightValues = computePointLightValues(input.world_position);
 
     float3 base_color = desert_color;
-    bool isWater = input.height < 2.0;
     if (input.height > 30.0)
     {
         base_color = snow_color;
     }
-    else if (isWater)
+    else if (input.height < 2.0)
     {
         base_color = water_color;
     }
 
-    float3 direct_light_color;
-    if (isWater)
-    {
-        float3 N = normalize(input.normal);
-        // micro bump for sparkle (high freq)
-        float2 wp = input.world_position.xz * 0.04;
-        float nPert = sin(wp.x) * sin(wp.y) * 0.03;
-        // perturb normal slightly in tangent plane (cheap)
-        N = normalize(N + float3(nPert, 0, nPert));
-        float3 V = normalize(camera_position - input.world_position.xyz);
-        float3 L = normalize(lightValues.dir);
-        float3 H = normalize(V + L);
-        float NdotL = saturate(dot(N, L));
-        float NdotH = saturate(dot(N, H));
-        float NdotV = saturate(dot(N, V));
-
-        float F0 = 0.02;
-        float fresnel = F0 + (1.0 - F0) * pow(1.0 - NdotV, 5.0);
-
-        float shininess = 512.0;
-        float spec = pow(NdotH, shininess) * (shininess + 8.0) / 8.0;
-        float spec2 = pow(NdotH, 64.0) * 0.5;
-        float3 sunSpec = (spec + spec2) * lightValues.L * fresnel * 0.9;
-
-        float3 R = reflect(-V, N);
-        float3 env = lerp(sky_color_horizon.rgb, sky_color_zenith.rgb, saturate(R.y * 0.5 + 0.5));
-        float3 waterRefl = env * fresnel * 0.7;
-
-        float3 waterDiffuse = water_color * NdotL * 0.55 + water_color * 0.12;
-        direct_light_color = waterDiffuse + sunSpec + waterRefl;
-
-        // subtle foam on wave peaks (height encodes wave)
-        float waveFoam = smoothstep(0.9, 1.3, input.height);
-        direct_light_color = lerp(direct_light_color, float3(1,1,1), waveFoam * 0.18 * saturate(NdotL));
-    }
-    else
-    {
-        float3 lighting = clamp(dot(normalize(input.normal), lightValues.dir), 0.0, 1.0) * lightValues.L;
-        direct_light_color = lighting * base_color;
-    }
+    float3 lighting = clamp(dot(normalize(input.normal), lightValues.dir), 0.0, 1.0) * lightValues.L;
+    float3 direct_light_color = lighting * base_color;
     float depth_value = log(resolution * input.screen_position.w + 1) / log(resolution * far_plane + 1);
     direct_light_color = lerp(direct_light_color, horizon_color, depth_value);
 
