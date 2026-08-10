@@ -34,3 +34,8 @@ depends/essential_math/common/Includes/IvOBB.h
 x64/Release/cali_test.exe
 x64/Release/cali_test.iobj
 x64/Release/cali_test.ipdb
+# CMake
+build/
+build-*/
+out/
+CMakeUserPresets.json

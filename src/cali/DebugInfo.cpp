@@ -3,6 +3,8 @@
 #include <D3D11\IvRendererD3D11.h>
 #include <string>
 
+#include "CommonFileSystem.h"
+
 namespace cali
 {
 	debug_info* debug_info::m_debug_info = nullptr;
@@ -23,7 +25,9 @@ namespace cali
 		auto& d3d_renderer = dynamic_cast<IvRendererD3D11&>(renderer);
 
 		m_sprite_batch = std::make_unique<DirectX::SpriteBatch>(d3d_renderer.GetContext());
-		m_sprite_font = std::make_unique<DirectX::SpriteFont>(d3d_renderer.GetDevice(), L"courier_new.spritefont");
+		// Use exe-relative path so app works regardless of working directory (fixes windbg/Release crash)
+		std::wstring font_path = get_executable_file_directory_w() + L"\\courier_new.spritefont";
+		m_sprite_font = std::make_unique<DirectX::SpriteFont>(d3d_renderer.GetDevice(), font_path.c_str());
 	}
 
 

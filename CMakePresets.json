@@ -1,0 +1,59 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "windows-x64-debug",
+            "displayName": "Windows x64 Debug (D3D11)",
+            "description": "Debug D3D11 build with MSVC",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CALI_GRAPHICS_API_D3D11": "ON"
+            }
+        },
+        {
+            "name": "windows-x64-release",
+            "displayName": "Windows x64 Release (D3D11)",
+            "description": "Release D3D11 build with MSVC",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CALI_GRAPHICS_API_D3D11": "ON"
+            }
+        },
+        {
+            "name": "ninja-debug",
+            "displayName": "Ninja Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-ninja-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CALI_GRAPHICS_API_D3D11": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "windows-x64-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release",
+            "configurePreset": "windows-x64-release",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "windows-x64-debug",
+            "configuration": "Debug",
+            "output": { "outputOnFailure": true }
+        }
+    ]
+}

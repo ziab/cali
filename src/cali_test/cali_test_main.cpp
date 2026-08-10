@@ -39,17 +39,16 @@ TEST(terrain_quad_tree, test_high_prescision)
 	ASSERT_TRUE(tqtree.get_node_at({ -5001.8784179687500,-3296.0344238281250 }) != nullptr);
 }
 
-void main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	try
 	{
 		testing::InitGoogleTest(&argc, argv);
-		auto ret = RUN_ALL_TESTS();
+		return RUN_ALL_TESTS();
 	}
 	catch (std::exception& e)
 	{
 		std::cout << "exception: " << e.what() << std::endl;
+		return 1;
 	}
-
-	system("pause");
 }
