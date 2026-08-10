@@ -40,4 +40,14 @@ namespace cali
 	{
 		return proc::generate_heightmap_texture(hash_str, width, height);
 	}
+
+	IvTexture* texture::generate_planet_heightmap(uint64_t seed, int width, int height)
+	{
+		return proc::generate_planet_heightmap(seed, width, height);
+	}
+
+	IvTexture* texture::generate_planet_heightmap(const std::string& hash_str, int width, int height)
+	{
+		return proc::generate_planet_heightmap(hash_str, width, height);
+	}
 }
