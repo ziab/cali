@@ -113,6 +113,7 @@ float gird_cells;
 float3 planet_center;
 float planet_radius;
 float curvature;
+float time;
 
 /*     -  
 Z  /       \
@@ -183,6 +184,67 @@ float3 adjusted_cube_to_sphere_face(in float2 v, float sphere_radius, float3 sph
     float3 rot_n = rotate_top_to_face(local_normal, face);
     normal = rot_n;
     return rotated + sphere_center;
+}
+
+// ------------------------------------------------------------
+// Ocean waves – Gerstner-like sine superposition
+// ------------------------------------------------------------
+void ocean_basis(float3 N, out float3 Tx, out float3 Tz)
+{
+    float3 up = abs(N.y) < 0.9 ? float3(0,1,0) : float3(1,0,0);
+    Tx = normalize(cross(up, N));
+    Tz = cross(N, Tx);
+}
+
+float ocean_height_and_slopes(float2 p, float t, out float2 slope)
+{
+    slope = float2(0,0);
+    float h = 0;
+    // wave 1
+    {
+        float2 dir = normalize(float2(0.9, 0.3));
+        float k = 0.018;
+        float amp = 2.0;
+        float speed = 1.1;
+        float phase = dot(dir, p) * k - t * speed;
+        h += amp * sin(phase);
+        float c = amp * k * cos(phase);
+        slope += c * dir;
+    }
+    // wave 2
+    {
+        float2 dir = normalize(float2(-0.7, 0.6));
+        float k = 0.032;
+        float amp = 1.1;
+        float speed = 0.9;
+        float phase = dot(dir, p) * k - t * speed;
+        h += amp * sin(phase);
+        float c = amp * k * cos(phase);
+        slope += c * dir;
+    }
+    // wave 3
+    {
+        float2 dir = normalize(float2(0.3, -0.8));
+        float k = 0.05;
+        float amp = 0.6;
+        float speed = 1.4;
+        float phase = dot(dir, p) * k - t * speed;
+        h += amp * sin(phase);
+        float c = amp * k * cos(phase);
+        slope += c * dir;
+    }
+    // small ripples
+    {
+        float2 dir = normalize(float2(0.6, 0.6));
+        float k = 0.09;
+        float amp = 0.25;
+        float speed = 2.2;
+        float phase = dot(dir, p) * k - t * speed;
+        h += amp * sin(phase);
+        float c = amp * k * cos(phase);
+        slope += c * dir;
+    }
+    return h;
 }
 
 float4x4 calc_rotation_matrix(in float3 axis, float angle)
@@ -263,19 +325,48 @@ TERRAIN_VS_OUTPUT main(float2 uv : TEXCOORD, float3 normal : NORMAL, float4 posi
         world_normal = normalize(world_position_inter - planet_center);
     }
 
-    float angle = acos(dot(world_normal, float3(0.0, 1.0, 0.0)));
-    float3 tangent = cross(world_normal, float3(0.0, 1.0, 0.0));
-    float4x4 normal_rot_mat = calc_rotation_matrix(tangent, angle);
-
     float height = sqrt(height_map.SampleLevel(height_mapSampler, translated_uv, 0).r) * 1500.0 * 0.1;
-    
-    float4 world_position = float4(world_position_inter + world_normal * height, 1.0);
+    bool isOcean = height < 2.0;
+
+    float3 finalNormal;
+    float4 world_position;
+
+    if (isOcean)
+    {
+        // ocean waves in tangent plane
+        float3 Tx, Tz;
+        ocean_basis(world_normal, Tx, Tz);
+        float3 localPos = world_position_inter - planet_center;
+        float2 waveP = float2(dot(localPos, Tx), dot(localPos, Tz));
+        float2 slope;
+        float waveH = ocean_height_and_slopes(waveP, time, slope);
+        // fade near shore to avoid discontinuity
+        float shoreBlend = saturate((2.0 - height) / 1.0);
+        waveH *= shoreBlend;
+        slope *= shoreBlend * 0.6;
+        float3 waveNormal = normalize(world_normal - slope.x * Tx - slope.y * Tz);
+        finalNormal = waveNormal;
+        // keep ocean at sea level + wave
+        float finalHeight = waveH;
+        world_position = float4(world_position_inter + world_normal * finalHeight, 1.0);
+        // preserve water tag for PS (height <2) – store wave height but keep below threshold
+        height = finalHeight * 0.5 + 0.5; // remap to ~0-1 range stays <2
+        // small foam hint could be encoded in height variation but keep simple
+    }
+    else
+    {
+        float angle = acos(dot(world_normal, float3(0.0, 1.0, 0.0)));
+        float3 tangent = cross(world_normal, float3(0.0, 1.0, 0.0));
+        float4x4 normal_rot_mat = calc_rotation_matrix(tangent, angle);
+        finalNormal = (float3) mul(normal_rot_mat,
+            float4(get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0.0)
+        );
+        world_position = float4(world_position_inter + world_normal * height, 1.0);
+    }
 
     output.screen_position = mul(IvViewProjectionMatrix, world_position);
     output.world_position = world_position;
-    output.normal = (float3) mul(normal_rot_mat,
-        float4(get_normal_from_heightmap_tex(height_map, height_mapSampler, translated_uv, quad_size_relative.x / gird_cells, 1.0), 0.0)
-    );
+    output.normal = finalNormal;
     output.height = height;
 
     return output;
